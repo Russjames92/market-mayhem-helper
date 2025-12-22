@@ -326,51 +326,65 @@
     }
   }
 
-  /* Make leaderboard tables consistently clean (any size) */
+  /* =========================
+   LEADERBOARD – DESKTOP TABLE ALIGNMENT
+   ========================= */
+@media (min-width:701px){
+
   #leaderboard table{
     width:100%;
     border-collapse:collapse;
-    table-layout:fixed; /* prevents “smashed” columns */
+    table-layout:fixed; /* critical for column discipline */
   }
+
+  /* Shared cell styling */
   #leaderboard th,
   #leaderboard td{
-    padding:10px 10px;
+    padding:12px 10px;
     border-bottom:1px solid #222;
-    font-size:12px;
+    font-size:13px;
     vertical-align:middle;
-    white-space:nowrap;
-  }
-  #leaderboard th{
-    font-weight:900;
-    opacity:.95;
   }
 
-  /* Rank column a bit wider for emoji */
+  /* ---- COLUMN ALIGNMENT ---- */
+
+  /* Rank */
   #leaderboard th:nth-child(1),
   #leaderboard td:nth-child(1){
-    width:70px;
+    width:80px;
+    text-align:center;
+    font-size:18px;
   }
 
-  /* Player column: allow wrapping so names never destroy layout */
+  /* Player (left aligned for readability) */
   #leaderboard th:nth-child(2),
   #leaderboard td:nth-child(2){
-    width:38%;
-    white-space:normal;
-    overflow-wrap:anywhere;
-    word-break:break-word;
+    width:35%;
+    text-align:left;
+    padding-left:16px;
+    font-weight:800;
   }
 
-  /* Center numeric columns */
-  #leaderboard th:nth-child(1),
-  #leaderboard td:nth-child(1),
+  /* Games */
   #leaderboard th:nth-child(3),
-  #leaderboard td:nth-child(3),
+  #leaderboard td:nth-child(3){
+    text-align:center;
+  }
+
+  /* Wins */
   #leaderboard th:nth-child(4),
-  #leaderboard td:nth-child(4),
+  #leaderboard td:nth-child(4){
+    text-align:center;
+  }
+
+  /* Total Assets */
   #leaderboard th:nth-child(5),
   #leaderboard td:nth-child(5){
     text-align:center;
+    font-weight:900;
+    white-space:nowrap;
   }
+}
 
   /* Mobile: prevent “jumbled” table by allowing horizontal scroll + smaller padding */
   @media (max-width:700px){
