@@ -71,13 +71,13 @@ const elBtnShortMove = document.getElementById("btnShortMove");
 const elShortMoveSymbol = document.getElementById("shortMoveSymbol");
 const elShortMoveDir = document.getElementById("shortMoveDir");
 
-const elPitBoardSection = document.getElementById("pitBoardSection");
-const elBtnPitToggle = document.getElementById("btnPitToggle");
+const pitBoardSection = document.getElementById("pitBoardSection");
+const pitToggleBtn = document.getElementById("pitToggleBtn");
 
-if (elBtnPitToggle && elPitBoardSection) {
-  elBtnPitToggle.addEventListener("click", () => {
-    const expanded = elPitBoardSection.classList.toggle("expanded");
-    elBtnPitToggle.textContent = expanded ? "Hide Pit Board" : "Show Pit Board";
+if (pitToggleBtn && pitBoardSection) {
+  pitToggleBtn.addEventListener("click", () => {
+    pitBoardSection.classList.toggle("expanded");
+    pitToggleBtn.textContent = pitBoardSection.classList.contains("expanded") ? "Hide" : "Show";
   });
 }
 
