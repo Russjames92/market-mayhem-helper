@@ -229,13 +229,14 @@ function renderPitBoard() {
     const cur = state.prices[s.symbol] ?? s.start;
 
     tr.innerHTML = `
-      <td><strong>${s.symbol}</strong></td>
-      <td>${s.name}</td>
-      <td>${industries}</td>
-      <td>$${fmtMoney(s.dividend)}</td>
-      <td>$${fmtMoney(s.start)}</td>
-      <td><strong>$${fmtMoney(cur)}</strong></td>
+      <td data-label="Symbol"><strong>${s.symbol}</strong></td>
+      <td data-label="Company">${s.name}</td>
+      <td data-label="Industries">${industries}</td>
+      <td data-label="Dividend">$${fmtMoney(s.dividend)}</td>
+      <td data-label="Start">$${fmtMoney(s.start)}</td>
+      <td data-label="Current"><strong>$${fmtMoney(cur)}</strong></td>
     `;
+
     elPitTableBody.appendChild(tr);
   }
 }
