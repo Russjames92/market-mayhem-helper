@@ -404,6 +404,24 @@
     .item{ border-bottom:1px solid #ddd !important; }
     .mini{ color:#333 !important; }
   }
+
+/* FINAL FIX: center Player column exactly under its header (desktop + mobile) */
+  #leaderboard thead th{
+    text-align:center !important;
+  }
+  
+  #leaderboard th:nth-child(2),
+  #leaderboard td:nth-child(2){
+    text-align:center !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
+  }
+  
+  /* Optional but makes numbers look visually lined up */
+  #leaderboard td{
+    font-variant-numeric: tabular-nums;
+  }
+
 </style>
 </head>
 
