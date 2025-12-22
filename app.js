@@ -151,12 +151,16 @@ function computePlayerIndustries(player) {
   return [...set];
 }
 function clearMarketMoverSelections() {
-   const dice = Number(diceTotal.value);
-
+  // Clear industry checks
   for (const box of elIndustryList.querySelectorAll(".industry-box")) {
     const chk = box.querySelector(".indCheck");
     if (chk) chk.checked = false;
   }
+
+  // Optional (recommended): reset dice dropdown to the placeholder
+  // If you want it to KEEP the selected dice value, delete these 2 lines.
+  if (elDiceTotal) elDiceTotal.value = "";
+
   updateMarketMoverButton();
 }
 
@@ -669,10 +673,13 @@ function renderLog() {
 function updateMarketMoverButton() {
   const anyChecked = [...elIndustryList.querySelectorAll(".indCheck")].some(chk => chk.checked);
   const started = !!state.started;
-  elBtnApplyMarketMover.disabled = !(anyChecked && started);
+  const diceOk = Number(elDiceTotal.value) >= 2 && Number(elDiceTotal.value) <= 12;
+
+  elBtnApplyMarketMover.disabled = !(started && anyChecked && diceOk);
+
   elMarketMoverHint.textContent = !started
     ? "Start a session first."
-    : (!anyChecked ? "Select at least one industry." : "Ready.");
+    : (!diceOk ? "Select a dice total (2–12)." : (!anyChecked ? "Select at least one industry." : "Ready."));
 }
 
 function renderAll() {
