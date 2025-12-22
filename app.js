@@ -151,6 +151,8 @@ function computePlayerIndustries(player) {
   return [...set];
 }
 function clearMarketMoverSelections() {
+   const dice = Number(diceTotal.value);
+
   for (const box of elIndustryList.querySelectorAll(".industry-box")) {
     const chk = box.querySelector(".indCheck");
     if (chk) chk.checked = false;
