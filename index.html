@@ -209,95 +209,51 @@
      PIT BOARD — Mobile Cards
      ============================ */
 
-  /* Cards are hidden by default (desktop) */
-  .pitCards{ display:none; }
+  /* --- Pit Board collapse/expand (mobile) --- */
+.pitHeadRow{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
 
-  /* On mobile: hide tableWrap, show cards */
-  @media (max-width:700px){
-    .tableWrap{ display:none; }
-    .pitCards{ display:grid; gap:10px; }
-  }
+.pitToggle{
+  display:none;          /* hidden on desktop */
+  width:auto;
+  padding:10px 14px;
+  border-radius:10px;
+  white-space:nowrap;
+}
 
-  /* Compact card */
-  .pitCard{
-    width:100%;
-    max-width:100%;
-    background:var(--panel2);
-    border:1px solid var(--border2);
-    border-radius:14px;
-    padding:10px;
-    overflow:hidden;
-  }
+.pitBoardWrap{
+  /* desktop: just normal content */
+}
 
-  .pitTopRow{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:10px;
-    width:100%;
+@media (max-width: 700px){
+  .pitToggle{
+    display:inline-flex; /* show toggle only on mobile */
   }
 
-  .pitLeft{
-    min-width:0;
-    flex:1;
+  /* collapsed state */
+  .pitBoardWrap.is-collapsed{
+    display:none;
   }
 
-  .pitSymLine{
-    display:flex;
-    gap:10px;
-    align-items:baseline;
-    min-width:0;
+  /* expanded state */
+  .pitBoardWrap.is-expanded{
+    display:block;
   }
 
-  .pitSym{
-    font-weight:900;
-    font-size:15px;
-    letter-spacing:.3px;
-    white-space:nowrap;
+  /* keep table usable on mobile */
+  .tableWrap{
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
   }
 
-  .pitName{
-    font-size:13px;
-    opacity:.9;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    min-width:0;
+  #pitTable th, #pitTable td{
+    white-space:nowrap; /* prevents squishing */
   }
-
-  .pitCurrent{
-    flex:0 0 auto;
-    text-align:right;
-    white-space:nowrap;
-  }
-  .pitCurLabel{
-    font-size:10px;
-    color:var(--muted);
-    margin-bottom:2px;
-  }
-  .pitCurPrice{
-    font-size:20px;
-    font-weight:900;
-    line-height:1.05;
-  }
-
-  .pitMetaRow{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    margin-top:8px;
-    font-size:12px;
-    color:var(--muted);
-    flex-wrap:wrap;
-  }
-
-  /* Small phones: tighten a bit */
-  @media (max-width:420px){
-    header{ padding:12px 12px; }
-    main{ padding:12px 12px; }
-    .card{ padding:12px; }
-    .pitCurPrice{ font-size:18px; }
-  }
+}
 </style>
 
 </head>
@@ -400,26 +356,38 @@
         <div id="playersArea"></div>
       </section>
       
-      <section class="card">
-        <h2>Pit Board (Prices + Industries)</h2>
-        <div class="sub">This replaces the dry-erase Pit Board updates and keeps everything consistent.</div>
-        <div class="tableWrap">
-          <table id="pitTable" class="pitTable">
-            <thead>
-              <tr>
-                <th>Symbol</th>
-                <th>Company</th>
-                <th>Industries</th>
-                <th>Dividend</th>
-                <th>Start</th>
-                <th>Current</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-          <div id="pitCards" class="pitCards"></div>
-        </div>
-      </section>
+      <section class="card" id="pitBoardCard">
+  <div class="pitHeadRow">
+    <div>
+      <h2>Pit Board (Prices + Industries)</h2>
+      <div class="sub">This replaces the dry-erase Pit Board updates and keeps everything consistent.</div>
+    </div>
+
+    <!-- Mobile-only toggle button -->
+    <button type="button" id="togglePitBoard" class="pitToggle">
+      Show
+    </button>
+  </div>
+
+  <!-- This wrapper is what we collapse/expand on mobile -->
+  <div id="pitBoardWrap" class="pitBoardWrap is-collapsed">
+    <div class="tableWrap">
+      <table id="pitTable">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Company</th>
+            <th>Industries</th>
+            <th>Dividend</th>
+            <th>Start</th>
+            <th>Current</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
       <section class="card">
         <h2>Game Log</h2>
