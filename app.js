@@ -37,11 +37,12 @@ const STOCKS = [
 
 // ---------- State ----------
 let state = {
-  started: false,
-  createdAt: null,
-  players: [],     // { id, name, cash, holdings: {SYM: shares} }
-  prices: {},      // { SYM: currentPrice }
-  log: []          // { ts, text }
+   started: false,
+   createdAt: null,
+   players: [],     // { id, name, cash, holdings: {SYM: shares} }
+   prices: {},      // { SYM: currentPrice }
+   log: [],          // { ts, text }
+   tradeDrafts: {}
 };
 
 // ---------- DOM ----------
@@ -112,6 +113,14 @@ function ensureHoldings(player) {
   if (!player.holdings) player.holdings = {};
   for (const s of STOCKS) {
     if (player.holdings[s.symbol] == null) player.holdings[s.symbol] = 0;
+  }
+}
+
+function ensureTradeDraft(playerId) {
+  if (!state.tradeDrafts) state.tradeDrafts = {};
+  if (!state.tradeDrafts[playerId]) {
+    // default symbol + shares
+    state.tradeDrafts[playerId] = { symbol: "EE", shares: 100 };
   }
 }
 
@@ -265,10 +274,32 @@ function renderPlayers() {
           <div style="font-size:14px; font-weight:800;">${p.name}</div>
           <div class="mini muted">Cash: <strong>$${fmtMoney(p.cash)}</strong> • Total Assets: <strong>$${fmtMoney(totalAssets)}</strong></div>
         </div>
-        <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap;">
-          <button class="primary" data-action="trade" data-player="${p.id}">Buy / Sell</button>
-          <button data-action="adjustCash" data-player="${p.id}">Adjust Cash</button>
-        </div>
+        <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
+            <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
+             Stock
+               <select data-role="tradeSymbol" data-player="${p.id}">
+               ${STOCKS.map(s => `<option value="${s.symbol}">${s.symbol}</option>`).join("")}
+                </select>
+           </label>
+
+           <div style="display:flex; align-items:center; gap:6px;">
+    <button type="button" data-role="sharesDown" data-player="${p.id}">-100</button>
+    <div class="mini" style="min-width:86px; text-align:center;">
+      Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
+    </div>
+    <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
+  </div>
+
+  <button type="button" class="primary" data-role="buy" data-player="${p.id}">Buy</button>
+  <button type="button" data-role="sell" data-player="${p.id}">Sell</button>
+
+  <button type="button" data-action="adjustCash" data-player="${p.id}">Adjust Cash</button>
+
+  <div class="mini muted" style="width:100%; text-align:right;">
+    <span data-role="tradePreview" data-player="${p.id}"></span>
+  </div>
+</div>
+
       </div>
 
       <div class="divider"></div>
@@ -277,8 +308,52 @@ function renderPlayers() {
     `;
 
     // hook buttons
-    wrap.querySelector('[data-action="trade"]').addEventListener("click", () => openTradeDialog(p.id));
-    wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
+    // Adjust cash stays
+wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
+
+// Trade panel elements
+const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
+const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
+const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
+
+let tradeShares = 100; // default per render
+
+function updatePreview() {
+  const symbol = elSymbol.value;
+  const stock = getStock(symbol);
+  const price = state.prices[symbol] ?? stock.start;
+  const cost = tradeShares * price;
+
+  const owned = p.holdings[symbol] || 0;
+
+  elShares.textContent = String(tradeShares);
+  elPreview.textContent =
+    `${symbol} @ $${fmtMoney(price)} • Total: $${fmtMoney(cost)} • You own: ${owned} sh`;
+}
+
+wrap.querySelector(`[data-role="sharesDown"][data-player="${p.id}"]`)
+  .addEventListener("click", () => {
+    tradeShares = Math.max(100, tradeShares - 100);
+    updatePreview();
+  });
+
+wrap.querySelector(`[data-role="sharesUp"][data-player="${p.id}"]`)
+  .addEventListener("click", () => {
+    tradeShares += 100;
+    updatePreview();
+  });
+
+elSymbol.addEventListener("change", updatePreview);
+
+wrap.querySelector(`[data-role="buy"][data-player="${p.id}"]`)
+  .addEventListener("click", () => doTrade(p.id, "BUY", elSymbol.value, tradeShares));
+
+wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`)
+  .addEventListener("click", () => doTrade(p.id, "SELL", elSymbol.value, tradeShares));
+
+// Initialize preview once per player card
+updatePreview();
+
 
     elPlayersArea.appendChild(wrap);
   }
@@ -435,71 +510,101 @@ function shortMove() {
   saveState();
 }
 
-// ---------- Trade / Cash dialogs (simple prompt-based, beginner-friendly) ----------
-function openCashDialog(playerId) {
+// ---------- Trade UI handlers (no prompts) ----------
+function tradeSetSymbol(playerId, symbol) {
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
+  ensureHoldings(p);
+  ensureTradeDraft(playerId);
 
-  const raw = prompt(
-    `${p.name} cash is $${fmtMoney(p.cash)}.\nEnter cash adjustment (example: -3000 or 5000):`,
-    "0"
-  );
-  if (raw == null) return;
-  const delta = Number(raw);
-  if (!Number.isFinite(delta)) {
-    alert("That wasn’t a number.");
-    return;
-  }
-  p.cash += delta;
-  addLog(`${p.name} cash adjusted: ${delta >= 0 ? "+" : ""}${fmtMoney(delta)} → $${fmtMoney(p.cash)}.`);
+  const s = String(symbol || "").trim().toUpperCase();
+  if (!getStock(s)) return; // ignore invalid
+
+  state.tradeDrafts[playerId].symbol = s;
   renderAll();
   saveState();
 }
 
-function openTradeDialog(playerId) {
+function tradeIncShares(playerId, delta) {
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  ensureHoldings(p);
+  ensureTradeDraft(playerId);
+
+  const d = state.tradeDrafts[playerId];
+  const next = (Number(d.shares) || 0) + Number(delta);
+
+  // keep at least 100, always in 100-share increments
+  d.shares = Math.max(100, Math.round(next / 100) * 100);
+
+  renderAll();
+  saveState();
+}
+
+function tradeExecute(playerId, side) {
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return;
+  ensureHoldings(p);
+  ensureTradeDraft(playerId);
+
+  const d = state.tradeDrafts[playerId];
+  const symbol = String(d.symbol).toUpperCase();
+  const shares = Number(d.shares);
+
+  const stock = getStock(symbol);
+  if (!stock) {
+    alert("Pick a valid stock.");
+    return;
+  }
+  if (!Number.isFinite(shares) || shares <= 0 || shares % 100 !== 0) {
+    alert("Shares must be 100, 200, 300, etc.");
+    return;
+  }
+
+  const price = state.prices[symbol] ?? stock.start;
+  const cost = shares * price;
+
+  const act = String(side).toUpperCase();
+  if (act === "BUY") {
+    if (p.cash < cost) {
+      alert(`${p.name} doesn’t have enough cash. Needs $${fmtMoney(cost)}, has $${fmtMoney(p.cash)}.`);
+      return;
+    }
+    p.cash -= cost;
+    p.holdings[symbol] = (p.holdings[symbol] || 0) + shares;
+    addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
+  } else if (act === "SELL") {
+    const have = p.holdings[symbol] || 0;
+    if (have < shares) {
+      alert(`${p.name} doesn’t have enough shares to sell. Has ${have}.`);
+      return;
+    }
+    p.holdings[symbol] = have - shares;
+    p.cash += cost;
+    addLog(`${p.name} SELL ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
+  } else {
+    alert("Invalid trade side.");
+    return;
+  }
+
+  renderAll();
+  saveState();
+}
+
+function doTrade(playerId, act, symbol, shares) {
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
   ensureHoldings(p);
 
-  const action = prompt(`Trade for ${p.name}:\nType BUY or SELL`, "BUY");
-  if (!action) return;
-  const act = action.trim().toUpperCase();
-  if (act !== "BUY" && act !== "SELL") {
-    alert("Type BUY or SELL.");
-    return;
-  }
-
-  const sym = prompt(`Enter stock symbol (example: EE, ABE, SLR):`, "EE");
-  if (!sym) return;
-  const symbol = sym.trim().toUpperCase();
   const stock = getStock(symbol);
   if (!stock) {
     alert("Unknown symbol.");
     return;
   }
 
-    // Shares preset selector (+100/+200/+300) with optional custom entry
-  const preset = prompt(
-    `Enter shares preset for ${p.name}:\n` +
-    `Type 100, 200, 300 for quick presets\n` +
-    `Or type CUSTOM to enter a different amount`,
-    "100"
-  );
-  if (preset == null) return;
-
-  let shares;
-
-  const presetClean = String(preset).trim().toUpperCase();
-  if (presetClean === "CUSTOM") {
-    const sharesRaw = prompt(`Enter shares (must be in 100-share increments):`, "100");
-    if (sharesRaw == null) return;
-    shares = Number(sharesRaw);
-  } else {
-    shares = Number(presetClean);
-  }
-
+  // safety
   if (!Number.isFinite(shares) || shares <= 0 || shares % 100 !== 0) {
-    alert("Shares must be a positive number in 100-share increments (100, 200, 300...).");
+    alert("Shares must be 100, 200, 300...");
     return;
   }
 
@@ -512,21 +617,26 @@ function openTradeDialog(playerId) {
       return;
     }
     p.cash -= cost;
-    p.holdings[symbol] += shares;
+    p.holdings[symbol] = (p.holdings[symbol] || 0) + shares;
     addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
-  } else {
-    if (p.holdings[symbol] < shares) {
-      alert(`${p.name} doesn’t have enough shares to sell. Has ${p.holdings[symbol]}.`);
+  } else if (act === "SELL") {
+    const owned = p.holdings[symbol] || 0;
+    if (owned < shares) {
+      alert(`${p.name} doesn’t have enough shares to sell. Has ${owned}.`);
       return;
     }
-    p.holdings[symbol] -= shares;
+    p.holdings[symbol] = owned - shares;
     p.cash += cost;
     addLog(`${p.name} SELL ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
+  } else {
+    alert("Invalid trade action.");
+    return;
   }
 
   renderAll();
   saveState();
 }
+
 
 // ---------- Events ----------
 elPlayerCount.addEventListener("change", buildSetupInputs);
