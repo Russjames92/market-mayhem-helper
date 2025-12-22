@@ -1,7 +1,7 @@
 /* Market Mayhem Helper
    - Pit board prices
    - Player cash/holdings
-   - Market mover (Step 7): industries + dice => auto price movement
+   - Market mover: industries + dice => auto price movement
 */
 
 const STORAGE_KEY = "mm_helper_session_v1";
@@ -11,7 +11,7 @@ const CANON_INDUSTRIES = [
   "Healthcare","Manufacturing","Technology","Transportation"
 ];
 
-// Stock definitions based on your Pit Board sheet (start price, dividend, dice move table)
+// Stock definitions (start price, dividend, dice move table)
 const STOCKS = [
   { symbol:"EE",   name:"Evanston Electric",   industries:["Energy"], start:95,  dividend:5,  moves:{low:12, mid:10, high:8} },
   { symbol:"ABE",  name:"Alberta Energy",      industries:["Energy"], start:125, dividend:10, moves:{low:16, mid:12, high:10} },
@@ -37,12 +37,11 @@ const STOCKS = [
 
 // ---------- State ----------
 let state = {
-   started: false,
-   createdAt: null,
-   players: [],     // { id, name, cash, holdings: {SYM: shares} }
-   prices: {},      // { SYM: currentPrice }
-   log: [],          // { ts, text }
-   tradeDrafts: {}
+  started: false,
+  createdAt: null,
+  players: [],     // { id, name, cash, holdings: {SYM: shares} }
+  prices: {},      // { SYM: currentPrice }
+  log: [],         // { ts, text }
 };
 
 // ---------- DOM ----------
@@ -71,90 +70,47 @@ const elBtnShortMove = document.getElementById("btnShortMove");
 const elShortMoveSymbol = document.getElementById("shortMoveSymbol");
 const elShortMoveDir = document.getElementById("shortMoveDir");
 
+// Pit toggle (mobile only)
 const pitBoardSection = document.getElementById("pitBoardSection");
-const pitToggleBtn = document.getElementById("pitToggleBtn");
-
-if (pitToggleBtn && pitBoardSection) {
-  pitToggleBtn.addEventListener("click", () => {
-    pitBoardSection.classList.toggle("expanded");
-    pitToggleBtn.textContent = pitBoardSection.classList.contains("expanded") ? "Hide" : "Show";
-  });
-}
-
+const pitToggleBtn = document.getElementById("btnPitToggle");
 
 // ---------- Helpers ----------
 function nowTs() {
-  const d = new Date();
-  return d.toLocaleString();
+  return new Date().toLocaleString();
+}
+function fmtMoney(n) {
+  const x = Number(n || 0);
+  return x.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
 function addLog(text) {
   state.log.unshift({ ts: nowTs(), text });
   renderLog();
 }
-
 function clampPrice(n) {
-  // You can change this rule if your printed game has a minimum.
   return Math.max(0, Math.round(n));
 }
-
 function diceBand(total) {
   if (total >= 2 && total <= 5) return "low";
   if (total >= 6 && total <= 8) return "mid";
-  return "high"; // 9-12
+  return "high";
 }
-
-function fmtMoney(n) {
-  const x = Number(n || 0);
-  return x.toLocaleString(undefined, { maximumFractionDigits: 0 });
-}
-
 function getStock(symbol) {
   return STOCKS.find(s => s.symbol === symbol);
 }
-
-function computePlayerNetWorth(player) {
-  let stockValue = 0;
-  for (const [sym, shares] of Object.entries(player.holdings)) {
-    const price = state.prices[sym] ?? getStock(sym).start;
-    stockValue += shares * price;
-  }
-  return player.cash + stockValue;
-}
-
 function ensureHoldings(player) {
   if (!player.holdings) player.holdings = {};
   for (const s of STOCKS) {
     if (player.holdings[s.symbol] == null) player.holdings[s.symbol] = 0;
   }
 }
-
-function ensureTradeDraft(playerId) {
-  if (!state.tradeDrafts) state.tradeDrafts = {};
-  if (!state.tradeDrafts[playerId]) {
-    // default symbol + shares
-    state.tradeDrafts[playerId] = { symbol: "EE", shares: 100 };
+function computePlayerNetWorth(player) {
+  let stockValue = 0;
+  for (const [sym, shares] of Object.entries(player.holdings)) {
+    const stock = getStock(sym);
+    const price = state.prices[sym] ?? stock.start;
+    stockValue += shares * price;
   }
-}
-
-function setupPitBoardToggle() {
-  const btn = document.getElementById("togglePitBoard");
-  const wrap = document.getElementById("pitBoardWrap");
-  if (!btn || !wrap) return;
-
-  function setExpanded(expanded) {
-    wrap.classList.toggle("is-collapsed", !expanded);
-    wrap.classList.toggle("is-expanded", expanded);
-    btn.textContent = expanded ? "Hide" : "Show";
-  }
-
-  // Default: collapsed on mobile, expanded on desktop
-  const isMobile = window.matchMedia("(max-width: 700px)").matches;
-  setExpanded(!isMobile);
-
-  btn.addEventListener("click", () => {
-    const expandedNow = wrap.classList.contains("is-expanded");
-    setExpanded(!expandedNow);
-  });
+  return player.cash + stockValue;
 }
 
 // ---------- Save/Load ----------
@@ -166,11 +122,7 @@ function saveState() {
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return;
-  try {
-    state = JSON.parse(raw);
-  } catch {
-    return;
-  }
+  try { state = JSON.parse(raw); } catch { /* ignore */ }
 }
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
@@ -198,10 +150,12 @@ function buildSetupInputs() {
 
 function buildIndustryUI() {
   elIndustryList.innerHTML = "";
+
   for (const ind of CANON_INDUSTRIES) {
     const box = document.createElement("div");
     box.className = "industry-box";
     box.dataset.industry = ind;
+
     box.innerHTML = `
       <div class="top">
         <div style="display:flex; gap:10px; align-items:center;">
@@ -218,20 +172,13 @@ function buildIndustryUI() {
       </div>
     `;
 
-    // Fill "Affects"
-    const syms = STOCKS
-      .filter(s => s.industries.includes(ind))
-      .map(s => s.symbol)
-      .join(", ");
+    const syms = STOCKS.filter(s => s.industries.includes(ind)).map(s => s.symbol).join(", ");
     box.querySelector(".affects").textContent = syms || "—";
 
     elIndustryList.appendChild(box);
   }
 
-  // Enable/disable apply button based on checked boxes + started session
-  elIndustryList.addEventListener("change", () => {
-    updateMarketMoverButton();
-  });
+  elIndustryList.addEventListener("change", updateMarketMoverButton);
 }
 
 function buildShortMoveUI() {
@@ -255,17 +202,16 @@ function renderStatus() {
 }
 
 function renderPitBoard() {
-  // Fill desktop table
+  // desktop table
   elPitTableBody.innerHTML = "";
 
-  // Fill mobile cards
-  const elPitCards = document.getElementById("pitCards");
+  // mobile cards
   if (elPitCards) elPitCards.innerHTML = "";
 
   for (const s of STOCKS) {
     const cur = state.prices[s.symbol] ?? s.start;
 
-    // ----- Desktop table row -----
+    // table row
     const tr = document.createElement("tr");
     const industries = s.industries.map(x => `<span class="tag">${x}</span>`).join("");
     tr.innerHTML = `
@@ -278,15 +224,17 @@ function renderPitBoard() {
     `;
     elPitTableBody.appendChild(tr);
 
-    // ----- Mobile card -----
+    // card
     if (elPitCards) {
       const card = document.createElement("div");
       card.className = "pitCard";
       card.innerHTML = `
         <div class="pitRow1">
           <div class="pitLeft">
-            <span class="pitSym">${s.symbol}</span>
-            <span class="pitName">${s.name}</span>
+            <div class="pitSymLine">
+              <span class="pitSym">${s.symbol}</span>
+              <span class="pitName">${s.name}</span>
+            </div>
           </div>
           <div class="pitCur">$${fmtMoney(cur)}</div>
         </div>
@@ -320,7 +268,6 @@ function renderPlayers() {
     wrap.className = "card";
     wrap.style.marginBottom = "12px";
 
-    // Holding summary
     const holdingLines = STOCKS
       .map(s => {
         const shares = p.holdings[s.symbol] || 0;
@@ -342,7 +289,6 @@ function renderPlayers() {
         </div>
 
         <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
-
           <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
             Stock
             <select data-role="tradeSymbol" data-player="${p.id}">
@@ -352,11 +298,9 @@ function renderPlayers() {
 
           <div style="display:flex; align-items:center; gap:6px;">
             <button type="button" data-role="sharesDown" data-player="${p.id}">-100</button>
-
             <div class="mini" style="min-width:120px; text-align:center;">
               Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
             </div>
-
             <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
           </div>
 
@@ -378,7 +322,6 @@ function renderPlayers() {
     // Adjust cash
     wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
 
-    // Trade panel elements
     const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
     const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
     const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
@@ -401,7 +344,6 @@ function renderPlayers() {
       tradeShares = Math.max(100, tradeShares - 100);
       updatePreview();
     });
-
     wrap.querySelector(`[data-role="sharesUp"][data-player="${p.id}"]`).addEventListener("click", () => {
       tradeShares += 100;
       updatePreview();
@@ -412,7 +354,6 @@ function renderPlayers() {
     wrap.querySelector(`[data-role="buy"][data-player="${p.id}"]`).addEventListener("click", () => {
       doTrade(p.id, "BUY", elSymbol.value, tradeShares);
     });
-
     wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`).addEventListener("click", () => {
       doTrade(p.id, "SELL", elSymbol.value, tradeShares);
     });
@@ -421,7 +362,6 @@ function renderPlayers() {
     elPlayersArea.appendChild(wrap);
   }
 }
-
 
 function renderLog() {
   elLog.innerHTML = "";
@@ -448,7 +388,6 @@ function renderAll() {
   renderPlayers();
   renderLog();
 
-  // buttons
   const started = !!state.started;
   elBtnPayDividends.disabled = !started;
   elBtnShortMove.disabled = !started;
@@ -493,15 +432,14 @@ function applyMarketMover() {
     return;
   }
 
-  const band = diceBand(total); // low/mid/high
+  const band = diceBand(total);
 
-  // Gather selected industries with directions
   const selections = [];
   for (const box of [...elIndustryList.querySelectorAll(".industry-box")]) {
     const chk = box.querySelector(".indCheck");
     if (!chk.checked) continue;
     const ind = box.dataset.industry;
-    const dir = box.querySelector(".indDir").value; // up/down
+    const dir = box.querySelector(".indDir").value;
     selections.push({ industry: ind, dir });
   }
 
@@ -510,9 +448,7 @@ function applyMarketMover() {
     return;
   }
 
-  // Apply adjustments
-  const touched = new Set();
-  const deltas = []; // for log
+  const deltas = [];
 
   for (const sel of selections) {
     const affected = STOCKS.filter(s => s.industries.includes(sel.industry));
@@ -524,12 +460,12 @@ function applyMarketMover() {
       const after = clampPrice(before + signed);
       state.prices[stock.symbol] = after;
 
-      touched.add(stock.symbol);
       deltas.push(`${stock.symbol} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
     }
   }
 
-  addLog(`Market Mover: dice ${total} (${band}) • ` +
+  addLog(
+    `Market Mover: dice ${total} (${band}) • ` +
     selections.map(s => `${s.industry} ${s.dir === "up" ? "↑" : "↓"}`).join(", ") +
     `<br><span class="mini muted">${deltas.join(" • ")}</span>`
   );
@@ -539,8 +475,6 @@ function applyMarketMover() {
 }
 
 function payDividends() {
-  // Opening Bell: everyone gets dividends per share owned (dividend never changes)
-  // Rules reference: dividends per share on pit board :contentReference[oaicite:3]{index=3}
   let totalPaid = 0;
 
   for (const p of state.players) {
@@ -563,7 +497,7 @@ function payDividends() {
 
 function shortMove() {
   const sym = elShortMoveSymbol.value;
-  const dir = elShortMoveDir.value; // up/down
+  const dir = elShortMoveDir.value;
   const before = state.prices[sym] ?? getStock(sym).start;
   const signed = dir === "up" ? 8 : -8;
   const after = clampPrice(before + signed);
@@ -574,83 +508,24 @@ function shortMove() {
   saveState();
 }
 
-// ---------- Trade UI handlers (no prompts) ----------
-function tradeSetSymbol(playerId, symbol) {
+function openCashDialog(playerId) {
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
-  ensureHoldings(p);
-  ensureTradeDraft(playerId);
 
-  const s = String(symbol || "").trim().toUpperCase();
-  if (!getStock(s)) return; // ignore invalid
+  const raw = prompt(
+    `${p.name} cash is $${fmtMoney(p.cash)}.\nEnter cash adjustment (example: -3000 or 5000):`,
+    "0"
+  );
+  if (raw == null) return;
 
-  state.tradeDrafts[playerId].symbol = s;
-  renderAll();
-  saveState();
-}
-
-function tradeIncShares(playerId, delta) {
-  const p = state.players.find(x => x.id === playerId);
-  if (!p) return;
-  ensureHoldings(p);
-  ensureTradeDraft(playerId);
-
-  const d = state.tradeDrafts[playerId];
-  const next = (Number(d.shares) || 0) + Number(delta);
-
-  // keep at least 100, always in 100-share increments
-  d.shares = Math.max(100, Math.round(next / 100) * 100);
-
-  renderAll();
-  saveState();
-}
-
-function tradeExecute(playerId, side) {
-  const p = state.players.find(x => x.id === playerId);
-  if (!p) return;
-  ensureHoldings(p);
-  ensureTradeDraft(playerId);
-
-  const d = state.tradeDrafts[playerId];
-  const symbol = String(d.symbol).toUpperCase();
-  const shares = Number(d.shares);
-
-  const stock = getStock(symbol);
-  if (!stock) {
-    alert("Pick a valid stock.");
-    return;
-  }
-  if (!Number.isFinite(shares) || shares <= 0 || shares % 100 !== 0) {
-    alert("Shares must be 100, 200, 300, etc.");
+  const delta = Number(raw);
+  if (!Number.isFinite(delta)) {
+    alert("That wasn’t a number.");
     return;
   }
 
-  const price = state.prices[symbol] ?? stock.start;
-  const cost = shares * price;
-
-  const act = String(side).toUpperCase();
-  if (act === "BUY") {
-    if (p.cash < cost) {
-      alert(`${p.name} doesn’t have enough cash. Needs $${fmtMoney(cost)}, has $${fmtMoney(p.cash)}.`);
-      return;
-    }
-    p.cash -= cost;
-    p.holdings[symbol] = (p.holdings[symbol] || 0) + shares;
-    addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
-  } else if (act === "SELL") {
-    const have = p.holdings[symbol] || 0;
-    if (have < shares) {
-      alert(`${p.name} doesn’t have enough shares to sell. Has ${have}.`);
-      return;
-    }
-    p.holdings[symbol] = have - shares;
-    p.cash += cost;
-    addLog(`${p.name} SELL ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
-  } else {
-    alert("Invalid trade side.");
-    return;
-  }
-
+  p.cash += delta;
+  addLog(`${p.name} cash adjusted: ${delta >= 0 ? "+" : ""}${fmtMoney(delta)} → $${fmtMoney(p.cash)}.`);
   renderAll();
   saveState();
 }
@@ -665,8 +540,6 @@ function doTrade(playerId, act, symbol, shares) {
     alert("Unknown symbol.");
     return;
   }
-
-  // safety
   if (!Number.isFinite(shares) || shares <= 0 || shares % 100 !== 0) {
     alert("Shares must be 100, 200, 300...");
     return;
@@ -701,6 +574,27 @@ function doTrade(playerId, act, symbol, shares) {
   saveState();
 }
 
+// ---------- Pit toggle logic ----------
+function setupPitToggle() {
+  if (!pitToggleBtn || !pitBoardSection) return;
+
+  function isMobile() {
+    return window.matchMedia("(max-width: 700px)").matches;
+  }
+
+  // Default state on load:
+  // - mobile: collapsed
+  // - desktop: doesn't matter (table is always visible; button hidden)
+  if (isMobile()) {
+    pitBoardSection.classList.remove("expanded");
+    pitToggleBtn.textContent = "Show Pit Board";
+  }
+
+  pitToggleBtn.addEventListener("click", () => {
+    const nowExpanded = pitBoardSection.classList.toggle("expanded");
+    pitToggleBtn.textContent = nowExpanded ? "Hide Pit Board" : "Show Pit Board";
+  });
+}
 
 // ---------- Events ----------
 elPlayerCount.addEventListener("change", buildSetupInputs);
@@ -716,16 +610,16 @@ elBtnReset.addEventListener("click", resetState);
 // ---------- Init ----------
 function init() {
   loadState();
+
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
 
-  // If loaded session, make sure holdings contain all symbols
   if (state.started) {
     for (const p of state.players) ensureHoldings(p);
   }
 
+  setupPitToggle();
   renderAll();
-   setupPitBoardToggle();
 }
 init();
