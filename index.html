@@ -313,6 +313,27 @@
     min-width: 380px;
   }
 }
+/* Desktop emphasis for player identity + finances */
+@media (min-width: 701px){
+  /* Player name */
+  #playersArea .card > div:first-child > div:first-child > div:first-child{
+    font-size:18px;      /* was ~14px */
+    font-weight:900;
+    letter-spacing:.3px;
+  }
+
+  /* Cash + Total Assets line */
+  #playersArea .card > div:first-child > div:first-child .mini.muted{
+    font-size:13px;      /* was 11px */
+    line-height:1.4;
+  }
+
+  /* Make the numbers pop */
+  #playersArea .card > div:first-child > div:first-child strong{
+    font-size:14px;
+    color: var(--text);
+  }
+}
 </style>
 </head>
 
