@@ -23,79 +23,78 @@
   body{ margin:0; background:var(--bg); color:var(--text); }
 
   /* =========================
-     HEADER (fixed layout)
+     HEADER (fixed)
      ========================= */
   header{
     padding:14px 16px;
     border-bottom:1px solid #222;
     display:flex;
+    gap:12px;
     align-items:center;
     justify-content:space-between;
-    gap:16px;
   }
-
-  /* Left block can shrink so it never shoves the right block */
-  header > div:first-child{ min-width:0; }
-
+  header > div:first-child{ min-width:0; } /* allow title block to shrink */
   header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
-  .mini{ font-size:11px; color:var(--muted); }
-  .muted{ color:var(--muted); }
 
-  /* This is the RIGHT side container in your header (currently class="row" inline max-width...) */
-  header .row{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "pill pill"
-      "save reset";
-    gap:10px;
-    align-items:stretch;
-
-    /* override your inline max-width so it can be sized by content */
-    max-width:none !important;
-    flex:0 0 auto;
-  }
-
-  /* stop the global .row > * rule from messing with header only */
-  header .row > *{
-    min-width:0 !important;
-    flex:unset !important;
-  }
-
-  /* Pill row */
-  header .pill{
-    grid-area:pill;
+  .pill{
     font-size:12px;
     opacity:.85;
     padding:6px 10px;
     border:1px solid var(--border2);
     border-radius:999px;
     white-space:nowrap;
+  }
+
+  /* Make the RIGHT header controls a 2-row grid:
+     [ pill pill ]
+     [ save reset ]  */
+  header .row{
+    /* override the generic .row flex used elsewhere */
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "status status"
+      "save   reset";
+    gap:10px;
+    align-items:stretch;
+    justify-items:stretch;
+
+    /* beat the inline max-width if it exists */
+    max-width:none !important;
+    width: min(560px, 100%);
+  }
+
+  /* Neutralize generic ".row > * { flex:1; min-width:140px }" inside header */
+  header .row > *{ min-width:0; }
+
+  /* Place items into the grid */
+  #sessionStatus{
+    grid-area:status;
     overflow:hidden;
     text-overflow:ellipsis;
-  }
-  #sessionStatus{ grid-area:pill; }
-
-  /* Buttons row: equal width, fill pill width */
-  header button{
-    width:100% !important;
-    border-radius:12px;
-    padding:10px;
-    cursor:pointer;
-    font-weight:800;
-    background:var(--panel2);
-    color:var(--text);
-    border:1px solid var(--border2);
+    white-space:nowrap;
   }
   #btnSave{ grid-area:save; }
   #btnReset{ grid-area:reset; }
 
-  button.primary{ background:#1e1e24; border-color:#3a3a3a; }
-  button.danger{ background:#241214; border-color:#5a2a2e; }
-  button:disabled{ opacity:.55; cursor:not-allowed; }
+  /* Buttons should stretch full cell width in header only */
+  header button{
+    width:100%;
+    border-radius:16px;
+  }
+
+  /* Keep mobile behavior nice (still works with grid) */
+  @media (max-width:700px){
+    header{
+      align-items:flex-start;
+    }
+    header .row{
+      width: min(420px, 100%);
+    }
+  }
 
   /* =========================
-     LAYOUT + CARDS
+     LAYOUT
      ========================= */
   main{
     padding:14px;
@@ -103,9 +102,7 @@
     grid-template-columns:420px 1fr;
     gap:14px;
   }
-  @media (max-width:1000px){
-    main{ grid-template-columns:1fr; }
-  }
+  @media (max-width:1000px){ main{ grid-template-columns:1fr; } }
 
   .card{
     background:var(--panel);
@@ -116,11 +113,13 @@
   }
   .card h2{ margin:0 0 8px; font-size:15px; font-weight:900; }
   .sub{ margin:0 0 10px; font-size:12px; color:var(--muted); line-height:1.35; }
+  .muted{ color:var(--muted); }
+  .mini{ font-size:11px; color:var(--muted); }
   .divider{ height:1px; background:#222; margin:12px 0; }
 
-  /* Form controls */
+  /* Inputs */
   label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
-  input,select,textarea{
+  input,select,button,textarea{
     width:100%;
     background:var(--panel2);
     color:var(--text);
@@ -131,13 +130,13 @@
   }
   input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
 
-  /* Generic flex rows (NOT header) */
-  .row{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
+  button{ cursor:pointer; font-weight:800; }
+  button.primary{ background:#1e1e24; border-color:#3a3a3a; }
+  button.danger{ background:#241214; border-color:#5a2a2e; }
+  button:disabled{ opacity:.55; cursor:not-allowed; }
+
+  /* Generic row/grid helpers (for the BODY, not header) */
+  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   .row > *{ flex:1; min-width:140px; }
 
   .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -159,7 +158,6 @@
   /* Industries */
   .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
-
   .industry-box{
     border:1px solid var(--border);
     border-radius:14px;
@@ -254,7 +252,8 @@
     gap:10px;
   }
   .pitLeft{ min-width:0; }
-  .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; margin-right:10px; }
+  .pitSymLine{ display:flex; gap:10px; align-items:baseline; min-width:0; }
+  .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; }
   .pitName{
     font-size:13px;
     opacity:.9;
@@ -264,7 +263,9 @@
     max-width:55vw;
   }
   .pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
+
   .pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+
   .pitRow3{
     display:grid;
     grid-template-columns:repeat(3,1fr);
