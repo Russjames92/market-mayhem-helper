@@ -83,113 +83,84 @@
   z-index: 2;
 }
 
-/* --- Mobile: turn the table into stacked "cards" --- */
-@media (max-width: 700px) {
-  .pitTable thead {
+@media (max-width: 600px) {
+
+  #pitTable thead {
     display: none;
   }
 
-  .pitTable,
-  .pitTable tbody,
-  .pitTable tr,
-  .pitTable td {
+  #pitTable,
+  #pitTable tbody,
+  #pitTable tr {
     display: block;
     width: 100%;
   }
 
-  .pitTable tr {
-    border: 1px solid #232323;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #111114;
-  }
-
-  .pitTable td {
-    border: none;
-    padding: 6px 0;
-  }
-
-  .pitTable td::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 12px;
-    opacity: .75;
-    margin-bottom: 2px;
-  }
-}
-/* =========================
-   Mobile compact Pit Board
-   ========================= */
-@media (max-width: 600px) {
-  /* Make pit table look like compact cards */
-  #pitTable thead { display: none; }
-
-  #pitTable, #pitTable tbody, #pitTable tr, #pitTable td {
-    display: block;
-    width: 100%;
-  }
-
-  /* Each stock becomes a compact card */
+  /* Each stock = compact card */
   #pitTable tbody tr {
     background: #111114;
     border: 1px solid #232323;
     border-radius: 12px;
     padding: 10px 12px;
-    margin: 10px 0;
+    margin: 8px 0;
   }
 
-  /* Remove the default "label stacking" feel */
   #pitTable td {
-    padding: 0;
     border: none;
-    margin: 0;
-  }
-
-  /* 1) Symbol + Company line */
-  #pitTable tbody tr td:nth-child(1),
-  #pitTable tbody tr td:nth-child(2) {
-    display: inline;
-  }
-
-  #pitTable tbody tr td:nth-child(1) {
-    font-weight: 900;
-    margin-right: 8px;
-  }
-
-  #pitTable tbody tr td:nth-child(2) {
-    opacity: 0.9;
-  }
-
-  /* 2) Industries line */
-  #pitTable tbody tr td:nth-child(3) {
-    margin-top: 6px;
+    padding: 0;
     display: block;
   }
 
-  /* 3) Dividend / Start / Current in a tight 3-column grid */
-  #pitTable tbody tr td:nth-child(4),
-  #pitTable tbody tr td:nth-child(5),
-  #pitTable tbody tr td:nth-child(6) {
-    margin-top: 8px;
+  /* --- Row 1: Symbol + Company + Current price --- */
+  #pitTable td:nth-child(1),
+  #pitTable td:nth-child(2),
+  #pitTable td:nth-child(6) {
     display: inline-block;
-    width: 33.33%;
-    vertical-align: top;
+    vertical-align: middle;
+  }
+
+  #pitTable td:nth-child(1) {
+    font-weight: 900;
+    margin-right: 6px;
+  }
+
+  #pitTable td:nth-child(2) {
+    opacity: 0.9;
+  }
+
+  #pitTable td:nth-child(6) {
+    float: right;
+    font-weight: 900;
+    font-size: 16px;
+  }
+
+  /* --- Row 2: Industries --- */
+  #pitTable td:nth-child(3) {
+    margin: 6px 0 8px;
+  }
+
+  /* --- Row 3: Dividend + Start --- */
+  #pitTable td:nth-child(4),
+  #pitTable td:nth-child(5) {
+    display: inline-block;
+    width: 50%;
     font-size: 12px;
-    opacity: 0.95;
+    opacity: 0.85;
   }
 
-  /* Make the current price pop */
-  #pitTable tbody tr td:nth-child(6) strong {
-    font-size: 14px;
-  }
-
-  /* Optional: smaller tags to save space */
   .tag {
     font-size: 11px;
     padding: 3px 8px;
   }
 }
+
+@media (max-width: 600px) {
+  /* Hide verbose labels we don't need on mobile */
+  #pitTable td::before {
+    display: none;
+  }
+}
+
 
 
   </style>
