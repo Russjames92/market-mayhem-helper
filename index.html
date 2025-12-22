@@ -118,6 +118,80 @@
     margin-bottom: 2px;
   }
 }
+/* =========================
+   Mobile compact Pit Board
+   ========================= */
+@media (max-width: 600px) {
+  /* Make pit table look like compact cards */
+  #pitTable thead { display: none; }
+
+  #pitTable, #pitTable tbody, #pitTable tr, #pitTable td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Each stock becomes a compact card */
+  #pitTable tbody tr {
+    background: #111114;
+    border: 1px solid #232323;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin: 10px 0;
+  }
+
+  /* Remove the default "label stacking" feel */
+  #pitTable td {
+    padding: 0;
+    border: none;
+    margin: 0;
+  }
+
+  /* 1) Symbol + Company line */
+  #pitTable tbody tr td:nth-child(1),
+  #pitTable tbody tr td:nth-child(2) {
+    display: inline;
+  }
+
+  #pitTable tbody tr td:nth-child(1) {
+    font-weight: 900;
+    margin-right: 8px;
+  }
+
+  #pitTable tbody tr td:nth-child(2) {
+    opacity: 0.9;
+  }
+
+  /* 2) Industries line */
+  #pitTable tbody tr td:nth-child(3) {
+    margin-top: 6px;
+    display: block;
+  }
+
+  /* 3) Dividend / Start / Current in a tight 3-column grid */
+  #pitTable tbody tr td:nth-child(4),
+  #pitTable tbody tr td:nth-child(5),
+  #pitTable tbody tr td:nth-child(6) {
+    margin-top: 8px;
+    display: inline-block;
+    width: 33.33%;
+    vertical-align: top;
+    font-size: 12px;
+    opacity: 0.95;
+  }
+
+  /* Make the current price pop */
+  #pitTable tbody tr td:nth-child(6) strong {
+    font-size: 14px;
+  }
+
+  /* Optional: smaller tags to save space */
+  .tag {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+}
+
+
   </style>
 </head>
 <body>
