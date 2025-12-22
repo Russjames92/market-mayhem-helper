@@ -257,6 +257,35 @@
       min-width:0;
     }
     .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
+    /* ===== Header: prevent .row global flex rules from breaking the top-right controls ===== */
+      header .row{
+        flex-wrap: nowrap;          /* keep on one line on desktop */
+        align-items: center;
+      }
+      
+      header .row > *{
+        flex: 0 0 auto !important;  /* override .row > * { flex:1 } */
+        min-width: 0 !important;    /* allow shrinking instead of pushing/overlapping */
+      }
+      
+      /* Make session pill shrink nicely instead of colliding with buttons */
+      #sessionStatus{
+        max-width: 420px;           /* adjust to taste */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      /* On smaller screens, allow wrapping again (your mobile behavior stays good) */
+      @media (max-width: 700px){
+        header .row{
+          flex-wrap: wrap;
+        }
+        #sessionStatus{
+          max-width: 100%;
+        }
+      }
+
   </style>
 </head>
 
