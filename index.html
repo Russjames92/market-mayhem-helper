@@ -40,6 +40,26 @@
       border-radius:999px;
       white-space:nowrap;
     }
+    /* Header right-side layout fix */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+    
+    /* Session pill should truncate, not overlap */
+    .header-actions .pill {
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    /* Buttons should never shrink */
+    .header-actions button {
+      flex-shrink: 0;
+    }
 
     main{
       padding:14px;
@@ -246,7 +266,7 @@
       <h1>Market Mayhem Helper</h1>
       <div class="mini muted">Physical board game + fast tracking (Pit Board + Player Assets)</div>
     </div>
-    <div class="row" style="max-width:520px; justify-content:flex-end;">
+    <div class="header-actions">
       <div class="pill" id="sessionStatus">No session loaded</div>
       <button class="primary" id="btnSave">Save</button>
       <button class="danger" id="btnReset">Reset</button>
