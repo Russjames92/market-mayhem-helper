@@ -433,6 +433,15 @@
     font-weight: 900;
     text-align: center;
   }
+    
+  /* Prevent industry name from smashing the up/down selector */
+  .industry-box .top strong{
+    display: block;
+    max-width: 140px;      /* adjust if needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 </style>
 </head>
 
