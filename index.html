@@ -6,239 +6,240 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#0b0b0c" />
   <title>Market Mayhem Helper</title>
+
   <style>
-  :root{
-    --bg:#0b0b0c;
-    --panel:#111114;
-    --panel2:#0e0e10;
-    --border:#232323;
-    --border2:#2a2a2a;
-    --text:#f2f2f2;
-    --muted:rgba(242,242,242,.72);
-    --shadow:0 10px 30px rgba(0,0,0,.35);
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  }
+    :root{
+      --bg:#0b0b0c;
+      --panel:#111114;
+      --panel2:#0e0e10;
+      --border:#232323;
+      --border2:#2a2a2a;
+      --text:#f2f2f2;
+      --muted:rgba(242,242,242,.72);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
 
-  *{ box-sizing:border-box; }
-  body{ margin:0; background:var(--bg); color:var(--text); }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--bg); color:var(--text); }
 
-  header{
-    padding:14px 16px;
-    border-bottom:1px solid #222;
-    display:flex;
-    gap:12px;
-    align-items:center;
-    justify-content:space-between;
-  }
-  header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
-  header .pill{
-    font-size:12px;
-    opacity:.85;
-    padding:6px 10px;
-    border:1px solid var(--border2);
-    border-radius:999px;
-    white-space:nowrap;
-  }
+    header{
+      padding:14px 16px;
+      border-bottom:1px solid #222;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
+    header .pill{
+      font-size:12px;
+      opacity:.85;
+      padding:6px 10px;
+      border:1px solid var(--border2);
+      border-radius:999px;
+      white-space:nowrap;
+    }
 
-  main{
-    padding:14px;
-    display:grid;
-    grid-template-columns:420px 1fr;
-    gap:14px;
-  }
-  @media (max-width:1000px){
-    main{ grid-template-columns:1fr; }
-  }
-
-  .card{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:14px;
-    box-shadow:var(--shadow);
-  }
-  .card h2{ margin:0 0 8px; font-size:15px; font-weight:900; }
-  .sub{ margin:0 0 10px; font-size:12px; color:var(--muted); line-height:1.35; }
-  .muted{ color:var(--muted); }
-  .mini{ font-size:11px; color:var(--muted); }
-  .divider{ height:1px; background:#222; margin:12px 0; }
-
-  /* Inputs */
-  label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
-  input,select,button,textarea{
-    width:100%;
-    background:var(--panel2);
-    color:var(--text);
-    border:1px solid var(--border2);
-    border-radius:12px;
-    padding:10px;
-    outline:none;
-  }
-  input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
-
-  button{ cursor:pointer; font-weight:800; }
-  button.primary{ background:#1e1e24; border-color:#3a3a3a; }
-  button.danger{ background:#241214; border-color:#5a2a2e; }
-  button:disabled{ opacity:.55; cursor:not-allowed; }
-
-  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-  .row > *{ flex:1; min-width:140px; }
-
-  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
-
-  /* Log */
-  .log{
-    height:220px;
-    overflow:auto;
-    background:var(--panel2);
-    border:1px solid var(--border2);
-    border-radius:14px;
-    padding:10px;
-    font-size:12px;
-  }
-  .log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
-  .log .item:last-child{ border-bottom:none; }
-
-  /* Industries */
-  .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
-  .industry-box{
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:10px;
-    background:var(--panel2);
-  }
-  .industry-box .top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-  }
-  .industry-box .top strong{ font-size:12px; }
-  .industry-box .top input[type="checkbox"]{ width:auto; transform:scale(1.15); }
-
-  .tag{
-    font-size:11px;
-    padding:4px 8px;
-    border:1px solid var(--border2);
-    border-radius:999px;
-    display:inline-block;
-    opacity:.9;
-    white-space:nowrap;
-    margin-right:6px;
-  }
-
-  /* Right column layout */
-  .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
-
-  /* ============================
-     PIT BOARD
-     Desktop = table
-     Mobile  = collapsed + cards
-     ============================ */
-
-  /* Header row with toggle button (toggle is hidden on desktop) */
-  .pitHead{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px;
-  }
-  .pitToggle{
-    display:none; /* desktop hidden */
-    width:auto;
-    padding:10px 12px;
-    border-radius:10px;
-    font-weight:800;
-    white-space:nowrap;
-  }
-
-  /* Desktop table wrapper */
-  #pitTableWrap{ display:block; }
-  #pitCards{ display:none; }
-
-  #pitTable{
-    width:100%;
-    border-collapse:collapse;
-  }
-  #pitTable th,#pitTable td{
-    border-bottom:1px solid #222;
-    padding:10px 8px;
-    font-size:12px;
-    text-align:left;
-    vertical-align:top;
-  }
-  #pitTable th{
-    position:sticky;
-    top:0;
-    background:var(--panel);
-    z-index:2;
-    opacity:.9;
-    font-weight:900;
-  }
-
-  /* Mobile behavior */
-  @media (max-width:700px){
-    .pitToggle{ display:inline-block; }
-
-    /* On mobile we use cards, and the section starts collapsed */
-    #pitTableWrap{ display:none; }     /* never show the table on mobile */
-    #pitCards{ display:none; }        /* hidden until expanded */
-
-    /* When expanded, show cards */
-    #pitBoardSection.expanded #pitCards{
+    main{
+      padding:14px;
       display:grid;
+      grid-template-columns:420px 1fr;
+      gap:14px;
+    }
+    @media (max-width:1000px){
+      main{ grid-template-columns:1fr; }
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+    .card h2{ margin:0 0 8px; font-size:15px; font-weight:900; }
+    .sub{ margin:0 0 10px; font-size:12px; color:var(--muted); line-height:1.35; }
+    .muted{ color:var(--muted); }
+    .mini{ font-size:11px; color:var(--muted); }
+    .divider{ height:1px; background:#222; margin:12px 0; }
+
+    label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
+    input,select,button,textarea{
+      width:100%;
+      background:var(--panel2);
+      color:var(--text);
+      border:1px solid var(--border2);
+      border-radius:12px;
+      padding:10px;
+      outline:none;
+    }
+    input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
+
+    button{ cursor:pointer; font-weight:800; }
+    button.primary{ background:#1e1e24; border-color:#3a3a3a; }
+    button.danger{ background:#241214; border-color:#5a2a2e; }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .row > *{ flex:1; min-width:140px; }
+
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
+
+    .log{
+      height:220px;
+      overflow:auto;
+      background:var(--panel2);
+      border:1px solid var(--border2);
+      border-radius:14px;
+      padding:10px;
+      font-size:12px;
+    }
+    .log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
+    .log .item:last-child{ border-bottom:none; }
+
+    .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
+    .industry-box{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      background:var(--panel2);
+    }
+    .industry-box .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
       gap:10px;
     }
-  }
+    .industry-box .top strong{ font-size:12px; }
+    .industry-box .top input[type="checkbox"]{ width:auto; transform:scale(1.15); }
 
-  /* Mobile cards layout */
-  .pitCard{
-    background:var(--panel2);
-    border:1px solid var(--border2);
-    border-radius:12px;
-    padding:10px;
-    width:100%;
-  }
-  .pitRow1{
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    gap:10px;
-  }
-  .pitLeft{ min-width:0; }
-  .pitSymLine{ display:flex; gap:10px; align-items:baseline; min-width:0; }
-  .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; }
-  .pitName{
-    font-size:13px;
-    opacity:.9;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
+    .tag{
+      font-size:11px;
+      padding:4px 8px;
+      border:1px solid var(--border2);
+      border-radius:999px;
+      display:inline-block;
+      opacity:.9;
+      white-space:nowrap;
+      margin-right:6px;
+    }
 
-  .pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
 
-  .pitRow3{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:8px;
-    margin-top:8px;
-    font-size:12px;
-    color:var(--muted);
-  }
-  .pitRow3 div{
-    background:rgba(255,255,255,.03);
-    border:1px solid rgba(255,255,255,.06);
-    border-radius:10px;
-    padding:6px 8px;
-  }
-  .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
-</style>
+    /* ============================
+       PIT BOARD
+       Desktop: table
+       Mobile: toggle + cards
+       ============================ */
 
+    .pitHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+
+    /* Toggle button: only visible on mobile */
+    .pitToggle{
+      display:none;
+      width:auto;
+      padding:10px 12px;
+      border-radius:10px;
+      white-space:nowrap;
+    }
+
+    /* Desktop table */
+    #pitTableWrap{ display:block; }
+    #pitTable{
+      width:100%;
+      border-collapse:collapse;
+    }
+    #pitTable th,#pitTable td{
+      border-bottom:1px solid #222;
+      padding:10px 8px;
+      font-size:12px;
+      text-align:left;
+      vertical-align:top;
+    }
+    #pitTable th{
+      position:sticky;
+      top:0;
+      background:var(--panel);
+      z-index:2;
+      opacity:.9;
+      font-weight:900;
+    }
+
+    /* Mobile cards container (hidden by default; shown when expanded) */
+    #pitCards{ display:none; }
+
+    @media (max-width:700px){
+      .pitToggle{ display:inline-block; }
+
+      /* on mobile, we never use the table view */
+      #pitTableWrap{ display:none; }
+
+      /* collapsed by default */
+      #pitBoardSection:not(.expanded) #pitCards{ display:none; }
+
+      /* expanded => show cards */
+      #pitBoardSection.expanded #pitCards{
+        display:grid;
+        gap:10px;
+      }
+    }
+
+    /* Mobile stock cards (fit width; no horizontal scroll) */
+    .pitCard{
+      background:var(--panel2);
+      border:1px solid var(--border2);
+      border-radius:12px;
+      padding:10px;
+      width:100%;
+    }
+    .pitRow1{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:10px;
+    }
+    .pitLeft{ min-width:0; }
+    .pitSymLine{ display:flex; gap:10px; align-items:baseline; min-width:0; }
+    .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; }
+    .pitName{
+      font-size:13px;
+      opacity:.9;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 55vw; /* keeps it from pushing the price off-screen */
+    }
+    .pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
+
+    .pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+
+    .pitRow3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .pitRow3 div{
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:10px;
+      padding:6px 8px;
+      min-width:0;
+    }
+    .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
+  </style>
 </head>
+
 <body>
   <header>
     <div>
@@ -270,24 +271,20 @@
         <div>
           <label>Starting cash per player</label>
           <input id="startingCash" type="number" min="0" step="1000" value="50000" />
-          <div class="mini muted">Set this to whatever your printed rules say.</div>
         </div>
       </div>
 
       <div class="divider"></div>
-
       <div id="playerInputs" class="grid2"></div>
-
       <div class="divider"></div>
 
       <button class="primary" id="btnStart">Start / Rebuild Session</button>
 
       <div class="divider"></div>
 
-      <h2>2) Market Mover </h2>
+      <h2>2) Market Mover</h2>
       <div class="sub">
-        Select the industries shown on the board space, choose up/down for each, then enter the 2d6 total.
-        The app updates all affected stock prices automatically. :contentReference[oaicite:1]{index=1}
+        Select industries, choose up/down, then enter the 2d6 total. The app updates all affected prices.
       </div>
 
       <div class="row">
@@ -298,11 +295,9 @@
       </div>
 
       <div class="divider"></div>
-
       <div class="industry-list" id="industryList"></div>
 
       <div class="divider"></div>
-
       <button class="primary" id="btnApplyMarketMover" disabled>Apply Market Mover</button>
       <div class="mini muted" id="marketMoverHint">Start a session first.</div>
 
@@ -327,56 +322,50 @@
           </select>
         </div>
       </div>
-
     </section>
 
     <!-- RIGHT COLUMN -->
     <section class="rightCol">
+
       <section class="card">
         <h2>Players (Cash + Holdings + Total Assets)</h2>
-        <div class="sub">Buy/Sell in 100-share increments :contentReference[oaicite:2]{index=2}</div>
+        <div class="sub">Buy/Sell in 100-share increments</div>
         <div id="playersArea"></div>
       </section>
-      
+
       <section class="card" id="pitBoardSection">
-  <div class="pitHead">
-    <div>
-      <h2>Pit Board (Prices + Industries)</h2>
-      <div class="sub">This replaces the dry-erase Pit Board updates and keeps everything consistent.</div>
-    </div>
+        <div class="pitHead">
+          <div>
+            <h2>Pit Board (Prices + Industries)</h2>
+            <div class="sub">Desktop shows the table. Mobile uses an expandable card view.</div>
+          </div>
+          <button id="btnPitToggle" class="pitToggle" type="button">Show Pit Board</button>
+        </div>
 
-    <!-- Mobile-only toggle button -->
-    <button id="btnPitToggle" class="pitToggle" type="button">
-      Show Pit Board
-    </button>
-  </div>
+        <!-- Desktop Table -->
+        <div id="pitTableWrap">
+          <table id="pitTable">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Company</th>
+                <th>Industries</th>
+                <th>Dividend</th>
+                <th>Start</th>
+                <th>Current</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
 
-  <!-- Desktop/table view -->
-  <div class="tableWrap" id="pitTableWrap">
-    <div style="overflow:auto;">
-    <table id="pitTable">
-      <thead>
-        <tr>
-          <th>Symbol</th>
-          <th>Company</th>
-          <th>Industries</th>
-          <th>Dividend</th>
-          <th>Start</th>
-          <th>Current</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    </div>
-  </div>
-
-  <!-- Mobile-fit view (no horizontal scrolling) -->
-  <div class="pitCards" id="pitCards"></div>
-</section>
+        <!-- Mobile Cards -->
+        <div id="pitCards"></div>
+      </section>
 
       <section class="card">
         <h2>Game Log</h2>
-        <div class="sub">Every market move + trade is recorded here so you don’t have to write it on paper.</div>
+        <div class="sub">Every market move + trade is recorded here.</div>
         <div class="log" id="log"></div>
       </section>
     </section>
