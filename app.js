@@ -125,6 +125,27 @@ function ensureTradeDraft(playerId) {
   }
 }
 
+function setupPitBoardToggle() {
+  const btn = document.getElementById("togglePitBoard");
+  const wrap = document.getElementById("pitBoardWrap");
+  if (!btn || !wrap) return;
+
+  function setExpanded(expanded) {
+    wrap.classList.toggle("is-collapsed", !expanded);
+    wrap.classList.toggle("is-expanded", expanded);
+    btn.textContent = expanded ? "Hide" : "Show";
+  }
+
+  // Default: collapsed on mobile, expanded on desktop
+  const isMobile = window.matchMedia("(max-width: 700px)").matches;
+  setExpanded(!isMobile);
+
+  btn.addEventListener("click", () => {
+    const expandedNow = wrap.classList.contains("is-expanded");
+    setExpanded(!expandedNow);
+  });
+}
+
 // ---------- Save/Load ----------
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -697,5 +718,6 @@ function init() {
   }
 
   renderAll();
+   setupPitBoardToggle();
 }
 init();
