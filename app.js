@@ -126,6 +126,20 @@ function computePlayerDividendDue(player) {
 
   return { total, perStock };
 }
+function computePlayerIndustries(player) {
+  ensureHoldings(player);
+
+  const set = new Set();
+
+  for (const s of STOCKS) {
+    const shares = player.holdings[s.symbol] || 0;
+    if (shares > 0) {
+      s.industries.forEach(ind => set.add(ind));
+    }
+  }
+
+  return [...set];
+}
 function clearMarketMoverSelections() {
   for (const box of elIndustryList.querySelectorAll(".industry-box")) {
     const chk = box.querySelector(".indCheck");
@@ -316,14 +330,33 @@ function renderPlayers() {
         ? `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$${fmtMoney(divTotal)}</strong></div>`
         : `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$0</strong></div>`;
 
+     const investedIndustries = computePlayerIndustries(p);
+
+      const industryLine = investedIndustries.length
+        ? `
+          <div class="mini muted" style="margin-top:6px;">
+            Industries:
+            ${investedIndustries.map(ind => `<span class="tag">${ind}</span>`).join("")}
+          </div>
+        `
+        : `
+          <div class="mini muted" style="margin-top:6px;">
+            Industries: <span class="muted">None</span>
+          </div>
+        `;
+
     const totalAssets = computePlayerNetWorth(p);
 
     wrap.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
         <div>
-          <div style="font-size:14px; font-weight:800;">${p.name}</div>
-          <div class="mini muted">Cash: <strong>$${fmtMoney(p.cash)}</strong> • Total Assets: <strong>$${fmtMoney(totalAssets)}</strong></div>
-        </div>
+           <div style="font-size:14px; font-weight:800;">${p.name}</div>
+           <div class="mini muted">
+             Cash: <strong>$${fmtMoney(p.cash)}</strong> •
+             Total Assets: <strong>$${fmtMoney(totalAssets)}</strong>
+           </div>
+           ${industryLine}
+         </div>
 
         <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
           <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
