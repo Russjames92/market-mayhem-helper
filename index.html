@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Market Mayhem Helper</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #0b0b0c; color: #f2f2f2; }
+    header { padding: 16px 18px; border-bottom: 1px solid #222; display:flex; gap:12px; align-items:center; justify-content:space-between; }
+    header h1 { font-size: 16px; margin: 0; letter-spacing:.4px; }
+    header .pill { font-size: 12px; opacity: .85; padding: 6px 10px; border: 1px solid #2a2a2a; border-radius: 999px; }
+    main { padding: 16px 18px; display:grid; grid-template-columns: 420px 1fr; gap: 14px; }
+    @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+
+    .card { background:#111114; border:1px solid #232323; border-radius: 12px; padding: 14px; }
+    .card h2 { margin: 0 0 10px; font-size: 14px; }
+    .sub { font-size: 12px; opacity: .8; margin-bottom: 10px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .row > * { flex: 1; min-width: 140px; }
+    label { font-size: 12px; opacity:.9; display:block; margin-bottom: 6px; }
+    input, select, button, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      background:#0e0e10;
+      color:#f2f2f2;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 10px 10px;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color:#4a4a4a; }
+    button { cursor:pointer; font-weight: 600; }
+    button.primary { background:#1e1e24; border-color:#3a3a3a; }
+    button.danger { background:#241214; border-color:#5a2a2e; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+
+    .divider { height: 1px; background:#222; margin: 12px 0; }
+
+    table { width:100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #222; padding: 10px 8px; font-size: 12px; text-align:left; }
+    th { opacity:.85; font-weight: 700; }
+    .tag { font-size: 11px; padding: 4px 8px; border: 1px solid #2a2a2a; border-radius: 999px; opacity: .9; display:inline-block; margin-right:6px; }
+    .mini { font-size: 11px; opacity:.75; }
+
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+
+    .log { height: 220px; overflow:auto; background:#0e0e10; border:1px solid #2a2a2a; border-radius: 12px; padding: 10px; font-size: 12px; }
+    .log .item { padding: 6px 2px; border-bottom: 1px dashed #222; }
+    .log .item:last-child { border-bottom:none; }
+    .muted { opacity: .75; }
+
+    .industry-list { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 520px) { .industry-list { grid-template-columns: 1fr; } }
+
+    .industry-box { border:1px solid #232323; border-radius: 12px; padding:10px; background:#0e0e10; }
+    .industry-box .top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .industry-box .top strong { font-size: 12px; }
+    .industry-box .top input[type="checkbox"] { width:auto; transform: scale(1.1); }
+    .industry-box select { padding: 8px; border-radius: 10px; }
+
+    .rightCol { display:grid; grid-template-rows: auto auto 1fr; gap:14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Market Mayhem Helper</h1>
+      <div class="mini muted">Physical board game + fast tracking (Pit Board + Player Assets)</div>
+    </div>
+    <div class="row" style="max-width:520px; justify-content:flex-end;">
+      <div class="pill" id="sessionStatus">No session loaded</div>
+      <button class="primary" id="btnSave">Save</button>
+      <button class="danger" id="btnReset">Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT COLUMN -->
+    <section class="card" id="setupCard">
+      <h2>1) Session Setup</h2>
+      <div class="sub">Choose number of players (2–4), names, and starting cash. Then start session.</div>
+
+      <div class="row">
+        <div>
+          <label>Number of players</label>
+          <select id="playerCount">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+          </select>
+        </div>
+        <div>
+          <label>Starting cash per player</label>
+          <input id="startingCash" type="number" min="0" step="1000" value="50000" />
+          <div class="mini muted">Set this to whatever your printed rules say.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div id="playerInputs" class="grid2"></div>
+
+      <div class="divider"></div>
+
+      <button class="primary" id="btnStart">Start / Rebuild Session</button>
+
+      <div class="divider"></div>
+
+      <h2>2) Market Mover (Step 7)</h2>
+      <div class="sub">
+        Select the industries shown on the board space, choose up/down for each, then enter the 2d6 total.
+        The app updates all affected stock prices automatically. :contentReference[oaicite:1]{index=1}
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Dice total (2–12)</label>
+          <input id="diceTotal" type="number" min="2" max="12" step="1" value="7" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="industry-list" id="industryList"></div>
+
+      <div class="divider"></div>
+
+      <button class="primary" id="btnApplyMarketMover" disabled>Apply Market Mover</button>
+      <div class="mini muted" id="marketMoverHint">Start a session first.</div>
+
+      <div class="divider"></div>
+
+      <h2>3) Quick Tools</h2>
+      <div class="row">
+        <button id="btnPayDividends" disabled>Pay Dividends (Opening Bell)</button>
+        <button id="btnShortMove" disabled>Short Sell / Short Squeeze (+/- 8)</button>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Short Move Stock</label>
+          <select id="shortMoveSymbol"></select>
+        </div>
+        <div>
+          <label>Direction</label>
+          <select id="shortMoveDir">
+            <option value="up">Up (+8)</option>
+            <option value="down">Down (-8)</option>
+          </select>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN -->
+    <section class="rightCol">
+      <section class="card">
+        <h2>Pit Board (Prices + Industries)</h2>
+        <div class="sub">This replaces the dry-erase Pit Board updates and keeps everything consistent.</div>
+        <div style="overflow:auto;">
+          <table id="pitTable">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Company</th>
+                <th>Industries</th>
+                <th>Dividend</th>
+                <th>Start</th>
+                <th>Current</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Players (Cash + Holdings + Total Assets)</h2>
+        <div class="sub">Buy/Sell in 100-share increments :contentReference[oaicite:2]{index=2}</div>
+        <div id="playersArea"></div>
+      </section>
+
+      <section class="card">
+        <h2>Game Log</h2>
+        <div class="sub">Every market move + trade is recorded here so you don’t have to write it on paper.</div>
+        <div class="log" id="log"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
