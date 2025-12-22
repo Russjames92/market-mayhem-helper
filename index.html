@@ -45,7 +45,8 @@
     white-space:nowrap;
   }
 
-  /* Header actions grid (expects .row on the header actions wrapper) */
+  /* Header actions grid (supports either .row or .header-actions) */
+  header .header-actions,
   header .row{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -56,8 +57,9 @@
     align-items:stretch;
     justify-items:stretch;
     width:min(560px, 100%);
-    max-width:none !important;
+    max-width:none;
   }
+  header .header-actions > *,
   header .row > *{ min-width:0; }
 
   #sessionStatus{
@@ -76,6 +78,7 @@
 
   @media (max-width:700px){
     header{ align-items:flex-start; }
+    header .header-actions,
     header .row{ width:min(420px, 100%); }
   }
 
@@ -88,7 +91,9 @@
     grid-template-columns:420px 1fr;
     gap:14px;
   }
-  @media (max-width:1000px){ main{ grid-template-columns:1fr; } }
+  @media (max-width:1000px){
+    main{ grid-template-columns:1fr; }
+  }
 
   .rightCol{
     display:grid;
@@ -205,10 +210,7 @@
   }
 
   #pitTableWrap{ display:block; }
-  #pitTable{
-    width:100%;
-    border-collapse:collapse;
-  }
+  #pitTable{ width:100%; border-collapse:collapse; }
   #pitTable th,#pitTable td{
     border-bottom:1px solid #222;
     padding:10px 8px;
@@ -230,10 +232,7 @@
   @media (max-width:700px){
     .pitToggle{ display:inline-block; }
     #pitTableWrap{ display:none; }
-    #pitBoardSection.expanded #pitCards{
-      display:grid;
-      gap:10px;
-    }
+    #pitBoardSection.expanded #pitCards{ display:grid; gap:10px; }
   }
 
   .pitCard{
@@ -263,7 +262,6 @@
   .pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
 
   .pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-
   .pitRow3{
     display:grid;
     grid-template-columns:repeat(3,1fr);
@@ -285,7 +283,6 @@
      PLAYERS (desktop-only polish)
      ========================= */
   @media (min-width:701px){
-    /* Keep left summary from squeezing right-side controls */
     #playersArea .card > div:first-child > div:first-child{
       max-width:420px;
       flex:0 0 420px;
@@ -296,7 +293,6 @@
       min-width:380px;
     }
 
-    /* Emphasize name + money */
     #playersArea .card > div:first-child > div:first-child > div:first-child{
       font-size:18px;
       font-weight:900;
@@ -314,100 +310,85 @@
   }
 
   /* =========================
-     LEADERBOARD (optimized for desktop + mobile)
+     LEADERBOARD (clean + aligned on desktop + scroll-safe on mobile)
      ========================= */
 
-  /* Button row inside leaderboard card */
+  /* Make the table wrapper scrollable on small screens (prevents crushing) */
+  #leaderboard .tableWrap{
+    overflow:auto;
+    border:1px solid #222;
+    border-radius:14px;
+  }
+
+  #leaderboard table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+  }
+
+  #leaderboard th,
+  #leaderboard td{
+    padding:12px 12px;
+    border-bottom:1px solid #222;
+    font-size:13px;
+    vertical-align:middle;
+    text-align:center;            /* center EVERYTHING under headers */
+  }
+
+  #leaderboard th{
+    font-weight:900;
+    opacity:.95;
+  }
+
+  /* Column sizing (keeps centers true and consistent) */
+  #leaderboard th:nth-child(1),
+  #leaderboard td:nth-child(1){
+    width:90px;                   /* room for medals */
+    font-size:18px;
+  }
+
+  #leaderboard th:nth-child(2),
+  #leaderboard td:nth-child(2){
+    width:42%;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;       /* prevents long names from shifting layout */
+  }
+
+  #leaderboard th:nth-child(3),
+  #leaderboard td:nth-child(3),
+  #leaderboard th:nth-child(4),
+  #leaderboard td:nth-child(4){
+    width:12%;
+  }
+
+  #leaderboard th:nth-child(5),
+  #leaderboard td:nth-child(5){
+    width:22%;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  /* Mobile: force horizontal scroll instead of squishing columns */
+  @media (max-width:700px){
+    #leaderboard table{
+      min-width:560px;
+    }
+    #leaderboard th,
+    #leaderboard td{
+      padding:10px 10px;
+      font-size:12px;
+    }
+  }
+
+  /* Leaderboard tab buttons on small screens */
   @media (max-width:700px){
     #btnLeaderboardViewSummary,
     #btnLeaderboardViewGames{
       min-width:0;
       padding:10px 10px;
     }
-  }
-
-  /* =========================
-   LEADERBOARD – DESKTOP TABLE ALIGNMENT
-   ========================= */
-@media (min-width:701px){
-
-  #leaderboard table{
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed; /* critical for column discipline */
-  }
-
-  /* Shared cell styling */
-  #leaderboard th,
-  #leaderboard td{
-    padding:12px 10px;
-    border-bottom:1px solid #222;
-    font-size:13px;
-    vertical-align:middle;
-  }
-
-  /* ---- COLUMN ALIGNMENT ---- */
-
-  /* Rank */
-  #leaderboard th:nth-child(1),
-  #leaderboard td:nth-child(1){
-    width:80px;
-    text-align:center;
-    font-size:18px;
-  }
-
-  /* Player (left aligned for readability) */
-  #leaderboard th:nth-child(2),
-  #leaderboard td:nth-child(2){
-    width:35%;
-    text-align:left;
-    padding-left:16px;
-    font-weight:800;
-  }
-
-  /* Games */
-  #leaderboard th:nth-child(3),
-  #leaderboard td:nth-child(3){
-    text-align:center;
-  }
-
-  /* Wins */
-  #leaderboard th:nth-child(4),
-  #leaderboard td:nth-child(4){
-    text-align:center;
-  }
-
-  /* Total Assets */
-  #leaderboard th:nth-child(5),
-  #leaderboard td:nth-child(5){
-    text-align:center;
-    font-weight:900;
-    white-space:nowrap;
-  }
-}
-
-  /* Mobile: prevent “jumbled” table by allowing horizontal scroll + smaller padding */
-  @media (max-width:700px){
-    /* The table wrapper is rendered as a div with overflow:auto inline,
-       but we make sure it behaves well even if not. */
-    #leaderboard table{
-      min-width:520px; /* forces a clean scroll instead of crushing */
-    }
-    #leaderboard th,
-    #leaderboard td{
-      padding:10px 8px;
-      font-size:12px;
-    }
-  }
-
-  /* Desktop: slightly roomier + nicer alignment */
-  @media (min-width:701px){
-    #leaderboard th, #leaderboard td{ font-size:13px; }
-    #leaderboard td:nth-child(2), #leaderboard th:nth-child(2){
-      text-align:left;
-      padding-left:14px;
-    }
-    #leaderboard td:nth-child(1){ font-size:18px; }
   }
 
   /* =========================
