@@ -15,17 +15,12 @@
     --border2:#2a2a2a;
     --text:#f2f2f2;
     --muted:rgba(242,242,242,.72);
-    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --shadow:0 10px 30px rgba(0,0,0,.35);
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
   }
 
   *{ box-sizing:border-box; }
-  html, body { height:100%; }
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-  }
+  body{ margin:0; background:var(--bg); color:var(--text); }
 
   header{
     padding:14px 16px;
@@ -35,12 +30,7 @@
     align-items:center;
     justify-content:space-between;
   }
-  header h1{
-    font-size:16px;
-    margin:0;
-    letter-spacing:.3px;
-    font-weight:800;
-  }
+  header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
   header .pill{
     font-size:12px;
     opacity:.85;
@@ -51,12 +41,12 @@
   }
 
   main{
-    padding:14px 14px;
+    padding:14px;
     display:grid;
-    grid-template-columns: 420px 1fr;
+    grid-template-columns:420px 1fr;
     gap:14px;
   }
-  @media (max-width: 1000px){
+  @media (max-width:1000px){
     main{ grid-template-columns:1fr; }
   }
 
@@ -65,57 +55,37 @@
     border:1px solid var(--border);
     border-radius:14px;
     padding:14px;
-    box-shadow: var(--shadow);
+    box-shadow:var(--shadow);
   }
-  .card h2{
-    margin:0 0 8px;
-    font-size:15px;
-    font-weight:900;
-  }
-  .sub{
-    font-size:12px;
-    color:var(--muted);
-    margin-bottom:10px;
-    line-height:1.35;
-  }
+  .card h2{ margin:0 0 8px; font-size:15px; font-weight:900; }
+  .sub{ margin:0 0 10px; font-size:12px; color:var(--muted); line-height:1.35; }
   .muted{ color:var(--muted); }
   .mini{ font-size:11px; color:var(--muted); }
   .divider{ height:1px; background:#222; margin:12px 0; }
 
   /* Inputs */
-  label{ font-size:12px; color:var(--muted); display:block; margin-bottom:6px; }
-  input, select, button, textarea{
+  label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
+  input,select,button,textarea{
     width:100%;
     background:var(--panel2);
     color:var(--text);
     border:1px solid var(--border2);
     border-radius:12px;
-    padding:10px 10px;
+    padding:10px;
     outline:none;
   }
-  input:focus, select:focus, textarea:focus{ border-color:#4a4a4a; }
+  input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
 
   button{ cursor:pointer; font-weight:800; }
   button.primary{ background:#1e1e24; border-color:#3a3a3a; }
   button.danger{ background:#241214; border-color:#5a2a2e; }
   button:disabled{ opacity:.55; cursor:not-allowed; }
 
-  .row{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
+  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   .row > *{ flex:1; min-width:140px; }
 
-  .grid2{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-  @media (max-width:600px){
-    .grid2{ grid-template-columns:1fr; }
-  }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
 
   /* Log */
   .log{
@@ -131,14 +101,8 @@
   .log .item:last-child{ border-bottom:none; }
 
   /* Industries */
-  .industry-list{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-  @media (max-width:520px){
-    .industry-list{ grid-template-columns:1fr; }
-  }
+  .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
   .industry-box{
     border:1px solid var(--border);
     border-radius:14px;
@@ -162,40 +126,49 @@
     display:inline-block;
     opacity:.9;
     white-space:nowrap;
+    margin-right:6px;
   }
 
   /* Right column layout */
-  .rightCol{
-    display:grid;
-    grid-template-rows:auto auto 1fr;
-    gap:14px;
-  }
+  .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
 
   /* ============================
-     PIT BOARD — Desktop Table
+     PIT BOARD
+     Desktop = table
+     Mobile  = collapsed + cards
      ============================ */
 
-  /* IMPORTANT: table is visible by default */
-  .tableWrap{
-    overflow:auto;
-    -webkit-overflow-scrolling:touch;
-    width:100%;
+  /* Header row with toggle button (toggle is hidden on desktop) */
+  .pitHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
   }
+  .pitToggle{
+    display:none; /* desktop hidden */
+    width:auto;
+    padding:10px 12px;
+    border-radius:10px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+
+  /* Desktop table wrapper */
+  #pitTableWrap{ display:block; }
+  #pitCards{ display:none; }
 
   #pitTable{
     width:100%;
     border-collapse:collapse;
-    table-layout:auto;
   }
-
-  #pitTable th, #pitTable td{
+  #pitTable th,#pitTable td{
     border-bottom:1px solid #222;
     padding:10px 8px;
     font-size:12px;
     text-align:left;
     vertical-align:top;
   }
-
   #pitTable th{
     position:sticky;
     top:0;
@@ -205,165 +178,64 @@
     font-weight:900;
   }
 
-  /* ============================
-     PIT BOARD — Mobile Cards
-     ============================ */
+  /* Mobile behavior */
+  @media (max-width:700px){
+    .pitToggle{ display:inline-block; }
 
-  /* --- Pit Board collapse/expand (mobile) --- */
-.pitHeadRow{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
+    /* On mobile we use cards, and the section starts collapsed */
+    #pitTableWrap{ display:none; }     /* never show the table on mobile */
+    #pitCards{ display:none; }        /* hidden until expanded */
 
-.pitToggle{
-  display:none;          /* hidden on desktop */
-  width:auto;
-  padding:10px 14px;
-  border-radius:10px;
-  white-space:nowrap;
-}
-
-.pitBoardWrap{
-  /* desktop: just normal content */
-}
-
-@media (max-width: 700px){
-  .pitToggle{
-    display:inline-flex; /* show toggle only on mobile */
+    /* When expanded, show cards */
+    #pitBoardSection.expanded #pitCards{
+      display:grid;
+      gap:10px;
+    }
   }
 
-  /* collapsed state */
-  .pitBoardWrap.is-collapsed{
-    display:none;
+  /* Mobile cards layout */
+  .pitCard{
+    background:var(--panel2);
+    border:1px solid var(--border2);
+    border-radius:12px;
+    padding:10px;
+    width:100%;
   }
-
-  /* expanded state */
-  .pitBoardWrap.is-expanded{
-    display:block;
-  }
-
-  /* keep table usable on mobile */
-  .tableWrap{
-    overflow:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-
-  #pitTable th, #pitTable td{
-    white-space:nowrap; /* prevents squishing */
-  }
-}
-
-  /* ---------- Pit Board header row + mobile toggle ---------- */
-.pitHead{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.pitToggle{
-  display:none; /* shown only on mobile */
-  width:auto;
-  padding:10px 12px;
-  border-radius:10px;
-  font-weight:700;
-}
-
-/* ---------- Desktop default ---------- */
-#pitTableWrap{ display:block; }
-#pitCards{ display:none; }
-
-/* ---------- Mobile behavior ---------- */
-@media (max-width: 700px){
-  /* show the toggle on mobile */
-  .pitToggle{ display:inline-block; }
-
-  /* by default, collapse the pit board */
-  #pitBoardSection #pitTableWrap,
-  #pitBoardSection #pitCards{
-    display:none;
-  }
-
-  /* when expanded, show ONLY the mobile-fit cards */
-  #pitBoardSection.expanded #pitCards{
-    display:grid;
+  .pitRow1{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
     gap:10px;
   }
-
-  /* optional: if you ever want “expanded table mode”, keep this ready */
-  #pitBoardSection.expanded.showTable #pitTableWrap{
-    display:block;
+  .pitLeft{ min-width:0; }
+  .pitSymLine{ display:flex; gap:10px; align-items:baseline; min-width:0; }
+  .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; }
+  .pitName{
+    font-size:13px;
+    opacity:.9;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
-}
+  .pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
 
-/* ---------- Mobile Pit Cards layout (fits width, no horizontal scroll) ---------- */
-.pitCard{
-  background: var(--panel2);
-  border: 1px solid var(--border2);
-  border-radius: 12px;
-  padding: 10px;
-  width: 100%;
-}
+  .pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
 
-.pitRow1{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:baseline;
-}
-
-.pitLeft{
-  min-width:0;
-}
-
-.pitSym{
-  font-weight:900;
-  font-size:15px;
-  letter-spacing:.4px;
-  margin-right:10px;
-}
-
-.pitName{
-  font-size:13px;
-  opacity:.9;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width: 210px;
-}
-
-.pitCur{
-  font-weight:900;
-  font-size:20px;
-  white-space:nowrap;
-}
-
-.pitRow2{
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  margin-top:8px;
-}
-
-.pitRow3{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:8px;
-  margin-top:8px;
-  font-size:12px;
-  opacity:.9;
-}
-
-.pitRow3 div{
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.06);
-  border-radius: 10px;
-  padding: 6px 8px;
-}
-.pitRow3 b{ display:block; font-size:11px; opacity:.8; font-weight:600; }
-
+  .pitRow3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-top:8px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .pitRow3 div{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:10px;
+    padding:6px 8px;
+  }
+  .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
 </style>
 
 </head>
@@ -481,6 +353,7 @@
 
   <!-- Desktop/table view -->
   <div class="tableWrap" id="pitTableWrap">
+    <div style="overflow:auto;">
     <table id="pitTable">
       <thead>
         <tr>
@@ -494,6 +367,7 @@
       </thead>
       <tbody></tbody>
     </table>
+    </div>
   </div>
 
   <!-- Mobile-fit view (no horizontal scrolling) -->
