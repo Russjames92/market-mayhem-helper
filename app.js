@@ -112,7 +112,20 @@ function computePlayerNetWorth(player) {
   }
   return player.cash + stockValue;
 }
+function computePlayerDividendDue(player) {
+  ensureHoldings(player);
+  let total = 0;
+  const perStock = {};
 
+  for (const s of STOCKS) {
+    const shares = player.holdings[s.symbol] || 0;
+    const due = shares > 0 ? (shares * s.dividend) : 0;
+    if (due > 0) perStock[s.symbol] = due;
+    total += due;
+  }
+
+  return { total, perStock };
+}
 function clearMarketMoverSelections() {
   for (const box of elIndustryList.querySelectorAll(".industry-box")) {
     const chk = box.querySelector(".indCheck");
@@ -276,16 +289,32 @@ function renderPlayers() {
     wrap.className = "card";
     wrap.style.marginBottom = "12px";
 
-    const holdingLines = STOCKS
-      .map(s => {
-        const shares = p.holdings[s.symbol] || 0;
-        if (shares === 0) return null;
-        const price = state.prices[s.symbol] ?? s.start;
-        const val = shares * price;
-        return `<div class="mini"><strong>${s.symbol}</strong>: ${shares} sh @ $${fmtMoney(price)} = $${fmtMoney(val)}</div>`;
-      })
-      .filter(Boolean)
-      .join("") || `<div class="mini muted">No holdings yet.</div>`;
+    const { total: divTotal } = computePlayerDividendDue(p);
+
+      const holdingLines = STOCKS
+        .map(s => {
+          const shares = p.holdings[s.symbol] || 0;
+          if (shares === 0) return null;
+      
+          const price = state.prices[s.symbol] ?? s.start;
+          const val = shares * price;
+      
+          const divDue = shares * s.dividend;
+      
+          return `
+            <div class="mini">
+              <strong>${s.symbol}</strong>:
+              ${shares} sh @ $${fmtMoney(price)} = $${fmtMoney(val)}
+              <span class="muted"> • Div Due: $${fmtMoney(divDue)}</span>
+            </div>
+          `;
+        })
+        .filter(Boolean)
+        .join("") || `<div class="mini muted">No holdings yet.</div>`;
+      
+      const dividendSummary = divTotal > 0
+        ? `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$${fmtMoney(divTotal)}</strong></div>`
+        : `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$0</strong></div>`;
 
     const totalAssets = computePlayerNetWorth(p);
 
@@ -325,7 +354,11 @@ function renderPlayers() {
       </div>
 
       <div class="divider"></div>
-      <div>${holdingLines}</div>
+      <div>
+        ${holdingLines}
+        ${dividendSummary}
+      </div>
+
     `;
 
     // Adjust cash
