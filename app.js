@@ -213,20 +213,24 @@ function renderLeaderboard() {
   // Summary rankings table
   const { totalGames, rows } = buildLeaderboardStats();
 
-  const tableRows = rows
-    .map((r, idx) => `
-      <tr>
-        <td><strong>${idx + 1}</strong></td>
-        <td><strong>${r.name}</strong></td>
-        <td>${r.games}</td>
-        <td><strong>${r.wins}</strong></td>
-        <td>${r.podiums}</td>
-        <td>${fmt1(r.avgFinish)}</td>
-        <td>#${r.bestFinish}</td>
-        <td>$${fmtMoney(r.totalAssets)}</td>
-      </tr>
-    `)
-    .join("");
+  const rankLabel = (idx) => {
+     if (idx === 0) return "🥇";
+     if (idx === 1) return "🥈";
+     if (idx === 2) return "🥉";
+     return `#${idx + 1}`;
+   };
+   
+   const tableRows = rows
+     .map((r, idx) => `
+       <tr>
+         <td><strong>${rankLabel(idx)}</strong></td>
+         <td><strong>${r.name}</strong></td>
+         <td>${r.games}</td>
+         <td><strong>${r.wins}</strong></td>
+         <td>$${fmtMoney(r.totalAssets)}</td>
+       </tr>
+     `)
+     .join("");
 
   elLeaderboard.innerHTML = `
     <div class="mini muted" style="margin-bottom:10px;">
@@ -237,24 +241,17 @@ function renderLeaderboard() {
       <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Rank</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Player</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Games</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Wins</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Podiums</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Avg Finish</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Best</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Total Assets</th>
-          </tr>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Rank</th>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Player</th>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Games</th>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Wins</th>
+              <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Total Assets</th>
+            </tr>
         </thead>
         <tbody>
           ${tableRows}
         </tbody>
       </table>
-    </div>
-
-    <div class="mini muted" style="margin-top:10px;">
-      Ranking order: Wins → Avg Finish → Games → Total Assets
     </div>
   `;
 }
