@@ -334,6 +334,16 @@
     color: var(--text);
   }
 }
+@media print{
+  body{ background:#fff !important; color:#000 !important; }
+  header, main > section:not(.rightCol), .rightCol > section:not(:last-child){ display:none !important; }
+  .rightCol{ display:block !important; }
+  .card{ box-shadow:none !important; border:none !important; background:#fff !important; }
+  .log{ height:auto !important; overflow:visible !important; border:none !important; padding:0 !important; }
+  button{ display:none !important; }
+  .item{ border-bottom:1px solid #ddd !important; }
+  .mini{ color:#333 !important; }
+}
 </style>
 </head>
 
@@ -461,8 +471,16 @@
       </section>
 
       <section class="card">
-        <h2>Game Log</h2>
-        <div class="sub">Every market move + trade is recorded here.</div>
+        <div class="row" style="align-items:flex-start;">
+          <div style="flex:1; min-width:200px;">
+            <h2>Game Log</h2>
+            <div class="sub">Every market move + trade is recorded here.</div>
+          </div>
+          <div style="flex:0; min-width:180px;">
+            <button class="primary" id="btnPrintLog" type="button">Print / Export Log</button>
+          </div>
+        </div>
+      
         <div class="log" id="log"></div>
       </section>
     </section>
