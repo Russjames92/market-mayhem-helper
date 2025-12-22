@@ -219,22 +219,8 @@ function renderLeaderboard() {
 
   // Summary rankings table
   const { totalGames, rows } = buildLeaderboardStats();
-
-  const rankLabel = (idx) => {
-     if (idx === 0) return "🥇";
-     if (idx === 1) return "🥈";
-     if (idx === 2) return "🥉";
-     return `#${idx + 1}`;
-   };
    
    const isMobileLb = window.matchMedia("(max-width: 700px)").matches;
-
-   const rankLabel = (idx) => {
-     if (idx === 0) return "🥇";
-     if (idx === 1) return "🥈";
-     if (idx === 2) return "🥉";
-     return `#${idx + 1}`;
-   };
    
    if (isMobileLb) {
      // Mobile: card list
