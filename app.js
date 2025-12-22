@@ -71,6 +71,17 @@ const elBtnShortMove = document.getElementById("btnShortMove");
 const elShortMoveSymbol = document.getElementById("shortMoveSymbol");
 const elShortMoveDir = document.getElementById("shortMoveDir");
 
+const elPitBoardSection = document.getElementById("pitBoardSection");
+const elBtnPitToggle = document.getElementById("btnPitToggle");
+
+if (elBtnPitToggle && elPitBoardSection) {
+  elBtnPitToggle.addEventListener("click", () => {
+    const expanded = elPitBoardSection.classList.toggle("expanded");
+    elBtnPitToggle.textContent = expanded ? "Hide Pit Board" : "Show Pit Board";
+  });
+}
+
+
 // ---------- Helpers ----------
 function nowTs() {
   const d = new Date();
@@ -244,13 +255,19 @@ function renderStatus() {
 }
 
 function renderPitBoard() {
-  // ---- Desktop table ----
+  // Fill desktop table
   elPitTableBody.innerHTML = "";
+
+  // Fill mobile cards
+  const elPitCards = document.getElementById("pitCards");
+  if (elPitCards) elPitCards.innerHTML = "";
+
   for (const s of STOCKS) {
-    const tr = document.createElement("tr");
-    const industries = s.industries.map(x => `<span class="tag">${x}</span>`).join("");
     const cur = state.prices[s.symbol] ?? s.start;
 
+    // ----- Desktop table row -----
+    const tr = document.createElement("tr");
+    const industries = s.industries.map(x => `<span class="tag">${x}</span>`).join("");
     tr.innerHTML = `
       <td><strong>${s.symbol}</strong></td>
       <td>${s.name}</td>
@@ -260,43 +277,34 @@ function renderPitBoard() {
       <td><strong>$${fmtMoney(cur)}</strong></td>
     `;
     elPitTableBody.appendChild(tr);
-  }
 
-  // ---- Mobile cards ----
-  if (!elPitCards) return;
-  elPitCards.innerHTML = "";
-
-  for (const s of STOCKS) {
-    const cur = state.prices[s.symbol] ?? s.start;
-    const tags = s.industries.map(x => `<span class="tag">${x}</span>`).join("");
-
-    const card = document.createElement("div");
-    card.className = "pitCard";
-    card.innerHTML = `
-      <div class="pitTopRow">
-        <div class="pitLeft">
-          <div class="pitSymLine">
-            <div class="pitSym">${s.symbol}</div>
-            <div class="pitName">${s.name}</div>
+    // ----- Mobile card -----
+    if (elPitCards) {
+      const card = document.createElement("div");
+      card.className = "pitCard";
+      card.innerHTML = `
+        <div class="pitRow1">
+          <div class="pitLeft">
+            <span class="pitSym">${s.symbol}</span>
+            <span class="pitName">${s.name}</span>
           </div>
-          <div style="margin-top:6px;">${tags}</div>
+          <div class="pitCur">$${fmtMoney(cur)}</div>
         </div>
 
-        <div class="pitCurrent">
-          <div class="pitCurLabel">Current</div>
-          <div class="pitCurPrice">$${fmtMoney(cur)}</div>
+        <div class="pitRow2">
+          ${s.industries.map(ind => `<span class="tag">${ind}</span>`).join("")}
         </div>
-      </div>
 
-      <div class="pitMetaRow">
-        <div>Div: <strong>$${fmtMoney(s.dividend)}</strong></div>
-        <div>Start: <strong>$${fmtMoney(s.start)}</strong></div>
-      </div>
-    `;
-    elPitCards.appendChild(card);
+        <div class="pitRow3">
+          <div><b>Div</b>$${fmtMoney(s.dividend)}</div>
+          <div><b>Start</b>$${fmtMoney(s.start)}</div>
+          <div><b>Move</b>${s.moves.low}/${s.moves.mid}/${s.moves.high}</div>
+        </div>
+      `;
+      elPitCards.appendChild(card);
+    }
   }
 }
-
 
 function renderPlayers() {
   elPlayersArea.innerHTML = "";
