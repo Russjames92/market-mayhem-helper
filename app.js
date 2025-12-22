@@ -171,6 +171,13 @@ function loadLeaderboard() {
   try { leaderboard = JSON.parse(raw) || []; } catch { leaderboard = []; }
 }
 
+function rankLabel(idx){
+  if (idx === 0) return "🥇";
+  if (idx === 1) return "🥈";
+  if (idx === 2) return "🥉";
+  return `#${idx + 1}`;
+}
+
 function renderLeaderboard() {
   if (!elLeaderboard) return;
 
