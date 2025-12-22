@@ -353,6 +353,20 @@
   }
 }
 
+/* Center leaderboard table content (desktop only) */
+@media (min-width: 701px){
+  #leaderboard table th,
+  #leaderboard table td{
+    text-align: center;
+  }
+
+  /* Keep player names readable */
+  #leaderboard table td:nth-child(2),
+  #leaderboard table th:nth-child(2){
+    text-align: left;
+    padding-left: 12px;
+  }
+}
 </style>
 </head>
 
