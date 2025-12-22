@@ -13,19 +13,19 @@ const CANON_INDUSTRIES = [
 
 // Stock definitions (start price, dividend, dice move table)
 const STOCKS = [
-  { symbol:"EE",   name:"Evanston Electric",   industries:["Energy"], start:95,  dividend:5,  moves:{low:12, mid:10, high:8} },
+  { symbol:"EE",   name:"Evanston Electric",   industries:["Manufacturing","Energy"], start:95,  dividend:5,  moves:{low:12, mid:10, high:8} },
   { symbol:"ABE",  name:"Alberta Energy",      industries:["Energy"], start:125, dividend:10, moves:{low:16, mid:12, high:10} },
   { symbol:"SLR",  name:"Stuart Solar",        industries:["Energy"], start:90,  dividend:6,  moves:{low:12, mid:10, high:8} },
   { symbol:"IRV",  name:"Irving Power",        industries:["Energy"], start:30,  dividend:2,  moves:{low:4,  mid:3,  high:2} },
   { symbol:"SHB",  name:"Shetland Bank",       industries:["Finance"], start:45, dividend:3,  moves:{low:6,  mid:5,  high:4} },
   { symbol:"SHS",  name:"Sherman Steel",       industries:["Manufacturing"], start:35, dividend:2, moves:{low:4, mid:3, high:2} },
   { symbol:"BEV",  name:"Brown Beverage",      industries:["Consumer"], start:50, dividend:3,  moves:{low:6,  mid:5,  high:4} },
-  { symbol:"GDN",  name:"Garden Health",       industries:["Healthcare"], start:65, dividend:3, moves:{low:6, mid:5, high:4} },
+  { symbol:"GDN",  name:"Garden Health",       industries:["Consumer","Healthcare"], start:65, dividend:3, moves:{low:6, mid:5, high:4} },
   { symbol:"FP",   name:"Founders Pharma",     industries:["Healthcare"], start:40, dividend:3, moves:{low:6, mid:5, high:4} },
   { symbol:"RUD",  name:"Rudy Insurance",      industries:["Finance"], start:90, dividend:7,  moves:{low:12, mid:10, high:8} },
   { symbol:"MM",   name:"McGinnis Motors",     industries:["Manufacturing"], start:25, dividend:2, moves:{low:4, mid:3, high:2} },
   { symbol:"DA",   name:"Darkside Digital",    industries:["Technology","Consumer"], start:100, dividend:4, moves:{low:12, mid:10, high:8} },
-  { symbol:"LA",   name:"Lawnview Tek",        industries:["Technology"], start:65, dividend:3, moves:{low:6, mid:5, high:4} },
+  { symbol:"LA",   name:"Lawnview Tek",        industries:["Technology","Consumer"], start:65, dividend:3, moves:{low:6, mid:5, high:4} },
   { symbol:"ALP",  name:"Alpha Solutions",     industries:["Consumer","Healthcare","Technology"], start:75, dividend:3, moves:{low:6, mid:5, high:4} },
   { symbol:"JUNO", name:"Juno Services",       industries:["Technology","Transportation"], start:45, dividend:2, moves:{low:6, mid:5, high:4} },
   { symbol:"NEW",  name:"Newmoon Aero",        industries:["Manufacturing","Defense"], start:120, dividend:6, moves:{low:16, mid:12, high:10} },
