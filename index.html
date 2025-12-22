@@ -435,8 +435,16 @@
     <section class="rightCol">
 
       <section class="card">
-        <h2>Players (Cash + Holdings + Total Assets)</h2>
-        <div class="sub">Buy/Sell in 100-share increments</div>
+        <div class="row" style="align-items:flex-start;">
+          <div style="flex:1; min-width:220px;">
+            <h2>Players (Cash + Holdings + Total Assets)</h2>
+            <div class="sub">Buy/Sell in 100-share increments</div>
+          </div>
+          <div style="flex:0; min-width:180px;">
+            <button class="danger" id="btnEndSession" type="button" disabled>End Session</button>
+          </div>
+        </div>
+      
         <div id="playersArea"></div>
       </section>
 
@@ -482,6 +490,20 @@
         </div>
       
         <div class="log" id="log"></div>
+      </section>
+
+      <section class="card">
+        <div class="row" style="align-items:flex-start;">
+          <div style="flex:1; min-width:220px;">
+            <h2>Leaderboard</h2>
+            <div class="sub">All completed sessions recorded on this device.</div>
+          </div>
+          <div style="flex:0; min-width:180px;">
+            <button id="btnClearLeaderboard" type="button">Clear Leaderboard</button>
+          </div>
+        </div>
+      
+        <div id="leaderboard"></div>
       </section>
     </section>
   </main>
