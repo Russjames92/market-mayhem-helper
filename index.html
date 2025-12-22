@@ -254,6 +254,116 @@
     white-space:nowrap; /* prevents squishing */
   }
 }
+
+  /* ---------- Pit Board header row + mobile toggle ---------- */
+.pitHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.pitToggle{
+  display:none; /* shown only on mobile */
+  width:auto;
+  padding:10px 12px;
+  border-radius:10px;
+  font-weight:700;
+}
+
+/* ---------- Desktop default ---------- */
+#pitTableWrap{ display:block; }
+#pitCards{ display:none; }
+
+/* ---------- Mobile behavior ---------- */
+@media (max-width: 700px){
+  /* show the toggle on mobile */
+  .pitToggle{ display:inline-block; }
+
+  /* by default, collapse the pit board */
+  #pitBoardSection #pitTableWrap,
+  #pitBoardSection #pitCards{
+    display:none;
+  }
+
+  /* when expanded, show ONLY the mobile-fit cards */
+  #pitBoardSection.expanded #pitCards{
+    display:grid;
+    gap:10px;
+  }
+
+  /* optional: if you ever want “expanded table mode”, keep this ready */
+  #pitBoardSection.expanded.showTable #pitTableWrap{
+    display:block;
+  }
+}
+
+/* ---------- Mobile Pit Cards layout (fits width, no horizontal scroll) ---------- */
+.pitCard{
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 10px;
+  width: 100%;
+}
+
+.pitRow1{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:baseline;
+}
+
+.pitLeft{
+  min-width:0;
+}
+
+.pitSym{
+  font-weight:900;
+  font-size:15px;
+  letter-spacing:.4px;
+  margin-right:10px;
+}
+
+.pitName{
+  font-size:13px;
+  opacity:.9;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width: 210px;
+}
+
+.pitCur{
+  font-weight:900;
+  font-size:20px;
+  white-space:nowrap;
+}
+
+.pitRow2{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+
+.pitRow3{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:8px;
+  margin-top:8px;
+  font-size:12px;
+  opacity:.9;
+}
+
+.pitRow3 div{
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+.pitRow3 b{ display:block; font-size:11px; opacity:.8; font-weight:600; }
+
 </style>
 
 </head>
@@ -356,37 +466,38 @@
         <div id="playersArea"></div>
       </section>
       
-      <section class="card" id="pitBoardCard">
-  <div class="pitHeadRow">
+      <section class="card" id="pitBoardSection">
+  <div class="pitHead">
     <div>
       <h2>Pit Board (Prices + Industries)</h2>
       <div class="sub">This replaces the dry-erase Pit Board updates and keeps everything consistent.</div>
     </div>
 
     <!-- Mobile-only toggle button -->
-    <button type="button" id="togglePitBoard" class="pitToggle">
-      Show
+    <button id="btnPitToggle" class="pitToggle" type="button">
+      Show Pit Board
     </button>
   </div>
 
-  <!-- This wrapper is what we collapse/expand on mobile -->
-  <div id="pitBoardWrap" class="pitBoardWrap is-collapsed">
-    <div class="tableWrap">
-      <table id="pitTable">
-        <thead>
-          <tr>
-            <th>Symbol</th>
-            <th>Company</th>
-            <th>Industries</th>
-            <th>Dividend</th>
-            <th>Start</th>
-            <th>Current</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <!-- Desktop/table view -->
+  <div class="tableWrap" id="pitTableWrap">
+    <table id="pitTable">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Company</th>
+          <th>Industries</th>
+          <th>Dividend</th>
+          <th>Start</th>
+          <th>Current</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
+
+  <!-- Mobile-fit view (no horizontal scrolling) -->
+  <div class="pitCards" id="pitCards"></div>
 </section>
 
       <section class="card">
