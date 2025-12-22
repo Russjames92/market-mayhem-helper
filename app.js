@@ -70,6 +70,8 @@ const elBtnShortMove = document.getElementById("btnShortMove");
 const elShortMoveSymbol = document.getElementById("shortMoveSymbol");
 const elShortMoveDir = document.getElementById("shortMoveDir");
 
+const elBtnPrintLog = document.getElementById("btnPrintLog");
+
 // Pit toggle (mobile only)
 const pitBoardSection = document.getElementById("pitBoardSection");
 const pitToggleBtn = document.getElementById("btnPitToggle");
@@ -662,6 +664,62 @@ function doTrade(playerId, act, symbol, shares) {
   saveState();
 }
 
+function printGameLog() {
+  const title = "Market Mayhem Helper — Game Log";
+  const sessionLine = state.started
+    ? `Session created: ${state.createdAt || ""} • Players: ${state.players.length}`
+    : "No session loaded";
+
+  const rows = state.log
+    .slice()               // copy
+    .reverse()             // print oldest -> newest
+    .map(item => `
+      <div class="row">
+        <div class="ts">${item.ts}</div>
+        <div class="txt">${item.text}</div>
+      </div>
+    `)
+    .join("");
+
+  const win = window.open("", "_blank");
+  if (!win) {
+    alert("Pop-up blocked. Allow pop-ups to print/export the log.");
+    return;
+  }
+
+  win.document.open();
+  win.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8"/>
+      <meta name="viewport" content="width=device-width,initial-scale=1"/>
+      <title>${title}</title>
+      <style>
+        :root{ font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+        body{ margin:24px; color:#000; }
+        h1{ margin:0 0 6px; font-size:18px; }
+        .sub{ margin:0 0 18px; color:#333; font-size:12px; }
+        .row{ padding:10px 0; border-bottom:1px solid #ddd; }
+        .ts{ font-size:11px; color:#444; margin-bottom:4px; }
+        .txt{ font-size:12px; }
+        .txt .mini{ color:#444; font-size:11px; }
+        @media print{ body{ margin:0.5in; } }
+      </style>
+    </head>
+    <body>
+      <h1>${title}</h1>
+      <div class="sub">${sessionLine}</div>
+      ${rows || `<div class="sub">No log entries yet.</div>`}
+      <script>
+        window.onload = () => window.print();
+      </script>
+    </body>
+    </html>
+  `);
+  win.document.close();
+}
+
 // ---------- Pit toggle logic ----------
 function setupPitToggle() {
   if (!pitToggleBtn || !pitBoardSection) return;
@@ -694,6 +752,8 @@ elBtnShortMove.addEventListener("click", shortMove);
 
 elBtnSave.addEventListener("click", saveState);
 elBtnReset.addEventListener("click", resetState);
+
+elBtnPrintLog.addEventListener("click", printGameLog);
 
 // ---------- Init ----------
 function init() {
