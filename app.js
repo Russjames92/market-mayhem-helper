@@ -426,7 +426,7 @@ function renderPlayers() {
           <button type="button" data-role="sell" data-player="${p.id}">Sell</button>
           <button type="button" class="danger" data-role="sellAll" data-player="${p.id}">Sell All</button>
 
-          <button type="button" data-action="adjustCash" data-player="${p.id}">Adjust Cash</button>
+          <button type="button" data-action="adjustCash" data-player="${p.id}">+/- Cash</button>
 
           <div class="mini muted" style="width:100%; text-align:right;">
             <span data-role="tradePreview" data-player="${p.id}"></span>
