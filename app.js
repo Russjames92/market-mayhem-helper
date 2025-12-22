@@ -113,6 +113,14 @@ function computePlayerNetWorth(player) {
   return player.cash + stockValue;
 }
 
+function clearMarketMoverSelections() {
+  for (const box of elIndustryList.querySelectorAll(".industry-box")) {
+    const chk = box.querySelector(".indCheck");
+    if (chk) chk.checked = false;
+  }
+  updateMarketMoverButton();
+}
+
 // ---------- Save/Load ----------
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -481,6 +489,8 @@ function applyMarketMover() {
     selections.map(s => `${s.industry} ${s.dir === "up" ? "↑" : "↓"}`).join(", ") +
     `<br><span class="mini muted">${deltas.join(" • ")}</span>`
   );
+
+   clearMarketMoverSelections();
 
   renderAll();
   saveState();
