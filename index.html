@@ -439,6 +439,40 @@
     .item{ border-bottom:1px solid #ddd !important; }
     .mini{ color:#333 !important; }
   }
+    /* ===== Market Mover industry row: keep label clean + make dir select NOT a giant pill ===== */
+  .industry-box .top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  
+  .industry-box .top > div:first-child{
+    flex:1 1 auto;
+    min-width:0;                 /* required for ellipsis */
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  
+  .industry-box .top strong{
+    flex:1 1 auto;
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  
+  /* override global select styles for the tiny up/down dropdown */
+  .industry-box .top select.indDir{
+    width:56px;                  /* compact */
+    flex:0 0 auto;               /* never shrink */
+    padding:6px 28px 6px 10px;   /* smaller height + room for caret */
+    border-radius:12px;
+    font-size:18px;
+    font-weight:900;
+    line-height:1;
+    text-align:center;
+  }
 </style>
 
 </head>
