@@ -409,9 +409,9 @@ function buildIndustryUI() {
           <strong>${ind}</strong>
         </div>
         <select class="indDir">
-          <option value="up">Up</option>
-          <option value="down">Down</option>
-        </select>
+           <option value="up">⬆️</option>
+           <option value="down">⬇️</option>
+         </select>
       </div>
       <div class="mini muted" style="margin-top:8px;">
         Affects: <span class="affects"></span>
