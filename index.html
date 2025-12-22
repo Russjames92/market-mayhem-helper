@@ -85,73 +85,104 @@
 
 @media (max-width: 600px) {
 
-  #pitTable thead {
-    display: none;
-  }
+  /* --- Pit Board: compact mobile-first layout --- */
+#pitTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px; /* space between row-cards */
+}
 
-  #pitTable,
-  #pitTable tbody,
-  #pitTable tr {
-    display: block;
-    width: 100%;
-  }
+#pitTable thead {
+  display: none; /* hide table header on mobile/card view */
+}
 
-  /* Each stock = compact card */
+#pitTable tbody tr {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 92px; /* key: middle can shrink */
+  gap: 10px;
+
+  background: #0e0e10;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  padding: 12px;
+
+  overflow: hidden; /* prevents weird overflow */
+}
+
+#pitTable tbody td {
+  border: none;
+  padding: 0;
+  min-width: 0; /* IMPORTANT: allows columns to shrink */
+}
+
+/* Left column */
+.pitSym {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.pitSymbol {
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: .5px;
+}
+
+/* Middle column */
+.pitMeta {
+  min-width: 0; /* IMPORTANT: allows ellipsis */
+}
+.pitCompany {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+.pitTags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.pitSmallRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pitSmall {
+  font-size: 12px;
+  opacity: .9;
+}
+
+/* Right column (Current) */
+.pitCur {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  white-space: nowrap;
+}
+.pitCurLabel {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.pitCurPrice {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+/* Optional: slightly tighter cards on small phones */
+@media (max-width: 420px) {
   #pitTable tbody tr {
-    background: #111114;
-    border: 1px solid #232323;
-    border-radius: 12px;
-    padding: 10px 12px;
-    margin: 8px 0;
+    grid-template-columns: 58px minmax(0, 1fr) 84px;
+    padding: 10px;
   }
+  .pitCurPrice { font-size: 20px; }
+}
 
-  #pitTable td {
-    border: none;
-    padding: 0;
-    display: block;
-  }
-
-  /* --- Row 1: Symbol + Company + Current price --- */
-  #pitTable td:nth-child(1),
-  #pitTable td:nth-child(2),
-  #pitTable td:nth-child(6) {
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  #pitTable td:nth-child(1) {
-    font-weight: 900;
-    margin-right: 6px;
-  }
-
-  #pitTable td:nth-child(2) {
-    opacity: 0.9;
-  }
-
-  #pitTable td:nth-child(6) {
-    float: right;
-    font-weight: 900;
-    font-size: 16px;
-  }
-
-  /* --- Row 2: Industries --- */
-  #pitTable td:nth-child(3) {
-    margin: 6px 0 8px;
-  }
-
-  /* --- Row 3: Dividend + Start --- */
-  #pitTable td:nth-child(4),
-  #pitTable td:nth-child(5) {
-    display: inline-block;
-    width: 50%;
-    font-size: 12px;
-    opacity: 0.85;
-  }
-
-  .tag {
-    font-size: 11px;
-    padding: 3px 8px;
-  }
 }
 
 @media (max-width: 600px) {
