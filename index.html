@@ -7,291 +7,281 @@
   <meta name="theme-color" content="#0b0b0c" />
   <title>Market Mayhem Helper</title>
   <style>
-    :root{
-      --bg:#0b0b0c;
-      --panel:#111114;
-      --panel2:#0e0e10;
-      --border:#232323;
-      --border2:#2a2a2a;
-      --text:#f2f2f2;
-      --muted:rgba(242,242,242,.72);
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    }
-  
-    *{ box-sizing:border-box; }
-    body{ margin:0; background:var(--bg); color:var(--text); }
-  
-    /* ---------- HEADER (fixed) ---------- */
-    header{
-      padding:14px 16px;
-      border-bottom:1px solid #222;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-    }
-    header > div:first-child{ min-width:0; } /* lets title block shrink */
-  
-    header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
-  
-    .pill{
-      font-size:12px;
-      opacity:.85;
-      padding:6px 10px;
-      border:1px solid var(--border2);
-      border-radius:999px;
-      white-space:nowrap;
-    }
-  
-    /* Your header right group is using .row; override ONLY inside header */
-    header .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-end;
-      flex-wrap:nowrap;
-      max-width:none !important; /* beats inline max-width */
-    }
-    header .row > *{
-      flex:0 0 auto !important; /* beats global .row > * flex:1 */
-      min-width:0 !important;
-    }
-  
-    /* Prevent global width:100% controls from blowing up header */
-    header button,
-    header input,
-    header select{
-      width:auto !important;
-    }
-  
-    /* Session pill truncates nicely on desktop */
-    #sessionStatus{
-      flex:1 1 auto !important;
-      max-width:520px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-  
-    /* Mobile: pill on top, buttons fill same width underneath (equal widths) */
-    @media (max-width:700px){
-      header .row{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        grid-template-areas:
-          "pill pill"
-          "save reset";
-        align-items:stretch;
-        justify-items:stretch;
-        width:100%;
-        max-width:520px;
-      }
-  
-      #sessionStatus{
-        grid-area:pill;
-        max-width:100%;
-        justify-self:stretch;
-      }
-  
-      #btnSave{
-        grid-area:save;
-        width:100% !important;
-      }
-      #btnReset{
-        grid-area:reset;
-        width:100% !important;
-      }
-    }
-  
-    /* ---------- MAIN LAYOUT ---------- */
-    main{
-      padding:14px;
+  :root{
+    --bg:#0b0b0c;
+    --panel:#111114;
+    --panel2:#0e0e10;
+    --border:#232323;
+    --border2:#2a2a2a;
+    --text:#f2f2f2;
+    --muted:rgba(242,242,242,.72);
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); }
+
+  /* =========================
+     HEADER (fixed layout)
+     ========================= */
+  header{
+    padding:14px 16px;
+    border-bottom:1px solid #222;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+  }
+
+  /* Left block can shrink so it never shoves the right block */
+  header > div:first-child{ min-width:0; }
+
+  header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
+  .mini{ font-size:11px; color:var(--muted); }
+  .muted{ color:var(--muted); }
+
+  /* This is the RIGHT side container in your header (currently class="row" inline max-width...) */
+  header .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "pill pill"
+      "save reset";
+    gap:10px;
+    align-items:stretch;
+
+    /* override your inline max-width so it can be sized by content */
+    max-width:none !important;
+    flex:0 0 auto;
+  }
+
+  /* stop the global .row > * rule from messing with header only */
+  header .row > *{
+    min-width:0 !important;
+    flex:unset !important;
+  }
+
+  /* Pill row */
+  header .pill{
+    grid-area:pill;
+    font-size:12px;
+    opacity:.85;
+    padding:6px 10px;
+    border:1px solid var(--border2);
+    border-radius:999px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #sessionStatus{ grid-area:pill; }
+
+  /* Buttons row: equal width, fill pill width */
+  header button{
+    width:100% !important;
+    border-radius:12px;
+    padding:10px;
+    cursor:pointer;
+    font-weight:800;
+    background:var(--panel2);
+    color:var(--text);
+    border:1px solid var(--border2);
+  }
+  #btnSave{ grid-area:save; }
+  #btnReset{ grid-area:reset; }
+
+  button.primary{ background:#1e1e24; border-color:#3a3a3a; }
+  button.danger{ background:#241214; border-color:#5a2a2e; }
+  button:disabled{ opacity:.55; cursor:not-allowed; }
+
+  /* =========================
+     LAYOUT + CARDS
+     ========================= */
+  main{
+    padding:14px;
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:14px;
+  }
+  @media (max-width:1000px){
+    main{ grid-template-columns:1fr; }
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+    box-shadow:var(--shadow);
+  }
+  .card h2{ margin:0 0 8px; font-size:15px; font-weight:900; }
+  .sub{ margin:0 0 10px; font-size:12px; color:var(--muted); line-height:1.35; }
+  .divider{ height:1px; background:#222; margin:12px 0; }
+
+  /* Form controls */
+  label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
+  input,select,textarea{
+    width:100%;
+    background:var(--panel2);
+    color:var(--text);
+    border:1px solid var(--border2);
+    border-radius:12px;
+    padding:10px;
+    outline:none;
+  }
+  input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
+
+  /* Generic flex rows (NOT header) */
+  .row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .row > *{ flex:1; min-width:140px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
+
+  /* Log */
+  .log{
+    height:220px;
+    overflow:auto;
+    background:var(--panel2);
+    border:1px solid var(--border2);
+    border-radius:14px;
+    padding:10px;
+    font-size:12px;
+  }
+  .log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
+  .log .item:last-child{ border-bottom:none; }
+
+  /* Industries */
+  .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
+
+  .industry-box{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px;
+    background:var(--panel2);
+  }
+  .industry-box .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .industry-box .top strong{ font-size:12px; }
+  .industry-box .top input[type="checkbox"]{ width:auto; transform:scale(1.15); }
+
+  .tag{
+    font-size:11px;
+    padding:4px 8px;
+    border:1px solid var(--border2);
+    border-radius:999px;
+    display:inline-block;
+    opacity:.9;
+    white-space:nowrap;
+    margin-right:6px;
+  }
+
+  .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
+
+  /* =========================
+     PIT BOARD
+     Desktop: table
+     Mobile: toggle + cards
+     ========================= */
+  .pitHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+  }
+
+  .pitToggle{
+    display:none;
+    width:auto;
+    padding:10px 12px;
+    border-radius:10px;
+    white-space:nowrap;
+  }
+
+  #pitTableWrap{ display:block; }
+  #pitTable{
+    width:100%;
+    border-collapse:collapse;
+  }
+  #pitTable th,#pitTable td{
+    border-bottom:1px solid #222;
+    padding:10px 8px;
+    font-size:12px;
+    text-align:left;
+    vertical-align:top;
+  }
+  #pitTable th{
+    position:sticky;
+    top:0;
+    background:var(--panel);
+    z-index:2;
+    opacity:.9;
+    font-weight:900;
+  }
+
+  #pitCards{ display:none; }
+
+  @media (max-width:700px){
+    .pitToggle{ display:inline-block; }
+    #pitTableWrap{ display:none; }
+    #pitBoardSection.expanded #pitCards{
       display:grid;
-      grid-template-columns:420px 1fr;
-      gap:14px;
-    }
-    @media (max-width:1000px){
-      main{ grid-template-columns:1fr; }
-    }
-  
-    /* ---------- CARDS / TYPO ---------- */
-    .card{
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:14px;
-      box-shadow:var(--shadow);
-    }
-    .card h2{ margin:0 0 8px; font-size:15px; font-weight:900; }
-    .sub{ margin:0 0 10px; font-size:12px; color:var(--muted); line-height:1.35; }
-    .muted{ color:var(--muted); }
-    .mini{ font-size:11px; color:var(--muted); }
-    .divider{ height:1px; background:#222; margin:12px 0; }
-  
-    /* ---------- FORMS ---------- */
-    label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
-    input,select,button,textarea{
-      width:100%;
-      background:var(--panel2);
-      color:var(--text);
-      border:1px solid var(--border2);
-      border-radius:12px;
-      padding:10px;
-      outline:none;
-    }
-    input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
-  
-    button{ cursor:pointer; font-weight:800; }
-    button.primary{ background:#1e1e24; border-color:#3a3a3a; }
-    button.danger{ background:#241214; border-color:#5a2a2e; }
-    button:disabled{ opacity:.55; cursor:not-allowed; }
-  
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .row > *{ flex:1; min-width:140px; }
-  
-    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
-  
-    /* ---------- LOG ---------- */
-    .log{
-      height:220px;
-      overflow:auto;
-      background:var(--panel2);
-      border:1px solid var(--border2);
-      border-radius:14px;
-      padding:10px;
-      font-size:12px;
-    }
-    .log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
-    .log .item:last-child{ border-bottom:none; }
-  
-    /* ---------- INDUSTRIES ---------- */
-    .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
-  
-    .industry-box{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px;
-      background:var(--panel2);
-    }
-    .industry-box .top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
       gap:10px;
     }
-    .industry-box .top strong{ font-size:12px; }
-    .industry-box .top input[type="checkbox"]{ width:auto; transform:scale(1.15); }
-  
-    .tag{
-      font-size:11px;
-      padding:4px 8px;
-      border:1px solid var(--border2);
-      border-radius:999px;
-      display:inline-block;
-      opacity:.9;
-      white-space:nowrap;
-      margin-right:6px;
-    }
-  
-    .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
-  
-    /* ---------- PIT BOARD ---------- */
-    .pitHead{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-    }
-  
-    .pitToggle{
-      display:none;
-      width:auto;
-      padding:10px 12px;
-      border-radius:10px;
-      white-space:nowrap;
-    }
-  
-    #pitTableWrap{ display:block; }
-    #pitTable{
-      width:100%;
-      border-collapse:collapse;
-    }
-    #pitTable th,#pitTable td{
-      border-bottom:1px solid #222;
-      padding:10px 8px;
-      font-size:12px;
-      text-align:left;
-      vertical-align:top;
-    }
-    #pitTable th{
-      position:sticky;
-      top:0;
-      background:var(--panel);
-      z-index:2;
-      opacity:.9;
-      font-weight:900;
-    }
-  
-    #pitCards{ display:none; }
-  
-    @media (max-width:700px){
-      .pitToggle{ display:inline-block; }
-      #pitTableWrap{ display:none; }
-  
-      #pitBoardSection.expanded #pitCards{
-        display:grid;
-        gap:10px;
-      }
-    }
-  
-    .pitCard{
-      background:var(--panel2);
-      border:1px solid var(--border2);
-      border-radius:12px;
-      padding:10px;
-      width:100%;
-    }
-    .pitRow1{
-      display:flex;
-      justify-content:space-between;
-      align-items:baseline;
-      gap:10px;
-    }
-    .pitLeft{ min-width:0; }
-    .pitSymLine{ display:flex; gap:10px; align-items:baseline; min-width:0; }
-    .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; }
-    .pitName{
-      font-size:13px;
-      opacity:.9;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:55vw;
-    }
-    .pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
-  
-    .pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-  
-    .pitRow3{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:8px;
-      margin-top:8px;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .pitRow3 div{
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:10px;
-      padding:6px 8px;
-      min-width:0;
-    }
-    .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
-  </style>
+  }
+
+  .pitCard{
+    background:var(--panel2);
+    border:1px solid var(--border2);
+    border-radius:12px;
+    padding:10px;
+    width:100%;
+  }
+  .pitRow1{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+  }
+  .pitLeft{ min-width:0; }
+  .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; margin-right:10px; }
+  .pitName{
+    font-size:13px;
+    opacity:.9;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:55vw;
+  }
+  .pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
+  .pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .pitRow3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-top:8px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .pitRow3 div{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:10px;
+    padding:6px 8px;
+    min-width:0;
+  }
+  .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
+</style>
 </head>
 
 <body>
