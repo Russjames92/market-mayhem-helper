@@ -306,6 +306,7 @@ function renderPlayers() {
 
           <button type="button" class="primary" data-role="buy" data-player="${p.id}">Buy</button>
           <button type="button" data-role="sell" data-player="${p.id}">Sell</button>
+          <button type="button" class="danger" data-role="sellAll" data-player="${p.id}">Sell All</button>
 
           <button type="button" data-action="adjustCash" data-player="${p.id}">Adjust Cash</button>
 
@@ -325,6 +326,7 @@ function renderPlayers() {
     const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
     const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
     const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
+     const elSellAll = wrap.querySelector(`[data-role="sellAll"][data-player="${p.id}"]`);
 
     let tradeShares = 100;
 
@@ -334,6 +336,9 @@ function renderPlayers() {
       const price = state.prices[symbol] ?? stock.start;
       const cost = tradeShares * price;
       const owned = p.holdings[symbol] || 0;
+
+       // Enable Sell All only if they own shares of the selected stock
+       elSellAll.disabled = owned <= 0;
 
       elShares.textContent = String(tradeShares);
       elPreview.textContent =
@@ -357,6 +362,13 @@ function renderPlayers() {
     wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`).addEventListener("click", () => {
       doTrade(p.id, "SELL", elSymbol.value, tradeShares);
     });
+
+     elSellAll.addEventListener("click", () => {
+        const symbol = elSymbol.value;
+        const owned = p.holdings[symbol] || 0;
+        if (owned <= 0) return;
+        doTrade(p.id, "SELL", symbol, owned);
+      });
 
     updatePreview();
     elPlayersArea.appendChild(wrap);
