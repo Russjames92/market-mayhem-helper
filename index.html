@@ -293,6 +293,42 @@
     min-width:0;
   }
   .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
+   /* ===== HEADER: make Save/Reset evenly fill the pill width ===== */
+
+/* Right-side controls container (the div.row in the header) */
+header .row{
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  justify-items: stretch;
+  max-width: none !important;
+}
+
+/* Session pill spans full width (both columns) */
+header #sessionStatus{
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+/* Buttons become equal width and fill each column */
+header #btnSave,
+header #btnReset{
+  width: 100% !important;
+  justify-self: stretch;
+}
+
+/* Keep the pill+buttons layout nice on very small screens too */
+@media (max-width: 420px){
+  header .row{
+    grid-template-columns: 1fr;
+  }
+  header #btnSave,
+  header #btnReset{
+    grid-column: 1 / -1;
+  }
+}
+
 </style>
 
 </head>
