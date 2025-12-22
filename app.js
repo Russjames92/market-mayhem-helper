@@ -988,6 +988,17 @@ function endSession() {
   saveState();
 }
 
+function payDividendsConfirmed() {
+  if (!state.started) return;
+
+  const ok = confirm(
+    "Pay Opening Bell dividends to ALL players?\n\nThis will add dividends to each player's cash based on current holdings."
+  );
+  if (!ok) return;
+
+  payDividends();
+}
+
 // ---------- Pit toggle logic ----------
 function setupPitToggle() {
   if (!pitToggleBtn || !pitBoardSection) return;
@@ -1015,7 +1026,7 @@ elPlayerCount.addEventListener("change", buildSetupInputs);
 elBtnStart.addEventListener("click", startSession);
 
 elBtnApplyMarketMover.addEventListener("click", applyMarketMover);
-elBtnPayDividends.addEventListener("click", payDividends);
+elBtnPayDividends.addEventListener("click", payDividendsConfirmed);
 elBtnShortMove.addEventListener("click", shortMove);
 
 elBtnSave.addEventListener("click", saveState);
