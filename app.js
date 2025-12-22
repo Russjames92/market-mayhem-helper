@@ -5,6 +5,7 @@
 */
 
 const STORAGE_KEY = "mm_helper_session_v1";
+const LEADERBOARD_KEY = "mm_helper_leaderboard_v1";
 
 const CANON_INDUSTRIES = [
   "Consumer","Defense","Energy","Finance",
@@ -71,6 +72,10 @@ const elShortMoveSymbol = document.getElementById("shortMoveSymbol");
 const elShortMoveDir = document.getElementById("shortMoveDir");
 
 const elBtnPrintLog = document.getElementById("btnPrintLog");
+
+const elBtnEndSession = document.getElementById("btnEndSession");
+const elLeaderboard = document.getElementById("leaderboard");
+const elBtnClearLeaderboard = document.getElementById("btnClearLeaderboard");
 
 // Pit toggle (mobile only)
 const pitBoardSection = document.getElementById("pitBoardSection");
@@ -148,6 +153,47 @@ function clearMarketMoverSelections() {
     if (chk) chk.checked = false;
   }
   updateMarketMoverButton();
+}
+
+let leaderboard = []; // [{ ts, placements:[{place,name,assets}], winner }]
+
+function saveLeaderboard() {
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
+}
+
+function loadLeaderboard() {
+  const raw = localStorage.getItem(LEADERBOARD_KEY);
+  if (!raw) return;
+  try { leaderboard = JSON.parse(raw) || []; } catch { leaderboard = []; }
+}
+
+function renderLeaderboard() {
+  if (!elLeaderboard) return;
+
+  if (!leaderboard.length) {
+    elLeaderboard.innerHTML = `<div class="muted">No completed sessions yet.</div>`;
+    return;
+  }
+
+  elLeaderboard.innerHTML = leaderboard
+    .slice()
+    .reverse() // newest first
+    .map(game => {
+      const rows = game.placements
+        .map(p => `<div class="mini"><strong>#${p.place}</strong> ${p.name} — <strong>$${fmtMoney(p.assets)}</strong></div>`)
+        .join("");
+
+      return `
+        <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
+          <div class="mini muted">${game.ts}</div>
+          <div style="margin-top:6px; font-size:13px; font-weight:900;">
+            Winner: ${game.winner}
+          </div>
+          <div style="margin-top:8px;">${rows}</div>
+        </div>
+      `;
+    })
+    .join("");
 }
 
 // ---------- Save/Load ----------
@@ -479,8 +525,17 @@ function renderAll() {
   const started = !!state.started;
   elBtnPayDividends.disabled = !started;
   elBtnShortMove.disabled = !started;
+   
+   elBtnEndSession.disabled = !started;
 
   updateMarketMoverButton();
+}
+
+function clearLeaderboard() {
+  if (!confirm("Clear leaderboard? This cannot be undone.")) return;
+  leaderboard = [];
+  localStorage.removeItem(LEADERBOARD_KEY);
+  renderLeaderboard();
 }
 
 // ---------- Actions ----------
@@ -720,6 +775,53 @@ function printGameLog() {
   win.document.close();
 }
 
+function endSession() {
+  if (!state.started) return;
+
+  if (!confirm("End session and record results to the leaderboard?")) return;
+
+  // compute standings
+  const standings = state.players.map(p => ({
+    id: p.id,
+    name: p.name,
+    assets: computePlayerNetWorth(p)
+  }));
+
+  standings.sort((a, b) => b.assets - a.assets);
+
+  const placements = standings.map((p, idx) => ({
+    place: idx + 1,
+    name: p.name,
+    assets: p.assets
+  }));
+
+  const winner = placements[0]?.name || "—";
+
+  // store on leaderboard
+  const entry = {
+    ts: nowTs(),
+    winner,
+    placements
+  };
+
+  leaderboard.push(entry);
+  saveLeaderboard();
+  renderLeaderboard();
+
+  // log it too
+  addLog(
+    `🏁 Session Ended — Winner: <strong>${winner}</strong><br>` +
+    `<span class="mini muted">` +
+    placements.map(p => `#${p.place} ${p.name} ($${fmtMoney(p.assets)})`).join(" • ") +
+    `</span>`
+  );
+
+  // mark session ended (but don't delete it unless you want to)
+  state.started = false;
+  renderAll();
+  saveState();
+}
+
 // ---------- Pit toggle logic ----------
 function setupPitToggle() {
   if (!pitToggleBtn || !pitBoardSection) return;
@@ -755,9 +857,15 @@ elBtnReset.addEventListener("click", resetState);
 
 elBtnPrintLog.addEventListener("click", printGameLog);
 
+elBtnEndSession.addEventListener("click", endSession);
+elBtnClearLeaderboard.addEventListener("click", clearLeaderboard);
+
 // ---------- Init ----------
 function init() {
   loadState();
+   
+   loadLeaderboard();
+   renderLeaderboard();
 
   buildSetupInputs();
   buildIndustryUI();
