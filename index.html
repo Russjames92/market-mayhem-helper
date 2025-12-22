@@ -171,14 +171,48 @@
     padding:10px;
     background:var(--panel2);
   }
+
   .industry-box .top{
     display:flex;
     justify-content:space-between;
     align-items:center;
     gap:10px;
   }
-  .industry-box .top strong{ font-size:12px; }
-  .industry-box .top input[type="checkbox"]{ width:auto; transform:scale(1.15); }
+
+  /* LEFT GROUP (checkbox + label) MUST be allowed to shrink */
+  .industry-box .top > div:first-child{
+    flex:1 1 auto;
+    min-width:0; /* critical for ellipsis in flex */
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .industry-box .top input[type="checkbox"]{
+    width:auto;
+    transform:scale(1.15);
+    flex:0 0 auto;
+  }
+
+  /* Label truncation */
+  .industry-box .top strong{
+    flex:1 1 auto;
+    min-width:0;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* Direction select should NEVER get squeezed */
+  .industry-box .top select.indDir{
+    width:74px;          /* keep stable */
+    flex:0 0 auto;       /* don't shrink */
+    text-align:center;
+    font-size:16px;
+    font-weight:900;
+    padding:10px 10px;
+  }
 
   .tag{
     font-size:11px;
@@ -312,8 +346,6 @@
   /* =========================
      LEADERBOARD (clean + aligned on desktop + scroll-safe on mobile)
      ========================= */
-
-  /* Make the table wrapper scrollable on small screens (prevents crushing) */
   #leaderboard .tableWrap{
     overflow:auto;
     border:1px solid #222;
@@ -332,7 +364,7 @@
     border-bottom:1px solid #222;
     font-size:13px;
     vertical-align:middle;
-    text-align:center;            /* center EVERYTHING under headers */
+    text-align:center;
   }
 
   #leaderboard th{
@@ -340,10 +372,9 @@
     opacity:.95;
   }
 
-  /* Column sizing (keeps centers true and consistent) */
   #leaderboard th:nth-child(1),
   #leaderboard td:nth-child(1){
-    width:90px;                   /* room for medals */
+    width:90px;
     font-size:18px;
   }
 
@@ -353,7 +384,7 @@
     font-weight:900;
     white-space:nowrap;
     overflow:hidden;
-    text-overflow:ellipsis;       /* prevents long names from shifting layout */
+    text-overflow:ellipsis;
   }
 
   #leaderboard th:nth-child(3),
@@ -370,25 +401,29 @@
     white-space:nowrap;
   }
 
-  /* Mobile: force horizontal scroll instead of squishing columns */
   @media (max-width:700px){
-    #leaderboard table{
-      min-width:560px;
-    }
-    #leaderboard th,
-    #leaderboard td{
-      padding:10px 10px;
-      font-size:12px;
-    }
+    #leaderboard table{ min-width:560px; }
+    #leaderboard th, #leaderboard td{ padding:10px 10px; font-size:12px; }
   }
 
-  /* Leaderboard tab buttons on small screens */
   @media (max-width:700px){
     #btnLeaderboardViewSummary,
     #btnLeaderboardViewGames{
       min-width:0;
       padding:10px 10px;
     }
+  }
+
+  #leaderboard thead th{ text-align:center !important; }
+
+  #leaderboard td{
+    font-variant-numeric: tabular-nums;
+  }
+
+  #diceTotal{
+    font-size:16px;
+    font-weight:900;
+    letter-spacing:.3px;
   }
 
   /* =========================
@@ -404,45 +439,8 @@
     .item{ border-bottom:1px solid #ddd !important; }
     .mini{ color:#333 !important; }
   }
-
-/* FINAL FIX: center Player column exactly under its header (desktop + mobile) */
-  #leaderboard thead th{
-    text-align:center !important;
-  }
-  
-  #leaderboard th:nth-child(2),
-  #leaderboard td:nth-child(2){
-    text-align:center !important;
-    padding-left:12px !important;
-    padding-right:12px !important;
-  }
-  
-  /* Optional but makes numbers look visually lined up */
-  #leaderboard td{
-    font-variant-numeric: tabular-nums;
-  }
-
-  #diceTotal{
-    font-size: 16px;
-    font-weight: 900;
-    letter-spacing: .3px;
-  }
-
-  .indDir{
-    font-size: 16px;
-    font-weight: 900;
-    text-align: center;
-  }
-    
-  /* Prevent industry name from smashing the up/down selector */
-  .industry-box .top strong{
-    display: block;
-    max-width: 140px;      /* adjust if needed */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 </style>
+
 </head>
 
 <body>
