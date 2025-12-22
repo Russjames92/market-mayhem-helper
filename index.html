@@ -473,6 +473,41 @@
     line-height:1;
     text-align:center;
   }
+  /* ===== Market Mover: Direction dropdown clarity (UP vs DOWN) ===== */
+
+  .industry-box .top select.indDir{
+    width:56px;
+    flex:0 0 auto;
+    padding:6px 26px 6px 10px;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:900;
+    line-height:1;
+    text-align:center;
+    cursor:pointer;
+  
+    /* neutral base */
+    background:var(--panel2);
+    color:#cfcfcf;
+  }
+  
+  /* UP selected */
+  .industry-box .top select.indDir option[value="up"]:checked,
+  .industry-box .top select.indDir[value="up"]{
+    color:#9fe3b2; /* soft green */
+  }
+  
+  /* DOWN selected */
+  .industry-box .top select.indDir option[value="down"]:checked,
+  .industry-box .top select.indDir[value="down"]{
+    color:#ff9b9b; /* soft red */
+  }
+  
+  /* Focus / interaction feedback */
+  .industry-box .top select.indDir:focus{
+    border-color:#555;
+    box-shadow:0 0 0 2px rgba(255,255,255,.06);
+  }
 </style>
 
 </head>
