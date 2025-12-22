@@ -77,6 +77,9 @@ const elBtnEndSession = document.getElementById("btnEndSession");
 const elLeaderboard = document.getElementById("leaderboard");
 const elBtnClearLeaderboard = document.getElementById("btnClearLeaderboard");
 
+const elBtnLeaderboardViewSummary = document.getElementById("btnLeaderboardViewSummary");
+const elBtnLeaderboardViewGames = document.getElementById("btnLeaderboardViewGames");
+
 // Pit toggle (mobile only)
 const pitBoardSection = document.getElementById("pitBoardSection");
 const pitToggleBtn = document.getElementById("btnPitToggle");
@@ -156,6 +159,7 @@ function clearMarketMoverSelections() {
 }
 
 let leaderboard = []; // [{ ts, placements:[{place,name,assets}], winner }]
+let leaderboardView = "summary"; // "summary" | "games"
 
 function saveLeaderboard() {
   localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
@@ -175,25 +179,148 @@ function renderLeaderboard() {
     return;
   }
 
-  elLeaderboard.innerHTML = leaderboard
-    .slice()
-    .reverse() // newest first
-    .map(game => {
-      const rows = game.placements
-        .map(p => `<div class="mini"><strong>#${p.place}</strong> ${p.name} — <strong>$${fmtMoney(p.assets)}</strong></div>`)
-        .join("");
+  // Toggle button styles
+  if (elBtnLeaderboardViewSummary && elBtnLeaderboardViewGames) {
+    elBtnLeaderboardViewSummary.classList.toggle("primary", leaderboardView === "summary");
+    elBtnLeaderboardViewGames.classList.toggle("primary", leaderboardView === "games");
+  }
 
-      return `
-        <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
-          <div class="mini muted">${game.ts}</div>
-          <div style="margin-top:6px; font-size:13px; font-weight:900;">
-            Winner: ${game.winner}
+  if (leaderboardView === "games") {
+    // Recent games feed
+    elLeaderboard.innerHTML = leaderboard
+      .slice()
+      .reverse()
+      .map(game => {
+        const rows = game.placements
+          .map(p => `<div class="mini"><strong>#${p.place}</strong> ${p.name} — <strong>$${fmtMoney(p.assets)}</strong></div>`)
+          .join("");
+
+        return `
+          <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
+            <div class="mini muted">${game.ts}</div>
+            <div style="margin-top:6px; font-size:13px; font-weight:900;">
+              Winner: ${game.winner}
+            </div>
+            <div style="margin-top:8px;">${rows}</div>
           </div>
-          <div style="margin-top:8px;">${rows}</div>
-        </div>
-      `;
-    })
+        `;
+      })
+      .join("");
+
+    return;
+  }
+
+  // Summary rankings table
+  const { totalGames, rows } = buildLeaderboardStats();
+
+  const tableRows = rows
+    .map((r, idx) => `
+      <tr>
+        <td><strong>${idx + 1}</strong></td>
+        <td><strong>${r.name}</strong></td>
+        <td>${r.games}</td>
+        <td><strong>${r.wins}</strong></td>
+        <td>${r.podiums}</td>
+        <td>${fmt1(r.avgFinish)}</td>
+        <td>#${r.bestFinish}</td>
+        <td>$${fmtMoney(r.totalAssets)}</td>
+      </tr>
+    `)
     .join("");
+
+  elLeaderboard.innerHTML = `
+    <div class="mini muted" style="margin-bottom:10px;">
+      Total completed games: <strong>${totalGames}</strong>
+    </div>
+
+    <div style="overflow:auto; border:1px solid var(--border2); border-radius:12px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Rank</th>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Player</th>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Games</th>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Wins</th>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Podiums</th>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Avg Finish</th>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Best</th>
+            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Total Assets</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mini muted" style="margin-top:10px;">
+      Ranking order: Wins → Avg Finish → Games → Total Assets
+    </div>
+  `;
+}
+
+function normName(name) {
+  return String(name || "").trim().toLowerCase();
+}
+
+function buildLeaderboardStats() {
+  // Aggregate across all recorded games
+  const stats = new Map(); // key: normalized name -> record
+  let totalGames = 0;
+
+  for (const game of leaderboard) {
+    if (!game?.placements?.length) continue;
+    totalGames += 1;
+
+    for (const p of game.placements) {
+      const key = normName(p.name);
+      if (!key) continue;
+
+      if (!stats.has(key)) {
+        stats.set(key, {
+          name: p.name.trim(),
+          games: 0,
+          wins: 0,
+          podiums: 0,      // top 3 finishes
+          totalFinish: 0,  // sum of finishing positions
+          bestFinish: 999,
+          totalAssets: 0,  // sum of end assets across games
+          lastSeenTs: game.ts || ""
+        });
+      }
+
+      const rec = stats.get(key);
+      rec.name = rec.name || p.name.trim();
+      rec.games += 1;
+      rec.totalFinish += Number(p.place || 0);
+      rec.bestFinish = Math.min(rec.bestFinish, Number(p.place || 999));
+      rec.totalAssets += Number(p.assets || 0);
+      rec.lastSeenTs = game.ts || rec.lastSeenTs;
+
+      if (p.place === 1) rec.wins += 1;
+      if (p.place <= 3) rec.podiums += 1;
+    }
+  }
+
+  const rows = [...stats.values()].map(r => ({
+    ...r,
+    avgFinish: r.games ? (r.totalFinish / r.games) : 0
+  }));
+
+  // Rank: wins desc, then avgFinish asc, then games desc, then totalAssets desc
+  rows.sort((a, b) => {
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    if (a.avgFinish !== b.avgFinish) return a.avgFinish - b.avgFinish;
+    if (b.games !== a.games) return b.games - a.games;
+    return b.totalAssets - a.totalAssets;
+  });
+
+  return { totalGames, rows };
+}
+
+function fmt1(n) {
+  const x = Number(n || 0);
+  return x.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 }
 
 // ---------- Save/Load ----------
@@ -791,7 +918,7 @@ function endSession() {
 
   const placements = standings.map((p, idx) => ({
     place: idx + 1,
-    name: p.name,
+    name: String(p.name || "").trim(),
     assets: p.assets
   }));
 
@@ -859,6 +986,19 @@ elBtnPrintLog.addEventListener("click", printGameLog);
 
 elBtnEndSession.addEventListener("click", endSession);
 elBtnClearLeaderboard.addEventListener("click", clearLeaderboard);
+
+if (elBtnLeaderboardViewSummary) {
+  elBtnLeaderboardViewSummary.addEventListener("click", () => {
+    leaderboardView = "summary";
+    renderLeaderboard();
+  });
+}
+if (elBtnLeaderboardViewGames) {
+  elBtnLeaderboardViewGames.addEventListener("click", () => {
+    leaderboardView = "games";
+    renderLeaderboard();
+  });
+}
 
 // ---------- Init ----------
 function init() {
