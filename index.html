@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0b0b0c" />
   <title>Market Mayhem Helper</title>
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -61,6 +63,61 @@
     .industry-box select { padding: 8px; border-radius: 10px; }
 
     .rightCol { display:grid; grid-template-rows: auto auto 1fr; gap:14px; }
+
+    /* --- Pit Board table wrapper --- */
+.tableWrap {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* make table a little tighter everywhere */
+.pitTable th, .pitTable td {
+  padding: 10px 10px;
+  vertical-align: top;
+}
+
+.pitTable th {
+  position: sticky;
+  top: 0;
+  background: #111114;
+  z-index: 2;
+}
+
+/* --- Mobile: turn the table into stacked "cards" --- */
+@media (max-width: 700px) {
+  .pitTable thead {
+    display: none;
+  }
+
+  .pitTable,
+  .pitTable tbody,
+  .pitTable tr,
+  .pitTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .pitTable tr {
+    border: 1px solid #232323;
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #111114;
+  }
+
+  .pitTable td {
+    border: none;
+    padding: 6px 0;
+  }
+
+  .pitTable td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 12px;
+    opacity: .75;
+    margin-bottom: 2px;
+  }
+}
   </style>
 </head>
 <body>
@@ -159,8 +216,8 @@
       <section class="card">
         <h2>Pit Board (Prices + Industries)</h2>
         <div class="sub">This replaces the dry-erase Pit Board updates and keeps everything consistent.</div>
-        <div style="overflow:auto;">
-          <table id="pitTable">
+        <div class="tableWrap">
+          <table id="pitTable" class="pitTable">
             <thead>
               <tr>
                 <th>Symbol</th>
