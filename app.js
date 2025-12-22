@@ -61,6 +61,7 @@ const elBtnApplyMarketMover = document.getElementById("btnApplyMarketMover");
 const elMarketMoverHint = document.getElementById("marketMoverHint");
 
 const elPitTableBody = document.querySelector("#pitTable tbody");
+const elPitCards = document.getElementById("pitCards");
 
 const elPlayersArea = document.getElementById("playersArea");
 const elLog = document.getElementById("log");
@@ -222,6 +223,7 @@ function renderStatus() {
 }
 
 function renderPitBoard() {
+  // ---- Desktop table ----
   elPitTableBody.innerHTML = "";
   for (const s of STOCKS) {
     const tr = document.createElement("tr");
@@ -229,28 +231,51 @@ function renderPitBoard() {
     const cur = state.prices[s.symbol] ?? s.start;
 
     tr.innerHTML = `
-  <td class="pitSym">
-    <div class="pitSymbol">${s.symbol}</div>
-  </td>
-
-  <td class="pitMeta">
-    <div class="pitCompany">${s.name}</div>
-    <div class="pitTags">${industries}</div>
-    <div class="pitSmallRow">
-      <span class="pitSmall"><span class="muted">Div</span> $${fmtMoney(s.dividend)}</span>
-      <span class="pitSmall"><span class="muted">Start</span> $${fmtMoney(s.start)}</span>
-    </div>
-  </td>
-
-  <td class="pitCur">
-    <div class="pitCurLabel muted">Now</div>
-    <div class="pitCurPrice">$${fmtMoney(cur)}</div>
-  </td>
-`;
-
+      <td><strong>${s.symbol}</strong></td>
+      <td>${s.name}</td>
+      <td>${industries}</td>
+      <td>$${fmtMoney(s.dividend)}</td>
+      <td>$${fmtMoney(s.start)}</td>
+      <td><strong>$${fmtMoney(cur)}</strong></td>
+    `;
     elPitTableBody.appendChild(tr);
   }
+
+  // ---- Mobile cards ----
+  if (!elPitCards) return;
+  elPitCards.innerHTML = "";
+
+  for (const s of STOCKS) {
+    const cur = state.prices[s.symbol] ?? s.start;
+    const tags = s.industries.map(x => `<span class="tag">${x}</span>`).join("");
+
+    const card = document.createElement("div");
+    card.className = "pitCard";
+    card.innerHTML = `
+      <div class="pitTopRow">
+        <div class="pitLeft">
+          <div class="pitSymLine">
+            <div class="pitSym">${s.symbol}</div>
+            <div class="pitName">${s.name}</div>
+          </div>
+          <div style="margin-top:6px;">${tags}</div>
+        </div>
+
+        <div class="pitCurrent">
+          <div class="pitCurLabel">Current</div>
+          <div class="pitCurPrice">$${fmtMoney(cur)}</div>
+        </div>
+      </div>
+
+      <div class="pitMetaRow">
+        <div>Div: <strong>$${fmtMoney(s.dividend)}</strong></div>
+        <div>Start: <strong>$${fmtMoney(s.start)}</strong></div>
+      </div>
+    `;
+    elPitCards.appendChild(card);
+  }
 }
+
 
 function renderPlayers() {
   elPlayersArea.innerHTML = "";
