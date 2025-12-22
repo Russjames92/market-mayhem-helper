@@ -23,7 +23,7 @@
   body{ margin:0; background:var(--bg); color:var(--text); }
 
   /* =========================
-     HEADER (fixed)
+     HEADER
      ========================= */
   header{
     padding:14px 16px;
@@ -33,7 +33,7 @@
     align-items:center;
     justify-content:space-between;
   }
-  header > div:first-child{ min-width:0; } /* allow title block to shrink */
+  header > div:first-child{ min-width:0; }
   header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
 
   .pill{
@@ -45,29 +45,21 @@
     white-space:nowrap;
   }
 
-  /* Make the RIGHT header controls a 2-row grid:
-     [ pill pill ]
-     [ save reset ]  */
+  /* Header actions grid (expects .row on the header actions wrapper) */
   header .row{
-    /* override the generic .row flex used elsewhere */
     display:grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:1fr 1fr;
     grid-template-areas:
       "status status"
       "save   reset";
     gap:10px;
     align-items:stretch;
     justify-items:stretch;
-
-    /* beat the inline max-width if it exists */
+    width:min(560px, 100%);
     max-width:none !important;
-    width: min(560px, 100%);
   }
-
-  /* Neutralize generic ".row > * { flex:1; min-width:140px }" inside header */
   header .row > *{ min-width:0; }
 
-  /* Place items into the grid */
   #sessionStatus{
     grid-area:status;
     overflow:hidden;
@@ -77,20 +69,14 @@
   #btnSave{ grid-area:save; }
   #btnReset{ grid-area:reset; }
 
-  /* Buttons should stretch full cell width in header only */
   header button{
     width:100%;
     border-radius:16px;
   }
 
-  /* Keep mobile behavior nice (still works with grid) */
   @media (max-width:700px){
-    header{
-      align-items:flex-start;
-    }
-    header .row{
-      width: min(420px, 100%);
-    }
+    header{ align-items:flex-start; }
+    header .row{ width:min(420px, 100%); }
   }
 
   /* =========================
@@ -104,6 +90,11 @@
   }
   @media (max-width:1000px){ main{ grid-template-columns:1fr; } }
 
+  .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
+
+  /* =========================
+     CARDS + TYPOGRAPHY
+     ========================= */
   .card{
     background:var(--panel);
     border:1px solid var(--border);
@@ -117,8 +108,11 @@
   .mini{ font-size:11px; color:var(--muted); }
   .divider{ height:1px; background:#222; margin:12px 0; }
 
-  /* Inputs */
+  /* =========================
+     FORMS + BUTTONS
+     ========================= */
   label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
+
   input,select,button,textarea{
     width:100%;
     background:var(--panel2);
@@ -135,14 +129,16 @@
   button.danger{ background:#241214; border-color:#5a2a2e; }
   button:disabled{ opacity:.55; cursor:not-allowed; }
 
-  /* Generic row/grid helpers (for the BODY, not header) */
+  /* Helpers */
   .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   .row > *{ flex:1; min-width:140px; }
 
   .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
 
-  /* Log */
+  /* =========================
+     LOG
+     ========================= */
   .log{
     height:220px;
     overflow:auto;
@@ -155,9 +151,12 @@
   .log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
   .log .item:last-child{ border-bottom:none; }
 
-  /* Industries */
+  /* =========================
+     INDUSTRIES
+     ========================= */
   .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
+
   .industry-box{
     border:1px solid var(--border);
     border-radius:14px;
@@ -181,15 +180,11 @@
     display:inline-block;
     opacity:.9;
     white-space:nowrap;
-    margin-right:6px;
+    margin:4px 6px 0 0;
   }
-
-  .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
 
   /* =========================
      PIT BOARD
-     Desktop: table
-     Mobile: toggle + cards
      ========================= */
   .pitHead{
     display:flex;
@@ -282,91 +277,135 @@
     min-width:0;
   }
   .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
-  /* Desktop: keep the new Industries list from shrinking the trade buttons */
-@media (min-width: 701px){
-  /* The left info column (name/cash/assets/industries) */
-  #playersArea .card > div:first-child > div:first-child{
-    max-width: 420px;            /* keeps it from eating the row */
-    flex: 0 0 420px;
-    min-width: 320px;
+
+  /* =========================
+     PLAYERS (desktop-only polish)
+     ========================= */
+  @media (min-width:701px){
+    /* Keep left summary from squeezing right-side controls */
+    #playersArea .card > div:first-child > div:first-child{
+      max-width:420px;
+      flex:0 0 420px;
+      min-width:320px;
+    }
+    #playersArea .card > div:first-child > div:last-child{
+      flex:1 1 380px;
+      min-width:380px;
+    }
+
+    /* Emphasize name + money */
+    #playersArea .card > div:first-child > div:first-child > div:first-child{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    #playersArea .card > div:first-child > div:first-child .mini.muted{
+      font-size:13px;
+      line-height:1.4;
+      white-space:normal;
+    }
+    #playersArea .card > div:first-child > div:first-child strong{
+      font-size:14px;
+      color:var(--text);
+    }
   }
 
-  /* Make the industries section go vertical (tags wrap under the label) */
-  #playersArea .card > div:first-child > div:first-child .mini{
-    white-space: normal;
+  /* =========================
+     LEADERBOARD (optimized for desktop + mobile)
+     ========================= */
+
+  /* Button row inside leaderboard card */
+  @media (max-width:700px){
+    #btnLeaderboardViewSummary,
+    #btnLeaderboardViewGames{
+      min-width:0;
+      padding:10px 10px;
+    }
   }
 
-  /* Put "Industries:" and the tags on their own line */
-  #playersArea .card > div:first-child > div:first-child .mini.muted{
-    display:block;
+  /* Make leaderboard tables consistently clean (any size) */
+  #leaderboard table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed; /* prevents “smashed” columns */
   }
-
-  /* Make tags wrap nicely in a vertical block instead of stretching the row */
-  #playersArea .card > div:first-child > div:first-child .tag{
-    display:inline-block;
-    margin:4px 6px 0 0;
+  #leaderboard th,
+  #leaderboard td{
+    padding:10px 10px;
+    border-bottom:1px solid #222;
+    font-size:12px;
+    vertical-align:middle;
+    white-space:nowrap;
   }
-
-  /* Ensure the right-side control cluster keeps its width */
-  #playersArea .card > div:first-child > div:last-child{
-    flex: 1 1 380px;
-    min-width: 380px;
-  }
-}
-/* Desktop emphasis for player identity + finances */
-@media (min-width: 701px){
-  /* Player name */
-  #playersArea .card > div:first-child > div:first-child > div:first-child{
-    font-size:18px;      /* was ~14px */
+  #leaderboard th{
     font-weight:900;
-    letter-spacing:.3px;
+    opacity:.95;
   }
 
-  /* Cash + Total Assets line */
-  #playersArea .card > div:first-child > div:first-child .mini.muted{
-    font-size:13px;      /* was 11px */
-    line-height:1.4;
+  /* Rank column a bit wider for emoji */
+  #leaderboard th:nth-child(1),
+  #leaderboard td:nth-child(1){
+    width:70px;
   }
 
-  /* Make the numbers pop */
-  #playersArea .card > div:first-child > div:first-child strong{
-    font-size:14px;
-    color: var(--text);
-  }
-}
-@media print{
-  body{ background:#fff !important; color:#000 !important; }
-  header, main > section:not(.rightCol), .rightCol > section:not(:last-child){ display:none !important; }
-  .rightCol{ display:block !important; }
-  .card{ box-shadow:none !important; border:none !important; background:#fff !important; }
-  .log{ height:auto !important; overflow:visible !important; border:none !important; padding:0 !important; }
-  button{ display:none !important; }
-  .item{ border-bottom:1px solid #ddd !important; }
-  .mini{ color:#333 !important; }
-}
-
-@media (max-width:700px){
-  #btnLeaderboardViewSummary,
-  #btnLeaderboardViewGames{
-    min-width: 0;
-    padding: 10px 10px;
-  }
-}
-
-/* Center leaderboard table content (desktop only) */
-@media (min-width: 701px){
-  #leaderboard table th,
-  #leaderboard table td{
-    text-align: center;
+  /* Player column: allow wrapping so names never destroy layout */
+  #leaderboard th:nth-child(2),
+  #leaderboard td:nth-child(2){
+    width:38%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    word-break:break-word;
   }
 
-  /* Keep player names readable */
-  #leaderboard table td:nth-child(2),
-  #leaderboard table th:nth-child(2){
-    text-align: left;
-    padding-left: 12px;
+  /* Center numeric columns */
+  #leaderboard th:nth-child(1),
+  #leaderboard td:nth-child(1),
+  #leaderboard th:nth-child(3),
+  #leaderboard td:nth-child(3),
+  #leaderboard th:nth-child(4),
+  #leaderboard td:nth-child(4),
+  #leaderboard th:nth-child(5),
+  #leaderboard td:nth-child(5){
+    text-align:center;
   }
-}
+
+  /* Mobile: prevent “jumbled” table by allowing horizontal scroll + smaller padding */
+  @media (max-width:700px){
+    /* The table wrapper is rendered as a div with overflow:auto inline,
+       but we make sure it behaves well even if not. */
+    #leaderboard table{
+      min-width:520px; /* forces a clean scroll instead of crushing */
+    }
+    #leaderboard th,
+    #leaderboard td{
+      padding:10px 8px;
+      font-size:12px;
+    }
+  }
+
+  /* Desktop: slightly roomier + nicer alignment */
+  @media (min-width:701px){
+    #leaderboard th, #leaderboard td{ font-size:13px; }
+    #leaderboard td:nth-child(2), #leaderboard th:nth-child(2){
+      text-align:left;
+      padding-left:14px;
+    }
+    #leaderboard td:nth-child(1){ font-size:18px; }
+  }
+
+  /* =========================
+     PRINT (log export)
+     ========================= */
+  @media print{
+    body{ background:#fff !important; color:#000 !important; }
+    header, main > section:not(.rightCol), .rightCol > section:not(:last-child){ display:none !important; }
+    .rightCol{ display:block !important; }
+    .card{ box-shadow:none !important; border:none !important; background:#fff !important; }
+    .log{ height:auto !important; overflow:visible !important; border:none !important; padding:0 !important; }
+    button{ display:none !important; }
+    .item{ border-bottom:1px solid #ddd !important; }
+    .mini{ color:#333 !important; }
+  }
 </style>
 </head>
 
