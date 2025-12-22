@@ -7,194 +7,224 @@
   <meta name="theme-color" content="#0b0b0c" />
   <title>Market Mayhem Helper</title>
   <style>
-    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    body { margin: 0; background: #0b0b0c; color: #f2f2f2; }
-    header { padding: 16px 18px; border-bottom: 1px solid #222; display:flex; gap:12px; align-items:center; justify-content:space-between; }
-    header h1 { font-size: 16px; margin: 0; letter-spacing:.4px; }
-    header .pill { font-size: 12px; opacity: .85; padding: 6px 10px; border: 1px solid #2a2a2a; border-radius: 999px; }
-    main { padding: 16px 18px; display:grid; grid-template-columns: 420px 1fr; gap: 14px; }
-    @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
-
-    .card { background:#111114; border:1px solid #232323; border-radius: 12px; padding: 14px; }
-    .card h2 { margin: 0 0 10px; font-size: 14px; }
-    .sub { font-size: 12px; opacity: .8; margin-bottom: 10px; }
-    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .row > * { flex: 1; min-width: 140px; }
-    label { font-size: 12px; opacity:.9; display:block; margin-bottom: 6px; }
-    input, select, button, textarea {
-      width: 100%;
-      box-sizing: border-box;
-      background:#0e0e10;
-      color:#f2f2f2;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 10px 10px;
-      outline: none;
-    }
-    input:focus, select:focus, textarea:focus { border-color:#4a4a4a; }
-    button { cursor:pointer; font-weight: 600; }
-    button.primary { background:#1e1e24; border-color:#3a3a3a; }
-    button.danger { background:#241214; border-color:#5a2a2e; }
-    button:disabled { opacity:.55; cursor:not-allowed; }
-
-    .divider { height: 1px; background:#222; margin: 12px 0; }
-
-    table { width:100%; border-collapse: collapse; }
-    th, td { border-bottom: 1px solid #222; padding: 10px 8px; font-size: 12px; text-align:left; }
-    th { opacity:.85; font-weight: 700; }
-    .tag { font-size: 11px; padding: 4px 8px; border: 1px solid #2a2a2a; border-radius: 999px; opacity: .9; display:inline-block; margin-right:6px; }
-    .mini { font-size: 11px; opacity:.75; }
-
-    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
-
-    .log { height: 220px; overflow:auto; background:#0e0e10; border:1px solid #2a2a2a; border-radius: 12px; padding: 10px; font-size: 12px; }
-    .log .item { padding: 6px 2px; border-bottom: 1px dashed #222; }
-    .log .item:last-child { border-bottom:none; }
-    .muted { opacity: .75; }
-
-    .industry-list { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 520px) { .industry-list { grid-template-columns: 1fr; } }
-
-    .industry-box { border:1px solid #232323; border-radius: 12px; padding:10px; background:#0e0e10; }
-    .industry-box .top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
-    .industry-box .top strong { font-size: 12px; }
-    .industry-box .top input[type="checkbox"] { width:auto; transform: scale(1.1); }
-    .industry-box select { padding: 8px; border-radius: 10px; }
-
-    .rightCol { display:grid; grid-template-rows: auto auto 1fr; gap:14px; }
-
-    /* --- Pit Board table wrapper --- */
-.tableWrap {
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* make table a little tighter everywhere */
-.pitTable th, .pitTable td {
-  padding: 10px 10px;
-  vertical-align: top;
-}
-
-.pitTable th {
-  position: sticky;
-  top: 0;
-  background: #111114;
-  z-index: 2;
-}
-
-@media (max-width: 600px) {
-
-  /* --- Pit Board: compact mobile-first layout --- */
-#pitTable {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 10px; /* space between row-cards */
-}
-
-#pitTable thead {
-  display: none; /* hide table header on mobile/card view */
-}
-
-#pitTable tbody tr {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) 92px; /* key: middle can shrink */
-  gap: 10px;
-
-  background: #0e0e10;
-  border: 1px solid #2a2a2a;
-  border-radius: 14px;
-  padding: 12px;
-
-  overflow: hidden; /* prevents weird overflow */
-}
-
-#pitTable tbody td {
-  border: none;
-  padding: 0;
-  min-width: 0; /* IMPORTANT: allows columns to shrink */
-}
-
-/* Left column */
-.pitSym {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-.pitSymbol {
-  font-weight: 800;
-  font-size: 16px;
-  letter-spacing: .5px;
-}
-
-/* Middle column */
-.pitMeta {
-  min-width: 0; /* IMPORTANT: allows ellipsis */
-}
-.pitCompany {
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 6px;
-}
-.pitTags {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-.pitSmallRow {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.pitSmall {
-  font-size: 12px;
-  opacity: .9;
-}
-
-/* Right column (Current) */
-.pitCur {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
-  white-space: nowrap;
-}
-.pitCurLabel {
-  font-size: 12px;
-  margin-bottom: 2px;
-}
-.pitCurPrice {
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1.05;
-}
-
-/* Optional: slightly tighter cards on small phones */
-@media (max-width: 420px) {
-  #pitTable tbody tr {
-    grid-template-columns: 58px minmax(0, 1fr) 84px;
-    padding: 10px;
+  :root{
+    --bg:#0b0b0c;
+    --panel:#111114;
+    --panel2:#0e0e10;
+    --border:#232323;
+    --border2:#2a2a2a;
+    --text:#f2f2f2;
+    --muted:rgba(242,242,242,.75);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
   }
-  .pitCurPrice { font-size: 20px; }
-}
 
-}
+  *{ box-sizing:border-box; }
 
-@media (max-width: 600px) {
-  /* Hide verbose labels we don't need on mobile */
-  #pitTable td::before {
-    display: none;
+  body{ margin:0; background:var(--bg); color:var(--text); }
+
+  header{
+    padding:16px 18px;
+    border-bottom:1px solid #222;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
   }
-}
+  header h1{ font-size:16px; margin:0; letter-spacing:.4px; }
+  header .pill{
+    font-size:12px;
+    opacity:.85;
+    padding:6px 10px;
+    border:1px solid var(--border2);
+    border-radius:999px;
+  }
 
+  main{
+    padding:16px 18px;
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:14px;
+  }
+  @media (max-width:1000px){
+    main{ grid-template-columns:1fr; }
+  }
 
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+  }
+  .card h2{ margin:0 0 10px; font-size:14px; }
+  .sub{ font-size:12px; opacity:.8; margin-bottom:10px; }
+  .muted{ color:var(--muted); }
+  .mini{ font-size:11px; opacity:.75; }
+  .divider{ height:1px; background:#222; margin:12px 0; }
 
-  </style>
+  .row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .row > *{ flex:1; min-width:140px; }
+
+  label{ font-size:12px; opacity:.9; display:block; margin-bottom:6px; }
+
+  input,select,button,textarea{
+    width:100%;
+    background:var(--panel2);
+    color:var(--text);
+    border:1px solid var(--border2);
+    border-radius:10px;
+    padding:10px 10px;
+    outline:none;
+  }
+  input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
+
+  button{ cursor:pointer; font-weight:600; }
+  button.primary{ background:#1e1e24; border-color:#3a3a3a; }
+  button.danger{ background:#241214; border-color:#5a2a2e; }
+  button:disabled{ opacity:.55; cursor:not-allowed; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
+
+  .log{
+    height:220px;
+    overflow:auto;
+    background:var(--panel2);
+    border:1px solid var(--border2);
+    border-radius:12px;
+    padding:10px;
+    font-size:12px;
+  }
+  .log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
+  .log .item:last-child{ border-bottom:none; }
+
+  .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
+
+  .industry-box{
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:10px;
+    background:var(--panel2);
+  }
+  .industry-box .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .industry-box .top strong{ font-size:12px; }
+  .industry-box .top input[type="checkbox"]{ width:auto; transform:scale(1.1); }
+
+  .tag{
+    font-size:11px;
+    padding:4px 8px;
+    border:1px solid var(--border2);
+    border-radius:999px;
+    display:inline-block;
+    margin-right:6px;
+    opacity:.9;
+  }
+
+  .rightCol{ display:grid; grid-template-rows:auto auto 1fr; gap:14px; }
+
+  /* ===== Pit Board: Desktop table ===== */
+  .tableWrap{
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #pitTable{
+    width:100%;
+    border-collapse:collapse;
+  }
+  #pitTable th, #pitTable td{
+    border-bottom:1px solid #222;
+    padding:10px 8px;
+    font-size:12px;
+    text-align:left;
+    vertical-align:top;
+  }
+  #pitTable th{
+    opacity:.85;
+    font-weight:700;
+    position:sticky;
+    top:0;
+    background:var(--panel);
+    z-index:2;
+  }
+
+  /* ===== Pit Board: Mobile cards ===== */
+  .pitCards{ display:none; }
+
+  @media (max-width:700px){
+    /* hide desktop table */
+    .tableWrap{ display:none; }
+    /* show cards */
+    .pitCards{ display:grid; gap:10px; }
+  }
+
+  .pitCard{
+    background:var(--panel2);
+    border:1px solid var(--border2);
+    border-radius:12px;
+    padding:10px;
+  }
+
+  .pitTopRow{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:flex-start;
+  }
+
+  .pitLeft{
+    min-width:0;
+  }
+
+  .pitSymLine{
+    display:flex;
+    gap:10px;
+    align-items:baseline;
+    min-width:0;
+  }
+
+  .pitSym{
+    font-weight:900;
+    font-size:16px;
+    letter-spacing:.4px;
+    white-space:nowrap;
+  }
+
+  .pitName{
+    font-size:14px;
+    opacity:.9;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .pitCurrent{
+    text-align:right;
+    white-space:nowrap;
+  }
+  .pitCurLabel{ font-size:11px; opacity:.8; }
+  .pitCurPrice{ font-size:22px; font-weight:900; line-height:1.05; }
+
+  .pitMetaRow{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:8px;
+    font-size:12px;
+    opacity:.9;
+    flex-wrap:wrap;
+  }
+</style>
 </head>
 <body>
   <header>
@@ -312,6 +342,7 @@
             </thead>
             <tbody></tbody>
           </table>
+          <div id="pitCards" class="pitCards"></div>
         </div>
       </section>
 
