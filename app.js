@@ -274,90 +274,88 @@ function renderPlayers() {
           <div style="font-size:14px; font-weight:800;">${p.name}</div>
           <div class="mini muted">Cash: <strong>$${fmtMoney(p.cash)}</strong> • Total Assets: <strong>$${fmtMoney(totalAssets)}</strong></div>
         </div>
+
         <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
-            <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
-             Stock
-               <select data-role="tradeSymbol" data-player="${p.id}">
-               ${STOCKS.map(s => `<option value="${s.symbol}">${s.symbol}</option>`).join("")}
-                </select>
-           </label>
 
-           <div style="display:flex; align-items:center; gap:6px;">
-    <button type="button" data-role="sharesDown" data-player="${p.id}">-100</button>
-    <div class="mini" style="min-width:86px; text-align:center;">
-      Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
-    </div>
-    <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
-  </div>
+          <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
+            Stock
+            <select data-role="tradeSymbol" data-player="${p.id}">
+              ${STOCKS.map(s => `<option value="${s.symbol}">${s.symbol} — ${s.name}</option>`).join("")}
+            </select>
+          </label>
 
-  <button type="button" class="primary" data-role="buy" data-player="${p.id}">Buy</button>
-  <button type="button" data-role="sell" data-player="${p.id}">Sell</button>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" data-role="sharesDown" data-player="${p.id}">-100</button>
 
-  <button type="button" data-action="adjustCash" data-player="${p.id}">Adjust Cash</button>
+            <div class="mini" style="min-width:120px; text-align:center;">
+              Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
+            </div>
 
-  <div class="mini muted" style="width:100%; text-align:right;">
-    <span data-role="tradePreview" data-player="${p.id}"></span>
-  </div>
-</div>
+            <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
+          </div>
 
+          <button type="button" class="primary" data-role="buy" data-player="${p.id}">Buy</button>
+          <button type="button" data-role="sell" data-player="${p.id}">Sell</button>
+
+          <button type="button" data-action="adjustCash" data-player="${p.id}">Adjust Cash</button>
+
+          <div class="mini muted" style="width:100%; text-align:right;">
+            <span data-role="tradePreview" data-player="${p.id}"></span>
+          </div>
+        </div>
       </div>
 
       <div class="divider"></div>
-
       <div>${holdingLines}</div>
     `;
 
-    // hook buttons
-    // Adjust cash stays
-wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
+    // Adjust cash
+    wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
 
-// Trade panel elements
-const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
-const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
-const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
+    // Trade panel elements
+    const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
+    const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
+    const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
 
-let tradeShares = 100; // default per render
+    let tradeShares = 100;
 
-function updatePreview() {
-  const symbol = elSymbol.value;
-  const stock = getStock(symbol);
-  const price = state.prices[symbol] ?? stock.start;
-  const cost = tradeShares * price;
+    function updatePreview() {
+      const symbol = elSymbol.value;
+      const stock = getStock(symbol);
+      const price = state.prices[symbol] ?? stock.start;
+      const cost = tradeShares * price;
+      const owned = p.holdings[symbol] || 0;
 
-  const owned = p.holdings[symbol] || 0;
+      elShares.textContent = String(tradeShares);
+      elPreview.textContent =
+        `${symbol} @ $${fmtMoney(price)} • Total: $${fmtMoney(cost)} • You own: ${owned} sh`;
+    }
 
-  elShares.textContent = String(tradeShares);
-  elPreview.textContent =
-    `${symbol} @ $${fmtMoney(price)} • Total: $${fmtMoney(cost)} • You own: ${owned} sh`;
-}
+    wrap.querySelector(`[data-role="sharesDown"][data-player="${p.id}"]`).addEventListener("click", () => {
+      tradeShares = Math.max(100, tradeShares - 100);
+      updatePreview();
+    });
 
-wrap.querySelector(`[data-role="sharesDown"][data-player="${p.id}"]`)
-  .addEventListener("click", () => {
-    tradeShares = Math.max(100, tradeShares - 100);
+    wrap.querySelector(`[data-role="sharesUp"][data-player="${p.id}"]`).addEventListener("click", () => {
+      tradeShares += 100;
+      updatePreview();
+    });
+
+    elSymbol.addEventListener("change", updatePreview);
+
+    wrap.querySelector(`[data-role="buy"][data-player="${p.id}"]`).addEventListener("click", () => {
+      doTrade(p.id, "BUY", elSymbol.value, tradeShares);
+    });
+
+    wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`).addEventListener("click", () => {
+      doTrade(p.id, "SELL", elSymbol.value, tradeShares);
+    });
+
     updatePreview();
-  });
-
-wrap.querySelector(`[data-role="sharesUp"][data-player="${p.id}"]`)
-  .addEventListener("click", () => {
-    tradeShares += 100;
-    updatePreview();
-  });
-
-elSymbol.addEventListener("change", updatePreview);
-
-wrap.querySelector(`[data-role="buy"][data-player="${p.id}"]`)
-  .addEventListener("click", () => doTrade(p.id, "BUY", elSymbol.value, tradeShares));
-
-wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`)
-  .addEventListener("click", () => doTrade(p.id, "SELL", elSymbol.value, tradeShares));
-
-// Initialize preview once per player card
-updatePreview();
-
-
     elPlayersArea.appendChild(wrap);
   }
 }
+
 
 function renderLog() {
   elLog.innerHTML = "";
