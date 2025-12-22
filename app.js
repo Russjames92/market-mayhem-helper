@@ -436,6 +436,42 @@ function shortMove() {
 }
 
 // ---------- Trade / Cash dialogs (simple prompt-based, beginner-friendly) ----------
+function setupTradePresets() {
+  // ✅ CHANGE THIS if your shares input uses a different id
+  const sharesInput = document.getElementById("tradeShares");
+
+  if (!sharesInput) return;
+
+  function getShares() {
+    const n = parseInt(sharesInput.value, 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function setShares(n) {
+    // Keep it clean: whole numbers only
+    sharesInput.value = String(Math.max(0, Math.trunc(n)));
+  }
+
+  // +100 / +200 / +300 buttons (adds to existing value)
+  document.querySelectorAll("[data-add-shares]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const add = parseInt(btn.getAttribute("data-add-shares"), 10) || 0;
+      setShares(getShares() + add);
+      sharesInput.focus();
+    });
+  });
+
+  // Clear button (sets to 0)
+  document.querySelectorAll("[data-set-shares]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const setTo = parseInt(btn.getAttribute("data-set-shares"), 10);
+      setShares(Number.isFinite(setTo) ? setTo : 0);
+      sharesInput.focus();
+    });
+  });
+}
+
+
 function openCashDialog(playerId) {
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
