@@ -491,14 +491,27 @@ function renderPitBoard() {
     // table row
     const tr = document.createElement("tr");
     const industries = s.industries.map(x => `<span class="tag">${x}</span>`).join("");
+     const curCell = `
+        <td>
+          <button
+            type="button"
+            class="pitPriceBtn"
+            data-action="editPrice"
+            data-symbol="${s.symbol}"
+            title="Click to manually set price"
+          >
+            $${fmtMoney(cur)}
+          </button>
+        </td>
+      `;
     tr.innerHTML = `
-      <td><strong>${s.symbol}</strong></td>
-      <td>${s.name}</td>
-      <td>${industries}</td>
-      <td>$${fmtMoney(s.dividend)}</td>
-      <td>$${fmtMoney(s.start)}</td>
-      <td><strong>$${fmtMoney(cur)}</strong></td>
-    `;
+        <td><strong>${s.symbol}</strong></td>
+        <td>${s.name}</td>
+        <td>${industries}</td>
+        <td>$${fmtMoney(s.dividend)}</td>
+        <td>$${fmtMoney(s.start)}</td>
+        ${curCell}
+      `;
     elPitTableBody.appendChild(tr);
 
     // card
@@ -513,7 +526,15 @@ function renderPitBoard() {
               <span class="pitName">${s.name}</span>
             </div>
           </div>
-          <div class="pitCur">$${fmtMoney(cur)}</div>
+          <button
+           type="button"
+           class="pitPriceBtn pitCur"
+           data-action="editPrice"
+           data-symbol="${s.symbol}"
+           title="Tap to manually set price"
+         >
+           $${fmtMoney(cur)}
+         </button>
         </div>
 
         <div class="pitRow2">
@@ -1059,6 +1080,12 @@ elBtnStart.addEventListener("click", startSession);
 elBtnApplyMarketMover.addEventListener("click", applyMarketMover);
 elBtnPayDividends.addEventListener("click", payDividendsConfirmed);
 elBtnShortMove.addEventListener("click", shortMove);
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest('[data-action="editPrice"]');
+  if (!btn) return;
+  openPriceEditor(btn.dataset.symbol);
+});
 
 elBtnSave.addEventListener("click", saveState);
 elBtnReset.addEventListener("click", resetState);
