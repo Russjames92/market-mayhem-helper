@@ -164,6 +164,37 @@ function clearMarketMoverSelections() {
   updateMarketMoverButton();
 }
 
+function openPriceEditor(symbol) {
+  if (!state.started) {
+    alert("Start a session first to manually set prices.");
+    return;
+  }
+
+  const stock = getStock(symbol);
+  if (!stock) return;
+
+  const before = state.prices[symbol] ?? stock.start;
+
+  const raw = prompt(
+    `${symbol} — ${stock.name}\nCurrent: $${fmtMoney(before)}\n\nEnter NEW price:`,
+    String(before)
+  );
+  if (raw == null) return;
+
+  const next = Number(String(raw).trim());
+  if (!Number.isFinite(next) || next < 0) {
+    alert("Enter a valid price (0 or higher).");
+    return;
+  }
+
+  const after = clampPrice(next);
+  state.prices[symbol] = after;
+
+  addLog(`Manual Price Set: ${symbol} $${fmtMoney(before)} → $${fmtMoney(after)}`);
+  renderAll();
+  saveState();
+}
+
 let leaderboard = []; // [{ ts, placements:[{place,name,assets}], winner }]
 let leaderboardView = "summary"; // "summary" | "games"
 
