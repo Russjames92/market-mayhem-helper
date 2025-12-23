@@ -12,6 +12,8 @@ const CANON_INDUSTRIES = [
   "Healthcare","Manufacturing","Technology","Transportation"
 ];
 
+const MAX_OPENING_BELLS = 4;
+
 // Stock definitions (start price, dividend, dice move table)
 const STOCKS = [
   { symbol:"EE",   name:"Evanston Electric",   industries:["Manufacturing","Energy"], start:95,  dividend:5,  moves:{low:12, mid:10, high:8} },
@@ -43,6 +45,7 @@ let state = {
   players: [],     // { id, name, cash, holdings: {SYM: shares} }
   prices: {},      // { SYM: currentPrice }
   log: [],         // { ts, text }
+   openingBells: 0,
 };
 
 // ---------- DOM ----------
@@ -193,6 +196,14 @@ function openPriceEditor(symbol) {
   addLog(`Manual Price Set: ${symbol} $${fmtMoney(before)} → $${fmtMoney(after)}`);
   renderAll();
   saveState();
+}
+
+function renderOpeningBellCounter() {
+  if (!elBtnPayDividends) return;
+
+  const n = Number(state.openingBells || 0);
+  const label = `Pay Dividends (Opening Bell) — ${n}/${MAX_OPENING_BELLS}`;
+  elBtnPayDividends.textContent = label;
 }
 
 let leaderboard = []; // [{ ts, placements:[{place,name,assets}], winner }]
@@ -400,11 +411,13 @@ function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return;
   try { state = JSON.parse(raw); } catch { /* ignore */ }
+
+   if (state.openingBells == null) state.openingBells = 0;
 }
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { started:false, createdAt:null, players:[], prices:{}, log:[] };
+  state = { started:false, createdAt:null, players:[], prices:{}, log:[], openingBells:0 };
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
@@ -746,6 +759,7 @@ function renderAll() {
    
    elBtnEndSession.disabled = !started;
 
+   renderOpeningBellCounter();
   updateMarketMoverButton();
 }
 
@@ -780,6 +794,7 @@ function startSession() {
   state.players = players;
   state.prices = prices;
   state.log = [];
+   state.openingBells = 0;
 
   addLog(`Session started with ${n} player(s). Starting cash: $${fmtMoney(startingCash)} each.`);
   renderAll();
@@ -838,6 +853,14 @@ function applyMarketMover() {
 }
 
 function payDividends() {
+  if (!state.started) return;
+
+  const nextBell = Number(state.openingBells || 0) + 1;
+
+  if (!confirm(`Confirm Opening Bell #${nextBell} of ${MAX_OPENING_BELLS}?\n\nThis will pay dividends to all players.`)) {
+    return;
+  }
+
   let totalPaid = 0;
 
   for (const p of state.players) {
@@ -853,9 +876,17 @@ function payDividends() {
     addLog(`${p.name} collected dividends: $${fmtMoney(paid)}.`);
   }
 
-  addLog(`Opening Bell dividends paid (total: $${fmtMoney(totalPaid)}).`);
+  state.openingBells = nextBell;
+
+  addLog(`Opening Bell #${state.openingBells} dividends paid (total: $${fmtMoney(totalPaid)}).`);
+
   renderAll();
   saveState();
+
+  if (state.openingBells >= MAX_OPENING_BELLS) {
+    addLog(`⏱️ Year ${MAX_OPENING_BELLS} reached — ending session.`);
+    endSession(true); // force end + record winner
+  }
 }
 
 function shortMove() {
@@ -993,11 +1024,12 @@ function printGameLog() {
   win.document.close();
 }
 
-function endSession() {
+function endSession(force = false) {
   if (!state.started) return;
 
-  if (!confirm("End session and record results to the leaderboard?")) return;
-
+  if (!force) {
+    if (!confirm("End session and record results to the leaderboard?")) return;
+  }
   // compute standings
   const standings = state.players.map(p => ({
     id: p.id,
