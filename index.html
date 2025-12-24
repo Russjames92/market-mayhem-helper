@@ -834,6 +834,40 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
     <section class="card" id="setupCard">
       <h2>1) Session Setup</h2>
       <div class="sub">Choose number of players (2–4), names, and starting cash. Then start session.</div>
+      <div class="divider"></div>
+
+        <h2>Live Session (Host + Viewers)</h2>
+        <div class="sub">
+          Host creates a live session and shares the link/code so everyone can view the same game state in real time.
+        </div>
+        
+        <div class="row">
+          <div class="pill" id="liveRolePill">Live: OFF</div>
+        </div>
+        
+        <div class="row">
+          <button class="primary" id="btnLiveCreate" type="button">Create Live Session (Host)</button>
+        
+          <div>
+            <label>Join code</label>
+            <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2" />
+          </div>
+        
+          <button id="btnLiveJoin" type="button">Join Live Session (Viewer)</button>
+        </div>
+        
+        <div class="row">
+          <div style="flex:1; min-width:260px;">
+            <label>Share link</label>
+            <input id="liveShareLink" type="text" readonly value="" />
+          </div>
+          <button id="btnCopyLiveLink" type="button">Copy Link</button>
+          <button class="danger" id="btnLiveLeave" type="button" disabled>Leave Live</button>
+        </div>
+        
+        <div class="mini muted" id="liveHint">
+          Tip: Viewers should open the share link on their phone. Host controls all actions.
+        </div>
 
       <div class="row">
         <div>
@@ -1037,6 +1071,11 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   <script>
     console.log("HTML reached script area ✅");
   </script>
+  <!-- Firebase (Realtime sessions) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
   <script src="app.js"></script>
   <script>
     console.log("app.js finished loading ✅");
