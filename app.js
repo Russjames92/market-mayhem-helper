@@ -545,6 +545,55 @@ function fmt1(n) {
   return x.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 }
 
+function openPitBuy(symbol) {
+  if (!state.started) {
+    alert("Start a session first.");
+    return;
+  }
+
+  const stock = getStock(symbol);
+  if (!stock) return;
+
+  // Pick player
+  const playersList = state.players
+    .map((p, i) => `${i + 1}) ${p.name}`)
+    .join("\n");
+
+  const pick = prompt(
+    `Buy ${symbol} — ${stock.name}\n\nChoose player:\n${playersList}\n\nEnter number (1-${state.players.length}):`,
+    "1"
+  );
+  if (pick == null) return;
+
+  const idx = Number(pick);
+  if (!Number.isFinite(idx) || idx < 1 || idx > state.players.length) {
+    alert("Invalid player selection.");
+    return;
+  }
+
+  const player = state.players[idx - 1];
+
+  // Shares
+  const sharesRaw = prompt(`Buy how many shares of ${symbol} for ${player.name}?\n(Must be 100, 200, 300...)`, "100");
+  if (sharesRaw == null) return;
+
+  const shares = Number(sharesRaw);
+  if (!Number.isFinite(shares) || shares <= 0 || shares % 100 !== 0) {
+    alert("Shares must be 100, 200, 300...");
+    return;
+  }
+
+  const price = state.prices[symbol] ?? stock.start;
+  const cost = shares * price;
+
+  const ok = confirm(
+    `Confirm BUY?\n\nPlayer: ${player.name}\nStock: ${symbol} — ${stock.name}\nShares: ${shares}\nPrice: $${fmtMoney(price)}\nTotal: $${fmtMoney(cost)}`
+  );
+  if (!ok) return;
+
+  doTrade(player.id, "BUY", symbol, shares);
+}
+
 // ---------- Save/Load ----------
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -708,8 +757,16 @@ function renderPitBoard() {
       <td class="selectCol">
         <input class="pitSelect" type="checkbox" data-symbol="${s.symbol}" ${checked} />
       </td>
-      <td><strong>${s.symbol}</strong></td>
-      <td>${s.name}</td>
+      <td>
+        <button type="button" class="pitTradeBtn" data-action="pitBuy" data-symbol="${s.symbol}">
+          <strong>${s.symbol}</strong>
+        </button>
+      </td>
+      <td>
+        <button type="button" class="pitTradeBtn" data-action="pitBuy" data-symbol="${s.symbol}">
+          ${s.name}
+        </button>
+      </td>
       <td>${industries}</td>
       <td>$${fmtMoney(s.dividend)}</td>
       <td>$${fmtMoney(s.start)}</td>
@@ -728,8 +785,10 @@ function renderPitBoard() {
         <div class="pitRow1">
           <div class="pitLeft">
             <div class="pitSymLine">
-              <span class="pitSym">${s.symbol}</span>
-              <span class="pitName">${s.name}</span>
+              <button type="button" class="pitTradeBtn" data-action="pitBuy" data-symbol="${s.symbol}" style="background:transparent; border:none; padding:0; color:inherit; cursor:pointer; text-align:left;">
+                 <span class="pitSym">${s.symbol}</span>
+                 <span class="pitName">${s.name}</span>
+               </button>
             </div>
           </div>
 
@@ -1378,6 +1437,12 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-lb-del]");
   if (!btn) return;
   deleteLeaderboardGameById(btn.getAttribute("data-lb-del"));
+});
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest('[data-action="pitBuy"]');
+  if (!btn) return;
+  openPitBuy(btn.dataset.symbol);
 });
 
 // Pit board: filter
