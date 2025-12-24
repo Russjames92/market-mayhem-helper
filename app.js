@@ -1613,7 +1613,23 @@ elBtnReset.addEventListener("click", resetState);
 
 elBtnPrintLog.addEventListener("click", printGameLog);
 
-elBtnEndSession.addEventListener("click", endSession);
+elBtnEndSession.addEventListener("click", () => {
+  if (!state.started) return;
+
+  const ok = confirm(
+    "🏁 End Session?\n\n" +
+    "This will:\n" +
+    "• Finalize all player assets\n" +
+    "• Record the results to the leaderboard\n" +
+    "• Close the current game\n\n" +
+    "You cannot resume this session once ended."
+  );
+
+  if (!ok) return;
+
+  endSession();
+});
+
 elBtnClearLeaderboard.addEventListener("click", clearLeaderboard);
 
 
