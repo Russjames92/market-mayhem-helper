@@ -628,6 +628,7 @@ function ensureTradeModal() {
               Shares: <strong id="mmTradeShares">100</strong>
             </div>
             <button type="button" id="mmTradeUp">+100</button>
+            <button type="button" id="modalSharesMax">MAX</button>
           </div>
         </div>
 
@@ -706,6 +707,20 @@ function openTradeModalForStock(symbol) {
     tradeModalState.shares += 100;
     renderTradeModalPreview();
   };
+   const elMax = document.getElementById("modalSharesMax");
+
+elMax.addEventListener("click", () => {
+  const player = state.players.find(p => p.id === selectedPlayerId);
+  if (!player) return;
+
+  const stock = getStock(selectedSymbol);
+  const price = state.prices[selectedSymbol] ?? stock.start;
+
+  const maxShares = Math.floor(player.cash / price / 100) * 100;
+
+  tradeShares = Math.max(100, maxShares);
+  updatePreview();
+});
 
   // actions
   document.getElementById("mmTradeBuy").onclick = () => {
