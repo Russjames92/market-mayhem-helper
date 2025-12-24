@@ -48,6 +48,11 @@ let state = {
    openingBells: 0,
 };
 
+// ---------- Pit Board View State ----------
+let pitFilterIndustry = "ALL"; // "ALL" or industry name
+let pitSortMode = "off";       // "off" | "asc" | "desc"
+let pitSelected = new Set();   // selected symbols for bulk ops
+
 // ---------- DOM ----------
 const elSessionStatus = document.getElementById("sessionStatus");
 const elBtnSave = document.getElementById("btnSave");
@@ -86,6 +91,17 @@ const elBtnLeaderboardViewGames = document.getElementById("btnLeaderboardViewGam
 // Pit toggle (mobile only)
 const pitBoardSection = document.getElementById("pitBoardSection");
 const pitToggleBtn = document.getElementById("btnPitToggle");
+
+// Pit board controls
+const elPitIndustryFilter = document.getElementById("pitIndustryFilter");
+const elPitSortCur = document.getElementById("pitSortCur");
+const elPitCurHeader = document.getElementById("pitCurHeader");
+const elPitSelectAll = document.getElementById("pitSelectAll");
+const elPitSelectedCount = document.getElementById("pitSelectedCount");
+const elPitBulkAmt = document.getElementById("pitBulkAmt");
+const elPitBulkMinus = document.getElementById("pitBulkMinus");
+const elPitBulkPlus = document.getElementById("pitBulkPlus");
+const elPitClearSelected = document.getElementById("pitClearSelected");
 
 // ---------- Helpers ----------
 function nowTs() {
@@ -233,6 +249,78 @@ function renderLeaderboard() {
     elLeaderboard.innerHTML = `<div class="muted">No completed sessions yet.</div>`;
     return;
   }
+
+function getAllIndustries() {
+  const set = new Set();
+  for (const s of STOCKS) s.industries.forEach(i => set.add(i));
+  return [...set].sort();
+}
+
+function updatePitSelectedUI() {
+  if (elPitSelectedCount) elPitSelectedCount.textContent = `Selected: ${pitSelected.size}`;
+}
+
+function stockCurrentPrice(sym) {
+  const s = getStock(sym);
+  return state.prices[sym] ?? s.start;
+}
+
+function getVisibleStocks() {
+  let list = STOCKS.slice();
+
+  if (pitFilterIndustry !== "ALL") {
+    list = list.filter(s => s.industries.includes(pitFilterIndustry));
+  }
+
+  if (pitSortMode !== "off") {
+    list.sort((a, b) => {
+      const pa = stockCurrentPrice(a.symbol);
+      const pb = stockCurrentPrice(b.symbol);
+      return pitSortMode === "asc" ? (pa - pb) : (pb - pa);
+    });
+  }
+
+  return list;
+}
+
+function applyBulkToSelected(delta) {
+  if (!state.started) {
+    alert("Start a session first.");
+    return;
+  }
+  if (!pitSelected.size) {
+    alert("Select at least one stock first.");
+    return;
+  }
+
+  const amt = Number(elPitBulkAmt?.value ?? 0);
+  if (!Number.isFinite(amt) || amt <= 0) {
+    alert("Enter a valid bulk amount (greater than 0).");
+    return;
+  }
+
+  const signed = delta > 0 ? amt : -amt;
+
+  const touched = [];
+  for (const sym of pitSelected) {
+    const s = getStock(sym);
+    if (!s) continue;
+
+    const before = state.prices[sym] ?? s.start;
+    const after = clampPrice(before + signed);
+    state.prices[sym] = after;
+
+    touched.push(`${sym} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
+  }
+
+  addLog(
+    `Bulk Adjust (${signed >= 0 ? "+" : ""}${signed}) on ${pitSelected.size} stock(s)<br>` +
+    `<span class="mini muted">${touched.join(" • ")}</span>`
+  );
+
+  renderAll();
+  saveState();
+}
 
   // Toggle button styles
   if (elBtnLeaderboardViewSummary && elBtnLeaderboardViewGames) {
@@ -481,6 +569,31 @@ function buildShortMoveUI() {
   }
 }
 
+function buildPitControlsUI() {
+  if (!elPitIndustryFilter) return;
+
+  // build filter dropdown once
+  elPitIndustryFilter.innerHTML = `<option value="ALL">All Industries</option>`;
+  for (const ind of getAllIndustries()) {
+    const opt = document.createElement("option");
+    opt.value = ind;
+    opt.textContent = ind;
+    elPitIndustryFilter.appendChild(opt);
+  }
+
+  elPitIndustryFilter.value = pitFilterIndustry;
+
+  // set initial sort button label
+  if (elPitSortCur) {
+    elPitSortCur.textContent =
+      pitSortMode === "off" ? "Sort Current: Off" :
+      pitSortMode === "asc" ? "Sort Current: Low → High" :
+      "Sort Current: High → Low";
+  }
+
+  updatePitSelectedUI();
+}
+
 // ---------- Render ----------
 function renderStatus() {
   if (!state.started) {
@@ -498,39 +611,58 @@ function renderPitBoard() {
   // mobile cards
   if (elPitCards) elPitCards.innerHTML = "";
 
-  for (const s of STOCKS) {
+  const list = getVisibleStocks();
+
+  // keep select-all checkbox in sync (only for visible rows)
+  if (elPitSelectAll) {
+    const visibleSyms = list.map(s => s.symbol);
+    const allVisibleSelected = visibleSyms.length > 0 && visibleSyms.every(sym => pitSelected.has(sym));
+    elPitSelectAll.checked = allVisibleSelected;
+  }
+
+  for (const s of list) {
     const cur = state.prices[s.symbol] ?? s.start;
 
     // table row
     const tr = document.createElement("tr");
     const industries = s.industries.map(x => `<span class="tag">${x}</span>`).join("");
-     const curCell = `
-        <td>
-          <button
-            type="button"
-            class="pitPriceBtn"
-            data-action="editPrice"
-            data-symbol="${s.symbol}"
-            title="Click to manually set price"
-          >
-            $${fmtMoney(cur)}
-          </button>
-        </td>
-      `;
+
+    const checked = pitSelected.has(s.symbol) ? "checked" : "";
+
+    const curCell = `
+      <td>
+        <button
+          type="button"
+          class="pitPriceBtn"
+          data-action="editPrice"
+          data-symbol="${s.symbol}"
+          title="Click to manually set price"
+        >
+          $${fmtMoney(cur)}
+        </button>
+      </td>
+    `;
+
     tr.innerHTML = `
-        <td><strong>${s.symbol}</strong></td>
-        <td>${s.name}</td>
-        <td>${industries}</td>
-        <td>$${fmtMoney(s.dividend)}</td>
-        <td>$${fmtMoney(s.start)}</td>
-        ${curCell}
-      `;
+      <td class="selectCol">
+        <input class="pitSelect" type="checkbox" data-symbol="${s.symbol}" ${checked} />
+      </td>
+      <td><strong>${s.symbol}</strong></td>
+      <td>${s.name}</td>
+      <td>${industries}</td>
+      <td>$${fmtMoney(s.dividend)}</td>
+      <td>$${fmtMoney(s.start)}</td>
+      ${curCell}
+    `;
     elPitTableBody.appendChild(tr);
 
-    // card
+    // card (mobile)
     if (elPitCards) {
       const card = document.createElement("div");
       card.className = "pitCard";
+
+      const cChecked = pitSelected.has(s.symbol) ? "checked" : "";
+
       card.innerHTML = `
         <div class="pitRow1">
           <div class="pitLeft">
@@ -539,15 +671,26 @@ function renderPitBoard() {
               <span class="pitName">${s.name}</span>
             </div>
           </div>
+
+          <label class="mini muted" style="display:flex; align-items:center; gap:8px;">
+            <input class="pitSelect" type="checkbox" data-symbol="${s.symbol}" ${cChecked} />
+            Select
+          </label>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px;">
           <button
-           type="button"
-           class="pitPriceBtn pitCur"
-           data-action="editPrice"
-           data-symbol="${s.symbol}"
-           title="Tap to manually set price"
-         >
-           $${fmtMoney(cur)}
-         </button>
+            type="button"
+            class="pitPriceBtn pitCur"
+            data-action="editPrice"
+            data-symbol="${s.symbol}"
+            title="Tap to manually set price"
+          >
+            $${fmtMoney(cur)}
+          </button>
+          <div class="mini muted" style="white-space:nowrap;">
+            Start: <strong>$${fmtMoney(s.start)}</strong>
+          </div>
         </div>
 
         <div class="pitRow2">
@@ -556,13 +699,15 @@ function renderPitBoard() {
 
         <div class="pitRow3">
           <div><b>Div</b>$${fmtMoney(s.dividend)}</div>
-          <div><b>Start</b>$${fmtMoney(s.start)}</div>
           <div><b>Move</b>${s.moves.low}/${s.moves.mid}/${s.moves.high}</div>
+          <div><b>Now</b>$${fmtMoney(cur)}</div>
         </div>
       `;
       elPitCards.appendChild(card);
     }
   }
+
+  updatePitSelectedUI();
 }
 
 function renderPlayers() {
@@ -1140,6 +1285,70 @@ if (elBtnLeaderboardViewGames) {
   });
 }
 
+// Pit board: filter
+if (elPitIndustryFilter) {
+  elPitIndustryFilter.addEventListener("change", () => {
+    pitFilterIndustry = elPitIndustryFilter.value || "ALL";
+    renderPitBoard();
+  });
+}
+
+// Pit board: sort toggle button
+function togglePitSort() {
+  pitSortMode = pitSortMode === "off" ? "asc" : (pitSortMode === "asc" ? "desc" : "off");
+  if (elPitSortCur) {
+    elPitSortCur.textContent =
+      pitSortMode === "off" ? "Sort Current: Off" :
+      pitSortMode === "asc" ? "Sort Current: Low → High" :
+      "Sort Current: High → Low";
+  }
+  renderPitBoard();
+}
+if (elPitSortCur) elPitSortCur.addEventListener("click", togglePitSort);
+if (elPitCurHeader) elPitCurHeader.addEventListener("click", togglePitSort);
+
+// Pit board: select checkboxes (table + mobile)
+document.addEventListener("change", (e) => {
+  const chk = e.target.closest(".pitSelect");
+  if (!chk) return;
+
+  const sym = chk.getAttribute("data-symbol");
+  if (!sym) return;
+
+  if (chk.checked) pitSelected.add(sym);
+  else pitSelected.delete(sym);
+
+  updatePitSelectedUI();
+  renderPitBoard(); // keeps select-all synced + re-renders both table/cards
+});
+
+// Pit board: select all visible
+if (elPitSelectAll) {
+  elPitSelectAll.addEventListener("change", () => {
+    const list = getVisibleStocks();
+    if (elPitSelectAll.checked) {
+      list.forEach(s => pitSelected.add(s.symbol));
+    } else {
+      list.forEach(s => pitSelected.delete(s.symbol));
+    }
+    updatePitSelectedUI();
+    renderPitBoard();
+  });
+}
+
+// Pit board: bulk adjust buttons
+if (elPitBulkMinus) elPitBulkMinus.addEventListener("click", () => applyBulkToSelected(-1));
+if (elPitBulkPlus) elPitBulkPlus.addEventListener("click", () => applyBulkToSelected(+1));
+
+// Pit board: clear selection
+if (elPitClearSelected) {
+  elPitClearSelected.addEventListener("click", () => {
+    pitSelected.clear();
+    updatePitSelectedUI();
+    renderPitBoard();
+  });
+}
+
 // ---------- Init ----------
 function init() {
   loadState();
@@ -1150,6 +1359,7 @@ function init() {
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
+  buildPitControlsUI();
 
   if (state.started) {
     for (const p of state.players) ensureHoldings(p);
