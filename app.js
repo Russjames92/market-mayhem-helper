@@ -1581,7 +1581,22 @@ function setupPitToggle() {
 
 // ---------- Events ----------
 elPlayerCount.addEventListener("change", buildSetupInputs);
-elBtnStart.addEventListener("click", startSession);
+elBtnStart.addEventListener("click", () => {
+  if (state.started) {
+    const ok = confirm(
+      "⚠️ Rebuild Session?\n\n" +
+      "This will END the current game and RESET:\n" +
+      "• All player cash & holdings\n" +
+      "• All stock prices\n" +
+      "• The game log\n\n" +
+      "This action cannot be undone."
+    );
+    if (!ok) return;
+  }
+
+  startSession();
+});
+
 
 elBtnApplyMarketMover.addEventListener("click", applyMarketMover);
 elBtnPayDividends.addEventListener("click", payDividendsConfirmed);
