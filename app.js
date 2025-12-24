@@ -274,14 +274,36 @@ function renderLeaderboard() {
           .join("");
 
         return `
-          <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
-            <div class="mini muted">${game.ts}</div>
-            <div style="margin-top:6px; font-size:13px; font-weight:900;">
-              Winner: ${game.winner}
-            </div>
-            <div style="margin-top:8px;">${rows}</div>
-          </div>
-        `;
+           <div style="position:relative; padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
+             
+             <button
+               type="button"
+               class="lbDel"
+               data-lb-del="${game.id}"
+               title="Delete this game"
+               style="
+                 position:absolute;
+                 top:10px;
+                 right:10px;
+                 width:34px;
+                 height:34px;
+                 border-radius:10px;
+                 border:1px solid var(--border2);
+                 background:rgba(0,0,0,.25);
+                 color:var(--text);
+                 font-weight:900;
+                 cursor:pointer;
+                 line-height:1;
+               "
+             >✕</button>
+         
+             <div class="mini muted">${game.ts}</div>
+             <div style="margin-top:6px; font-size:13px; font-weight:900;">
+               Winner: ${game.winner}
+             </div>
+             <div style="margin-top:8px;">${rows}</div>
+           </div>
+         `;
       })
       .join("");
 
@@ -359,6 +381,18 @@ function renderLeaderboard() {
   `;
 }
 
+function deleteLeaderboardGameById(gameId) {
+  const idx = leaderboard.findIndex(g => g && g.id === gameId);
+  if (idx === -1) return;
+
+  const g = leaderboard[idx];
+  const ok = confirm(`Delete this recorded game?\n\n${g?.ts || ""}\nWinner: ${g?.winner || "—"}`);
+  if (!ok) return;
+
+  leaderboard.splice(idx, 1);
+  saveLeaderboard();
+  renderLeaderboard();
+}
 
 function updatePitSelectedUI() {
   if (!elPitSelectedCount) return;
@@ -1247,10 +1281,11 @@ function endSession(force = false) {
 
   // store on leaderboard
   const entry = {
-    ts: nowTs(),
-    winner,
-    placements
-  };
+     id: crypto.randomUUID ? crypto.randomUUID() : `g_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+     ts: nowTs(),
+     winner,
+     placements
+   };
 
   leaderboard.push(entry);
   saveLeaderboard();
@@ -1325,6 +1360,7 @@ elBtnPrintLog.addEventListener("click", printGameLog);
 elBtnEndSession.addEventListener("click", endSession);
 elBtnClearLeaderboard.addEventListener("click", clearLeaderboard);
 
+
 if (elBtnLeaderboardViewSummary) {
   elBtnLeaderboardViewSummary.addEventListener("click", () => {
     leaderboardView = "summary";
@@ -1337,6 +1373,12 @@ if (elBtnLeaderboardViewGames) {
     renderLeaderboard();
   });
 }
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-lb-del]");
+  if (!btn) return;
+  deleteLeaderboardGameById(btn.getAttribute("data-lb-del"));
+});
 
 // Pit board: filter
 if (elPitIndustryFilter) {
