@@ -351,7 +351,9 @@ function applyBulkToSelected(delta) {
       })
       .join("");
 
-    return;
+    if (!session) {
+        console.warn("No active session");
+      }
   }
 
   // Summary rankings table
