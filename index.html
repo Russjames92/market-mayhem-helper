@@ -832,8 +832,14 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   <main>
     <!-- LEFT COLUMN -->
     <section class="card" id="setupCard">
-      <h2>1) Session Setup</h2>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h2 style="margin:0;">1) Session Setup</h2>
+        <button type="button" id="btnToggleSetup" style="white-space:nowrap;">Collapse</button>
+      </div>
       <div class="sub">Choose number of players (2–4), names, and starting cash. Then start session.</div>
+      
+      <div id="sessionSetupBody">
+        <!-- everything in Session Setup (including Live Session block) should be INSIDE this -->
       <div class="divider"></div>
 
         <h2>Live Session (Host + Viewers)</h2>
@@ -843,6 +849,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
         
         <div class="row">
           <div class="pill" id="liveRolePill">Live: OFF</div>
+          <div class="pill" id="liveViewersPill" style="margin-left:10px;">Viewers: —</div>
         </div>
         
         <div class="row">
@@ -891,6 +898,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
       <button class="primary" id="btnStart">Start / Rebuild Session</button>
 
       <div class="divider"></div>
+    </div>
 
       <h2>2) Market Mover</h2>
       <div class="sub">
