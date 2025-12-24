@@ -285,6 +285,77 @@ function renderLeaderboard() {
     if (!session) {
         console.warn("No active session");
       }
+     // Summary rankings table
+     const { totalGames, rows } = buildLeaderboardStats();
+      
+      const isMobileLb = window.matchMedia("(max-width: 700px)").matches;
+      
+      if (isMobileLb) {
+        // Mobile: card list
+        elLeaderboard.innerHTML = `
+          <div class="mini muted" style="margin-bottom:10px;">
+            Total completed games: <strong>${totalGames}</strong>
+          </div>
+      
+          <div style="display:grid; gap:10px;">
+            ${rows.map((r, idx) => `
+              <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2);">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
+                  <div style="font-weight:900; font-size:14px;">
+                    <span style="margin-right:8px;">${rankLabel(idx)}</span>${r.name}
+                  </div>
+                  <div style="font-weight:900; font-size:14px; white-space:nowrap;">
+                    ${r.wins}W
+                  </div>
+                </div>
+      
+                <div class="mini muted" style="margin-top:6px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                  <span>Games: <strong>${r.games}</strong></span>
+                  <span>Total Assets: <strong>$${fmtMoney(r.totalAssets)}</strong></span>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+        return;
+      }
+      
+      // Desktop: keep the table view
+      const tableRows = rows
+        .map((r, idx) => `
+          <tr>
+            <td><strong>${rankLabel(idx)}</strong></td>
+            <td><strong>${r.name}</strong></td>
+            <td>${r.games}</td>
+            <td><strong>${r.wins}</strong></td>
+            <td>$${fmtMoney(r.totalAssets)}</td>
+          </tr>
+        `)
+        .join("");
+      
+      elLeaderboard.innerHTML = `
+        <div class="mini muted" style="margin-bottom:10px;">
+          Total completed games: <strong>${totalGames}</strong>
+        </div>
+      
+        <div style="overflow:auto; border:1px solid var(--border2); border-radius:12px;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Rank</th>
+                <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Player</th>
+                <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Games</th>
+                <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Wins</th>
+                <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Total Assets</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </div>
+      `;
+   }
   }
 
 function updatePitSelectedUI() {
@@ -352,78 +423,6 @@ function applyBulkToSelected(delta) {
 
   renderAll();
   saveState();
-}
-
-  // Summary rankings table
-  const { totalGames, rows } = buildLeaderboardStats();
-   
-   const isMobileLb = window.matchMedia("(max-width: 700px)").matches;
-   
-   if (isMobileLb) {
-     // Mobile: card list
-     elLeaderboard.innerHTML = `
-       <div class="mini muted" style="margin-bottom:10px;">
-         Total completed games: <strong>${totalGames}</strong>
-       </div>
-   
-       <div style="display:grid; gap:10px;">
-         ${rows.map((r, idx) => `
-           <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2);">
-             <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
-               <div style="font-weight:900; font-size:14px;">
-                 <span style="margin-right:8px;">${rankLabel(idx)}</span>${r.name}
-               </div>
-               <div style="font-weight:900; font-size:14px; white-space:nowrap;">
-                 ${r.wins}W
-               </div>
-             </div>
-   
-             <div class="mini muted" style="margin-top:6px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-               <span>Games: <strong>${r.games}</strong></span>
-               <span>Total Assets: <strong>$${fmtMoney(r.totalAssets)}</strong></span>
-             </div>
-           </div>
-         `).join("")}
-       </div>
-     `;
-     return;
-   }
-   
-   // Desktop: keep the table view
-   const tableRows = rows
-     .map((r, idx) => `
-       <tr>
-         <td><strong>${rankLabel(idx)}</strong></td>
-         <td><strong>${r.name}</strong></td>
-         <td>${r.games}</td>
-         <td><strong>${r.wins}</strong></td>
-         <td>$${fmtMoney(r.totalAssets)}</td>
-       </tr>
-     `)
-     .join("");
-   
-   elLeaderboard.innerHTML = `
-     <div class="mini muted" style="margin-bottom:10px;">
-       Total completed games: <strong>${totalGames}</strong>
-     </div>
-   
-     <div style="overflow:auto; border:1px solid var(--border2); border-radius:12px;">
-       <table style="width:100%; border-collapse:collapse;">
-         <thead>
-           <tr>
-             <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Rank</th>
-             <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Player</th>
-             <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Games</th>
-             <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Wins</th>
-             <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Total Assets</th>
-           </tr>
-         </thead>
-         <tbody>
-           ${tableRows}
-         </tbody>
-       </table>
-     </div>
-   `;
 }
 
 function normName(name) {
