@@ -6,834 +6,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#0b0b0c" />
   <title>Market Mayhem Helper</title>
-  <style>
-:root{
-  --bg:#0b0b0c;
-  --panel:#111114;
-  --panel2:#0e0e10;
-  --border:#232323;
-  --border2:#2a2a2a;
-  --text:#f2f2f2;
-  --muted:rgba(242,242,242,.72);
-  --shadow:0 10px 30px rgba(0,0,0,.35);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-}
 
-*{ box-sizing:border-box; }
-body{ margin:0; background:var(--bg); color:var(--text); }
-
-/* =========================
-   HEADER
-   ========================= */
-header{
-  padding:14px 16px;
-  border-bottom:1px solid #222;
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:space-between;
-}
-header > div:first-child{ min-width:0; }
-header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
-
-.pill{
-  font-size:12px;
-  opacity:.85;
-  padding:6px 10px;
-  border:1px solid var(--border2);
-  border-radius:999px;
-  white-space:nowrap;
-}
-
-/* Header actions grid (supports either .row or .header-actions) */
-header .header-actions,
-header .row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  grid-template-areas:
-    "status status"
-    "save   reset";
-  gap:10px;
-  align-items:stretch;
-  justify-items:stretch;
-  width:min(560px, 100%);
-  max-width:none;
-}
-header .header-actions > *,
-header .row > *{ min-width:0; }
-
-#sessionStatus{
-  grid-area:status;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-#btnSave{ grid-area:save; }
-#btnReset{ grid-area:reset; }
-
-header button{
-  width:100%;
-  border-radius:16px;
-}
-
-@media (max-width:700px){
-  header{ align-items:flex-start; }
-  header .header-actions,
-  header .row{ width:min(420px, 100%); }
-}
-
-/* =========================
-   LAYOUT
-   ========================= */
-main{
-  padding:14px;
-  display:grid;
-  grid-template-columns:420px 1fr;
-  gap:14px;
-}
-@media (max-width:1000px){
-  main{ grid-template-columns:1fr; }
-}
-
-.rightCol{
-  display:grid;
-  gap:14px;
-}
-
-/* =========================
-   CARDS + TYPOGRAPHY
-   ========================= */
-.card{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:14px;
-  box-shadow:var(--shadow);
-}
-.card h2{ margin:0 0 8px; font-size:15px; font-weight:900; }
-.sub{ margin:0 0 10px; font-size:12px; color:var(--muted); line-height:1.35; }
-.muted{ color:var(--muted); }
-.mini{ font-size:11px; color:var(--muted); }
-.divider{ height:1px; background:#222; margin:12px 0; }
-
-/* =========================
-   FORMS + BUTTONS
-   ========================= */
-label{ display:block; margin-bottom:6px; font-size:12px; color:var(--muted); }
-
-input,select,button,textarea{
-  width:100%;
-  background:var(--panel2);
-  color:var(--text);
-  border:1px solid var(--border2);
-  border-radius:12px;
-  padding:10px;
-  outline:none;
-}
-input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
-
-button{ cursor:pointer; font-weight:800; }
-button.primary{ background:#1e1e24; border-color:#3a3a3a; }
-button.danger{ background:#241214; border-color:#5a2a2e; }
-button:disabled{ opacity:.55; cursor:not-allowed; }
-
-/* Helpers */
-.row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-.row > *{ flex:1; min-width:140px; }
-
-.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-@media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
-
-/* =========================
-   LOG
-   ========================= */
-.log{
-  height:220px;
-  overflow:auto;
-  background:var(--panel2);
-  border:1px solid var(--border2);
-  border-radius:14px;
-  padding:10px;
-  font-size:12px;
-}
-.log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
-.log .item:last-child{ border-bottom:none; }
-
-/* =========================
-   INDUSTRIES (Market Mover)
-   ========================= */
-.industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-@media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
-
-.industry-box{
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:10px;
-  background:var(--panel2);
-}
-
-.industry-box .top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.industry-box .top > div:first-child{
-  flex:1 1 auto;
-  min-width:0;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.industry-box .top input[type="checkbox"]{
-  width:auto;
-  transform:scale(1.15);
-  flex:0 0 auto;
-}
-
-.industry-box .top strong{
-  flex:1 1 auto;
-  min-width:0;
-  font-size:12px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-/* Dice dropdown text styling */
-#diceTotal{
-  font-size:16px;
-  font-weight:900;
-  letter-spacing:.3px;
-}
-
-/* indDir select: compact, emoji-centered, NO ARROW, clear state */
-.industry-box .top select.indDir{
-  width:52px;
-  flex:0 0 auto;
-  padding:0;                 /* no extra space needed since no caret */
-  height:40px;
-  border-radius:12px;
-
-  font-size:20px;
-  font-weight:900;
-  line-height:1;
-  text-align:center;
-  text-align-last:center;
-  cursor:pointer;
-
-  background:var(--panel2);
-  color:#e6e6e6;
-  border:1px solid var(--border2);
-
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
-
-  /* helps keep the emoji visually centered */
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* UP selected */
-.industry-box .top select.indDir:has(option[value="up"]:checked){
-  color:#9fe3b2;
-  border-color:rgba(159,227,178,.55);
-  background:
-    linear-gradient(180deg, rgba(159,227,178,.14), rgba(0,0,0,0)),
-    var(--panel2);
-}
-
-/* DOWN selected */
-.industry-box .top select.indDir:has(option[value="down"]:checked){
-  color:#ff9b9b;
-  border-color:rgba(255,155,155,.55);
-  background:
-    linear-gradient(180deg, rgba(255,155,155,.14), rgba(0,0,0,0)),
-    var(--panel2);
-}
-
-.industry-box .top select.indDir:focus{
-  border-color:#666;
-  box-shadow:0 0 0 2px rgba(255,255,255,.08);
-}
-
-.tag{
-  font-size:11px;
-  padding:4px 8px;
-  border:1px solid var(--border2);
-  border-radius:999px;
-  display:inline-block;
-  opacity:.9;
-  white-space:nowrap;
-  margin:4px 6px 0 0;
-}
-
-/* =========================
-   PIT BOARD
-   ========================= */
-.pitHead{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-}
-
-.pitToggle{
-  display:none;
-  width:auto;
-  padding:10px 12px;
-  border-radius:10px;
-  white-space:nowrap;
-}
-
-#pitTableWrap{ display:block; }
-#pitTable{ width:100%; border-collapse:collapse; }
-#pitTable th,#pitTable td{
-  border-bottom:1px solid #222;
-  padding:10px 8px;
-  font-size:12px;
-  text-align:left;
-  vertical-align:top;
-}
-#pitTable th{
-  position:sticky;
-  top:0;
-  background:var(--panel);
-  z-index:2;
-  opacity:.9;
-  font-weight:900;
-}
-
-#pitCards{ display:none; }
-
-@media (max-width:700px){
-  .pitToggle{ display:inline-block; }
-  #pitTableWrap{ display:none; }
-  #pitBoardSection.expanded #pitCards{ display:grid; gap:10px; }
-}
-
-.pitCard{
-  background:var(--panel2);
-  border:1px solid var(--border2);
-  border-radius:12px;
-  padding:10px;
-  width:100%;
-}
-.pitRow1{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-  gap:10px;
-}
-.pitLeft{ min-width:0; }
-.pitSymLine{ display:flex; gap:10px; align-items:baseline; min-width:0; }
-.pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; }
-.pitName{
-  font-size:13px;
-  opacity:.9;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:55vw;
-}
-.pitCur{ font-weight:900; font-size:20px; white-space:nowrap; }
-
-.pitRow2{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-.pitRow3{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-top:8px;
-  font-size:12px;
-  color:var(--muted);
-}
-.pitRow3 div{
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:10px;
-  padding:6px 8px;
-  min-width:0;
-}
-.pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
-
-/* =========================
-   PLAYERS (desktop-only polish)
-   ========================= */
-@media (min-width:701px){
-  #playersArea .card > div:first-child > div:first-child{
-    max-width:420px;
-    flex:0 0 420px;
-    min-width:320px;
-  }
-  #playersArea .card > div:first-child > div:last-child{
-    flex:1 1 380px;
-    min-width:380px;
-  }
-
-  #playersArea .card > div:first-child > div:first-child > div:first-child{
-    font-size:18px;
-    font-weight:900;
-    letter-spacing:.3px;
-  }
-  #playersArea .card > div:first-child > div:first-child .mini.muted{
-    font-size:13px;
-    line-height:1.4;
-    white-space:normal;
-  }
-  #playersArea .card > div:first-child > div:first-child strong{
-    font-size:14px;
-    color:var(--text);
-  }
-}
-
-/* =========================
-   LEADERBOARD
-   ========================= */
-#leaderboard .tableWrap{
-  overflow:auto;
-  border:1px solid #222;
-  border-radius:14px;
-}
-
-#leaderboard table{
-  width:100%;
-  border-collapse:collapse;
-  table-layout:fixed;
-}
-
-#leaderboard th,
-#leaderboard td{
-  padding:12px 12px;
-  border-bottom:1px solid #222;
-  font-size:13px;
-  vertical-align:middle;
-  text-align:center;
-}
-
-#leaderboard th{
-  font-weight:900;
-  opacity:.95;
-}
-
-#leaderboard th:nth-child(1),
-#leaderboard td:nth-child(1){
-  width:90px;
-  font-size:18px;
-}
-
-#leaderboard th:nth-child(2),
-#leaderboard td:nth-child(2){
-  width:42%;
-  font-weight:900;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-#leaderboard th:nth-child(3),
-#leaderboard td:nth-child(3),
-#leaderboard th:nth-child(4),
-#leaderboard td:nth-child(4){
-  width:12%;
-}
-
-#leaderboard th:nth-child(5),
-#leaderboard td:nth-child(5){
-  width:22%;
-  font-weight:900;
-  white-space:nowrap;
-}
-
-@media (max-width:700px){
-  #leaderboard table{ min-width:560px; }
-  #leaderboard th, #leaderboard td{ padding:10px 10px; font-size:12px; }
-  #btnLeaderboardViewSummary,
-  #btnLeaderboardViewGames{ min-width:0; padding:10px 10px; }
-}
-
-#leaderboard thead th{ text-align:center !important; }
-#leaderboard td{ font-variant-numeric: tabular-nums; }
-
-/* =========================
-   PRINT (log export)
-   ========================= */
-@media print{
-  body{ background:#fff !important; color:#000 !important; }
-  header, main > section:not(.rightCol), .rightCol > section:not(:last-child){ display:none !important; }
-  .rightCol{ display:block !important; }
-  .card{ box-shadow:none !important; border:none !important; background:#fff !important; }
-  .log{ height:auto !important; overflow:visible !important; border:none !important; padding:0 !important; }
-  button{ display:none !important; }
-  .item{ border-bottom:1px solid #ddd !important; }
-  .mini{ color:#333 !important; }
-}
-
-    .pitPriceBtn{
-    width:auto;
-    background:transparent;
-    border:1px solid transparent;
-    color:var(--text);
-    font-weight:900;
-    padding:2px 6px;
-    border-radius:10px;
-    cursor:pointer;
-  }
-  .pitPriceBtn:hover{
-    border-color:rgba(255,255,255,.14);
-    background:rgba(255,255,255,.04);
-  }
-  .pitPriceBtn:focus{
-    outline:none;
-    border-color:rgba(255,255,255,.22);
-    box-shadow:0 0 0 2px rgba(255,255,255,.08);
-  }
-    /* =========================
-   PIT BOARD CONTROLS (Sort / Filter / Bulk Adjust)
-   ========================= */
-.pitControls{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-  margin:10px 0 12px;
-}
-.pitControls > *{ flex:0 0 auto; }
-
-.pitControls .spacer{
-  flex:1 1 auto;
-  min-width:120px;
-}
-
-.pitControls .miniLabel{
-  font-size:12px;
-  color:var(--muted);
-  margin-right:6px;
-  white-space:nowrap;
-}
-
-.pitControls select,
-.pitControls input{
-  width:auto;
-  min-width:180px;
-}
-
-.pitControls .bulkAmt{
-  min-width:120px;
-  width:120px;
-  text-align:center;
-  font-weight:900;
-}
-
-.pitControls button{
-  width:auto;
-  padding:10px 12px;
-  border-radius:12px;
-}
-
-.pitControls .countPill{
-  font-size:12px;
-  padding:6px 10px;
-  border:1px solid var(--border2);
-  border-radius:999px;
-  white-space:nowrap;
-  opacity:.9;
-}
-
-/* Checkbox column on pit table */
-#pitTable th.selectCol,
-#pitTable td.selectCol{
-  width:44px;
-  text-align:center;
-}
-#pitTable input.pitSelect{
-  width:auto;
-  transform:scale(1.15);
-}
-
-/* Make Current header look clickable-ish */
-#pitCurHeader{
-  cursor:pointer;
-  user-select:none;
-}
-/* --- Trade Modal --- */
-.mmModalBack {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.55);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
-  z-index: 9999;
-}
-
-.mmModalBack.open { display: flex; }
-
-.mmModal {
-  width: min(980px, 100%);
-  border: 1px solid var(--border2);
-  border-radius: 18px;
-  background: var(--panel2);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
-.mmModalHeader {
-  display:flex;
-  justify-content: space-between;
-  align-items:center;
-  padding: 14px 14px;
-  border-bottom: 1px solid var(--border2);
-}
-
-.mmModalTitle {
-  font-weight: 900;
-  font-size: 14px;
-}
-
-.mmModalClose {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid var(--border2);
-  background: transparent;
-  color: var(--text);
-}
-
-.mmModalBody { padding: 14px; }
-
-.mmTradeRow {
-  display:flex;
-  gap: 12px;
-  align-items:center;
-  flex-wrap: wrap;
-}
-
-.mmTradeRow .field {
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  flex: 1;
-  min-width: 260px;
-}
-
-.mmTradeRow select {
-  width: 100%;
-}
-
-.mmTradeShares {
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  margin-left: auto;
-}
-
-.mmTradePreview {
-  margin-top: 10px;
-}
-
-.mmTradeBtns {
-  margin-top: 14px;
-  display:grid;
-  gap: 10px;
-}
-
-.mmTradeBtns button {
-  width: 100%;
-  padding: 16px 14px;
-  font-weight: 900;
-  border-radius: 14px;
-}
-
-#pitControlsRow{
-  flex-wrap:wrap;
-}
-#pitControlsRow label{
-  margin:0;
-}
-#pitSelectAll{
-  width:auto;
-}
-
-/* ===== Pit Board Mobile Cleanup ===== */
-@media (max-width: 700px) {
-  /* Controls area: stack cleanly */
-  .pit-controls,
-  .pitControls,
-  #pitControls {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    align-items: stretch;
-  }
-
-  /* If your controls are inside a row, force wrap */
-  .pit-controls .row,
-  .pitControls .row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  /* Put filter + sort on their own nice rows */
-  #pitIndustryFilter {
-    width: 100%;
-  }
-
-  #pitSortCur {
-    width: 100%;
-  }
-
-  /* Selected pill + bulk tools: 2-column grid */
-  .pitBulkRow,
-  .pit-bulk-row,
-  #pitBulkRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    align-items: center;
-  }
-
-  /* Make number input behave */
-  #pitBulkAmt {
-    width: 100%;
-    text-align: center;
-  }
-
-  /* Buttons fill width and look uniform */
-  #pitBulkMinus,
-  #pitBulkPlus,
-  #pitClearSelected,
-  #btnPitToggle,
-  #pitSortCur {
-    width: 100%;
-  }
-
-  /* Card layout: tighten spacing */
-  .pitCard {
-    padding: 12px;
-    border-radius: 16px;
-  }
-
-  .pitRow1 {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  /* Checkbox lives in top-right, never floats away */
-  .pitSelectCard {
-    width: 22px;
-    height: 22px;
-    flex: 0 0 auto;
-    margin: 2px 0 0 0;
-  }
-
-  /* Price button: larger tap target */
-  .pitPriceBtn.pitCur {
-    min-width: 120px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    font-weight: 900;
-    font-size: 20px;
-  }
-
-  /* Reduce tag clutter, wrap nicely */
-  .pitRow2 {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  /* Bottom stats: clean 3-up grid */
-  .pitRow3 {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  .pitRow3 > div {
-    padding: 10px;
-    border-radius: 12px;
-  }
-}
-    
-.pitControls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pitBulkRow {
-  display: flex;
-  gap: 8px;
-}
-
-.pitBulkRow button {
-  flex: 1;
-}
-
-#pitBulkAmt {
-  width: 70px;
-  text-align: center;
-}
-
-/* Make pit header controls share one consistent width on desktop */
-@media (min-width: 701px) {
-  .pitControls {
-    /* pick the width you want the header controls to be */
-    max-width: 760px;
-    width: 100%;
-    margin: 0 auto;              /* centers that block in the pit board */
-    align-items: stretch;         /* children can fill full width */
-  }
-
-  .pitBulkRow {
-    width: 100%;
-  }
-
-  /* Make these match the bulk row width */
-  .pitControls > #pitIndustryFilter,
-  .pitControls > #pitSortCur,
-  .pitControls > #pitClearSelected,
-  .pitControls > #pitSelectedCount {
-    width: 100%;
-  }
-
-  /* Optional: keep Selected aligned nicely */
-  #pitSelectedCount {
-    text-align: center;
-  }
-}
-/* ===== Collapsible section headers ===== */
-[id^="btnToggle"]{
-  width:auto !important;
-  padding:8px 12px !important;
-  border-radius:999px !important;
-  font-size:12px !important;
-  font-weight:900 !important;
-  letter-spacing:.2px;
-  background:rgba(255,255,255,.03) !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  color:var(--text) !important;
-}
-
-[id^="btnToggle"]:hover{
-  background:rgba(255,255,255,.06) !important;
-  border-color:rgba(255,255,255,.16) !important;
-}
-
-[id^="btnToggle"]:active{
-  transform:translateY(1px);
-}
-</style>
+  <!-- External stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
@@ -842,7 +17,8 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
       <h1>Market Mayhem: Exchange</h1>
       <div class="mini muted">Physical board game + fast tracking (Pit Board + Player Assets)</div>
     </div>
-    <div class="row header-actions">
+
+    <div class="header-actions">
       <div class="pill" id="sessionStatus">No session loaded</div>
       <button class="primary" id="btnSave">Save</button>
       <button class="danger" id="btnReset">Reset</button>
@@ -851,297 +27,275 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
 
   <main>
     <!-- LEFT COLUMN -->
-    <section class="card" id="setupCard">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <h2 style="margin:0;">1) Session Setup</h2>
-        <button type="button" id="btnToggleSetup" style="white-space:nowrap;">Collapse</button>
-      </div>
-      <div class="sub">Choose number of players (2–4), names, and starting cash. Then start session.</div>
-      
-      <div id="sessionSetupBody">
-        <!-- everything in Session Setup (including Live Session block) should be INSIDE this -->
-      <div class="divider"></div>
+    <section>
+      <!-- 1) Session Setup -->
+      <section class="card" id="setupCard">
+        <div class="sectionHead">
+          <h2>1) Session Setup</h2>
+          <button type="button" class="btnToggle" id="btnToggleSetup">Collapse</button>
+        </div>
+        <div class="sub">Choose number of players (2–4), names, and starting cash. Then start session.</div>
 
-        <h2>Live Session (Host + Viewers)</h2>
-        <div class="sub">
-          Host creates a live session and shares the link/code so everyone can view the same game state in real time.
-        </div>
-        
-        <div class="row">
-          <div class="pill" id="liveRolePill">Live: OFF</div>
-          <div class="pill" id="liveViewersPill" style="margin-left:10px;">Viewers: —</div>
-        </div>
-        
-        <div class="row">
-          <button class="primary" id="btnLiveCreate" type="button">Create Live Session (Host)</button>
-        
-          <div>
-            <label>Join code</label>
-            <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2" />
+        <div id="sessionSetupBody">
+          <div class="divider"></div>
+
+          <h2>Live Session (Host + Viewers)</h2>
+          <div class="sub">
+            Host creates a live session and shares the link/code so everyone can view the same game state in real time.
           </div>
-        
-          <button id="btnLiveJoin" type="button">Join Live Session (Viewer)</button>
-        </div>
-        
-        <div class="row">
-          <div style="flex:1; min-width:260px;">
-            <label>Share link</label>
-            <input id="liveShareLink" type="text" readonly value="" />
+
+          <div class="row">
+            <div class="pill" id="liveRolePill">Live: OFF</div>
+            <div class="pill" id="liveViewersPill">Viewers: —</div>
           </div>
-          <button id="btnCopyLiveLink" type="button">Copy Link</button>
-          <button class="danger" id="btnLiveLeave" type="button" disabled>Leave Live</button>
+
+          <div class="row">
+            <button class="primary" id="btnLiveCreate" type="button">Create Live Session (Host)</button>
+
+            <div>
+              <label>Join code</label>
+              <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2" />
+            </div>
+
+            <button id="btnLiveJoin" type="button">Join Live Session (Viewer)</button>
+          </div>
+
+          <div class="row">
+            <div style="flex:1; min-width:260px;">
+              <label>Share link</label>
+              <input id="liveShareLink" type="text" readonly value="" />
+            </div>
+            <button id="btnCopyLiveLink" type="button">Copy Link</button>
+            <button class="danger" id="btnLiveLeave" type="button" disabled>Leave Live</button>
+          </div>
+
+          <div class="mini muted" id="liveHint">
+            Tip: Viewers should open the share link on their phone. Host controls all actions.
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row">
+            <div>
+              <label>Number of players</label>
+              <select id="playerCount">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+              </select>
+            </div>
+            <div>
+              <label>Starting cash per player</label>
+              <input id="startingCash" type="number" min="0" step="1000" value="50000" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div id="playerInputs" class="grid2"></div>
+          <div class="divider"></div>
+
+          <button class="primary" id="btnStart">Start / Rebuild Session</button>
         </div>
-        
-        <div class="mini muted" id="liveHint">
-          Tip: Viewers should open the share link on their phone. Host controls all actions.
+      </section>
+
+      <!-- 2) Market Mover -->
+      <section class="card" id="marketMoverCard">
+        <div class="sectionHead">
+          <h2>2) Market Mover</h2>
+          <button type="button" class="btnToggle" id="btnToggleMarketMover">Collapse</button>
         </div>
+        <div class="sub">Select industries, choose up/down, then enter the 2d6 total.</div>
 
-      <div class="row">
-        <div>
-          <label>Number of players</label>
-          <select id="playerCount">
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4" selected>4</option>
-          </select>
+        <div id="marketMoverBody">
+          <div class="row">
+            <div>
+              <label>Dice total (2–12)</label>
+              <select id="diceTotal">
+                <option value="">🎲 Dice Total</option>
+                <option value="2">⚀⚀ (2)</option>
+                <option value="3">⚀⚁ (3)</option>
+                <option value="4">⚀⚂ (4)</option>
+                <option value="5">⚀⚃ (5)</option>
+                <option value="6">⚀⚄ (6)</option>
+                <option value="7">⚁⚄ (7)</option>
+                <option value="8">⚂⚄ (8)</option>
+                <option value="9">⚃⚄ (9)</option>
+                <option value="10">⚄⚄ (10)</option>
+                <option value="11">⚄⚅ (11)</option>
+                <option value="12">⚅⚅ (12)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="industry-list" id="industryList"></div>
+
+          <div class="divider"></div>
+          <button class="primary" id="btnApplyMarketMover" disabled>Apply Market Mover</button>
+
+          <div class="mini muted" id="marketMoverHint">Start a session first.</div>
         </div>
-        <div>
-          <label>Starting cash per player</label>
-          <input id="startingCash" type="number" min="0" step="1000" value="50000" />
+      </section>
+
+      <!-- 3) Quick Tools -->
+      <section class="card" id="toolsCard">
+        <div class="sectionHead">
+          <h2>3) Quick Tools</h2>
+          <button type="button" class="btnToggle" id="btnToggleTools">Collapse</button>
         </div>
-      </div>
+        <div class="sub">Common actions: dividends and short move.</div>
 
-      <div class="divider"></div>
-      <div id="playerInputs" class="grid2"></div>
-      <div class="divider"></div>
+        <div id="toolsBody">
+          <div class="row">
+            <button id="btnPayDividends" disabled>Pay Dividends (Opening Bell)</button>
+            <button id="btnShortMove" disabled>Short Sell / Short Squeeze (+/- 8)</button>
+          </div>
 
-      <button class="primary" id="btnStart">Start / Rebuild Session</button>
-
-      <div class="divider"></div>
-    </div>
-
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <h2 style="margin:0;">2) Market Mover</h2>
-        <button type="button" id="btnToggleMarketMover" style="white-space:nowrap;">Collapse</button>
-      </div>
-      <div class="sub">...</div>
-      
-      <div id="marketMoverBody">
-        <!-- Market Mover content goes here -->
-
-      <div class="row">
-        <div>
-          <label>Dice total (2–12)</label>
-          <select id="diceTotal">
-            <option value="">🎲 Dice Total</option>
-            <option value="2">⚀⚀ (2)</option>
-            <option value="3">⚀⚁ (3)</option>
-            <option value="4">⚀⚂ (4)</option>
-            <option value="5">⚀⚃ (5)</option>
-            <option value="6">⚀⚄ (6)</option>
-            <option value="7">⚁⚄ (7)</option>
-            <option value="8">⚂⚄ (8)</option>
-            <option value="9">⚃⚄ (9)</option>
-            <option value="10">⚄⚄ (10)</option>
-            <option value="11">⚄⚅ (11)</option>
-            <option value="12">⚅⚅ (12)</option>
-          </select>
+          <div class="row">
+            <div>
+              <label>Short Move Stock</label>
+              <select id="shortMoveSymbol"></select>
+            </div>
+            <div>
+              <label>Direction</label>
+              <select id="shortMoveDir">
+                <option value="up">Up (+8)</option>
+                <option value="down">Down (-8)</option>
+              </select>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-
-      <div class="divider"></div>
-      <div class="industry-list" id="industryList"></div>
-
-      <div class="divider"></div>
-      <button class="primary" id="btnApplyMarketMover" disabled>Apply Market Mover</button>
-      <div class="mini muted" id="marketMoverHint">Start a session first.</div>
-
-      <div class="divider"></div>
-
-      <h2>3) Quick Tools</h2>
-      <div class="row">
-        <button id="btnPayDividends" disabled>Pay Dividends (Opening Bell)</button>
-        <button id="btnShortMove" disabled>Short Sell / Short Squeeze (+/- 8)</button>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Short Move Stock</label>
-          <select id="shortMoveSymbol"></select>
-        </div>
-        <div>
-          <label>Direction</label>
-          <select id="shortMoveDir">
-            <option value="up">Up (+8)</option>
-            <option value="down">Down (-8)</option>
-          </select>
-        </div>
-      </div>
+      </section>
     </section>
 
     <!-- RIGHT COLUMN -->
     <section class="rightCol">
-
-      <section class="card">
-        <div class="row" style="align-items:flex-start;">
-          <div style="flex:1; min-width:220px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-              <h2 style="margin:0;">Players</h2>
-              <button type="button" id="btnTogglePlayers" style="white-space:nowrap;">Collapse</button>
-            </div>
-            
-            <div id="playersBody">
-              <!-- players area -->
-            <div class="sub">Buy/Sell in 100-share increments</div>
-          </div>
-          <div style="flex:0; min-width:180px;">
-            <button class="danger" id="btnEndSession" type="button" disabled>End Session</button>
-          </div>
+      <!-- Players -->
+      <section class="card" id="playersCard">
+        <div class="sectionHead">
+          <h2>Players</h2>
+          <button type="button" class="btnToggle" id="btnTogglePlayers">Collapse</button>
         </div>
-      
-        <div id="playersArea"></div>
-      </div>
-    </section>
-  
+
+        <div id="playersBody">
+          <div class="row" style="align-items:flex-start;">
+            <div class="sub" style="flex:1; min-width:220px;">Buy/Sell in 100-share increments</div>
+            <div style="flex:0; min-width:180px;">
+              <button class="danger" id="btnEndSession" type="button" disabled>End Session</button>
+            </div>
+          </div>
+
+          <div id="playersArea"></div>
+        </div>
+      </section>
+
+      <!-- Pit Board -->
       <section class="card" id="pitBoardSection">
-        <div class="pitHead">
-          <div>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-              <h2 style="margin:0;">3) Pit Board</h2>
-              <button type="button" id="btnTogglePitBoard" style="white-space:nowrap;">Collapse</button>
-            </div>
-            
-            <div id="pitBoardBody">
-              <!-- Pit Board content goes here -->
-
-            <div class="sub">Desktop shows the table. Mobile uses an expandable card view.</div>
-          </div>
-          <button id="btnPitToggle" class="pitToggle" type="button">Show Pit Board</button>
+        <div class="sectionHead">
+          <h2>4) Pit Board</h2>
+          <button type="button" class="btnToggle" id="btnTogglePitBoard">Collapse</button>
         </div>
-          <div class="pitControls">
 
+        <div id="pitBoardBody">
+          <div class="sub">Desktop shows table. Mobile uses expandable card view.</div>
+
+          <div class="pitHead">
+            <button id="btnPitToggle" class="pitToggle" type="button">Show Pit Board</button>
+          </div>
+
+          <div class="pitControls">
             <select id="pitIndustryFilter"></select>
-            <!-- ROW 1: bulk controls -->
+
             <div class="pitBulkRow">
               <button id="pitBulkMinus">- Apply</button>
-          
-              <input
-                id="pitBulkAmt"
-                type="number"
-                inputmode="numeric"
-                min="1"
-                step="1"
-                value="5"
-              />
-          
+              <input id="pitBulkAmt" type="number" inputmode="numeric" min="1" step="1" value="5" />
               <button id="pitBulkPlus">+ Apply</button>
             </div>
-          
-            <!-- stacked controls -->
+
             <button id="pitSortCur">Sort Current: Off</button>
-
             <button id="pitClearSelected">Clear</button>
-          
             <div id="pitSelectedCount" class="mini muted">Selected: 0</div>
-          
           </div>
-        </div>
 
-        <!-- Pit Board Controls (Desktop + Mobile) -->
           <div class="row" id="pitControlsRow" style="align-items:center; margin-top:10px;">
             <label class="mini muted" style="display:flex; align-items:center; gap:8px; width:auto;">
               <input type="checkbox" id="pitSelectAll" />
               Select all (filtered)
             </label>
-          
-            <!-- <div class="mini muted" id="pitSelectedCount" style="width:auto;">Selected: 0</div> -->
           </div>
 
-        <!-- Desktop Table -->
-        <div id="pitTableWrap">
-          <table id="pitTable">
-            <thead>
-              <tr>
-                <th class="selectCol"></th> 
-                <th>Symbol</th>
-                <th>Company</th>
-                <th>Industries</th>
-                <th>Dividend</th>
-                <th>Start</th>
-                <th id="pitCurHeader" title="Sort by Current Price">Current</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+          <div id="pitTableWrap">
+            <table id="pitTable">
+              <thead>
+                <tr>
+                  <th class="selectCol"></th>
+                  <th>Symbol</th>
+                  <th>Company</th>
+                  <th>Industries</th>
+                  <th>Dividend</th>
+                  <th>Start</th>
+                  <th id="pitCurHeader" title="Sort by Current Price">Current</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
 
-        <!-- Mobile Cards -->
-        <div id="pitCards"></div>
+          <div id="pitCards"></div>
+        </div>
       </section>
 
-      <section class="card">
-        <div class="row" style="align-items:flex-start;">
-          <div style="flex:1; min-width:200px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-              <h2 style="margin:0;">Game Log</h2>
-              <button type="button" id="btnToggleLog" style="white-space:nowrap;">Collapse</button>
-            </div>
-            
-            <div id="logBody">
-              <!-- your log panel -->
-
-            <div class="sub">Every market move + trade is recorded here.</div>
-          </div>
-          <div style="flex:0; min-width:180px;">
-            <button class="primary" id="btnPrintLog" type="button">Print / Export Log</button>
-          </div>
+      <!-- Game Log -->
+      <section class="card" id="logCard">
+        <div class="sectionHead">
+          <h2>Game Log</h2>
+          <button type="button" class="btnToggle" id="btnToggleLog">Collapse</button>
         </div>
-      
-        <div class="log" id="log"></div>
-      </div>
+
+        <div id="logBody">
+          <div class="row" style="align-items:flex-start;">
+            <div class="sub" style="flex:1; min-width:200px;">Every market move + trade is recorded here.</div>
+            <div style="flex:0; min-width:180px;">
+              <button class="primary" id="btnPrintLog" type="button">Print / Export Log</button>
+            </div>
+          </div>
+
+          <div class="log" id="log"></div>
+        </div>
       </section>
 
-      <section class="card">
-        <div class="row" style="align-items:flex-start;">
-          <div style="flex:1; min-width:220px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-              <h2 style="margin:0;">Leaderboard</h2>
-              <button type="button" id="btnToggleLeaderboard" style="white-space:nowrap;">Collapse</button>
-            </div>
-            
-            <div id="leaderboardBody">
-              <!-- leaderboard panel -->
+      <!-- Leaderboard -->
+      <section class="card" id="leaderboardCard">
+        <div class="sectionHead">
+          <h2>Leaderboard</h2>
+          <button type="button" class="btnToggle" id="btnToggleLeaderboard">Collapse</button>
+        </div>
 
-            <div class="sub">All completed sessions recorded on this device.</div>
+        <div id="leaderboardBody">
+          <div class="row" style="align-items:flex-start;">
+            <div class="sub" style="flex:1; min-width:220px;">All completed sessions recorded on this device.</div>
+            <div style="flex:0; min-width:180px;">
+              <button id="btnClearLeaderboard" type="button">Clear Leaderboard</button>
+            </div>
           </div>
-          <div style="flex:0; min-width:180px;">
-            <button id="btnClearLeaderboard" type="button">Clear Leaderboard</button>
+
+          <div class="row" style="align-items:flex-start; margin-bottom:10px;">
+            <button class="primary" id="btnLeaderboardViewSummary" type="button">All-Time Rankings</button>
+            <button id="btnLeaderboardViewGames" type="button">Recent Games</button>
           </div>
-        </div>
-      
-        <div class="row" style="align-items:flex-start; margin-bottom:10px;">
-          <button class="primary" id="btnLeaderboardViewSummary" type="button">All-Time Rankings</button>
-          <button id="btnLeaderboardViewGames" type="button">Recent Games</button>
-        </div>
-        
-        <div id="leaderboard"></div>
+
+          <div id="leaderboard"></div>
         </div>
       </section>
     </section>
   </main>
 
-  <script>
-    console.log("HTML reached script area ✅");
-  </script>
   <!-- Firebase (Realtime sessions) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 
   <script src="app.js"></script>
-  <script>
-    console.log("app.js finished loading ✅");
-  </script>
 </body>
 </html>
+
