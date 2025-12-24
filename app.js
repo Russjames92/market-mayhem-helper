@@ -1788,6 +1788,18 @@ if (elPitClearSelected) {
   });
 }
 
+// --------- FB Init --------
+function initFirebase() {
+  const firebaseConfig = {
+  apiKey: "AIzaSyC4VOmU6kXwYG-fIh0G2-m2LbJSNfaCCjs",
+  authDomain: "market-mayhem-live.firebaseapp.com",
+  projectId: "market-mayhem-live",
+  storageBucket: "market-mayhem-live.firebasestorage.app",
+  messagingSenderId: "1089674731126",
+  appId: "1:1089674731126:web:9a2825dac7f28c5be5c957"
+};
+  };
+
 // ---------- Init ----------
 function init() {
   loadState();
