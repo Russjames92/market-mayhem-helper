@@ -924,10 +924,13 @@ function applyViewerLocks() {
 
   if (elBtnEndSession) elBtnEndSession.disabled = ro || !state.started;
 
-  // Pit board controls
-  if (elPitIndustryFilter) elPitIndustryFilter.disabled = ro;
-  if (elPitSortCur) elPitSortCur.disabled = ro;
-  if (elPitSelectAll) elPitSelectAll.disabled = ro;
+    // Pit board controls
+  // Viewers ARE allowed to filter/sort (view-only)
+  if (elPitIndustryFilter) elPitIndustryFilter.disabled = false;
+  if (elPitSortCur) elPitSortCur.disabled = false;
+
+  // Viewers are NOT allowed to bulk adjust prices
+  if (elPitSelectAll) elPitSelectAll.disabled = ro;      // optional (safe either way)
   if (elPitBulkAmt) elPitBulkAmt.disabled = ro;
   if (elPitBulkMinus) elPitBulkMinus.disabled = ro;
   if (elPitBulkPlus) elPitBulkPlus.disabled = ro;
