@@ -85,6 +85,15 @@ let live = {
   applyingRemote: false,
 };
 
+const elLiveViewersPill = document.getElementById("liveViewersPill");
+const elBtnToggleSetup = document.getElementById("btnToggleSetup");
+const elSessionSetupBody = document.getElementById("sessionSetupBody");
+
+let presence = {
+  timer: null,
+  unsub: null,
+  lastCount: null
+};
 
 const elPlayerCount = document.getElementById("playerCount");
 const elStartingCash = document.getElementById("startingCash");
@@ -1041,6 +1050,10 @@ function subscribeToSession(sid) {
     }
 
     setLiveUI();
+      // Start/refresh presence AFTER role is determined
+     stopPresence();
+     startPresence();
+
   });
 
   setLiveUI();
@@ -1105,6 +1118,8 @@ function leaveLiveSession() {
     try { live.unsub(); } catch {}
   }
 
+   stopPresence();
+
   live = {
     enabled: false,
     sid: null,
@@ -1150,6 +1165,83 @@ function pushStateToCloud() {
   });
 }
 
+function setViewersPill(n) {
+  if (!elLiveViewersPill) return;
+  if (!live.enabled) {
+    elLiveViewersPill.textContent = "Viewers: —";
+    return;
+  }
+  if (typeof n === "number") {
+    elLiveViewersPill.textContent = `Viewers: ${n}`;
+  } else {
+    elLiveViewersPill.textContent = "Viewers: …";
+  }
+}
+
+function stopPresence() {
+  if (presence.timer) clearInterval(presence.timer);
+  presence.timer = null;
+
+  if (presence.unsub) {
+    try { presence.unsub(); } catch {}
+  }
+  presence.unsub = null;
+
+  // Try to remove our presence doc when leaving
+  if (fb.ready && live.enabled && live.sid && fb.uid) {
+    fb.db.collection("sessions").doc(live.sid)
+      .collection("presence").doc(fb.uid)
+      .delete()
+      .catch(() => {});
+  }
+
+  setViewersPill(null);
+}
+
+function startPresence() {
+  if (!fb.ready || !live.enabled || !live.sid || !fb.uid) return;
+
+  const sid = live.sid;
+  const presRef = fb.db.collection("sessions").doc(sid).collection("presence").doc(fb.uid);
+
+  // heartbeat write
+  const beat = () => {
+    presRef.set({
+      uid: fb.uid,
+      role: live.isHost ? "host" : "viewer",
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true }).catch(() => {});
+  };
+
+  beat();
+  presence.timer = setInterval(beat, 15000);
+
+  // host listens & counts "recent" devices
+  if (live.isHost) {
+    const coll = fb.db.collection("sessions").doc(sid).collection("presence");
+
+    // Update count whenever collection changes; filter "recent" in JS
+    presence.unsub = coll.onSnapshot(snap => {
+      const now = Date.now();
+      const cutoffMs = 35000; // treat devices as connected if pinged within last 35s
+
+      let count = 0;
+      snap.forEach(doc => {
+        const data = doc.data() || {};
+        const ts = data.lastSeen?.toDate ? data.lastSeen.toDate().getTime() : 0;
+        if (ts && (now - ts) <= cutoffMs) count += 1;
+      });
+
+      setViewersPill(count);
+    });
+  } else {
+    // viewer: just show "Connected"
+    setViewersPill(1);
+  }
+
+  // cleanup on tab close/refresh
+  window.addEventListener("beforeunload", stopPresence, { once: true });
+}
 
 // ---------- UI Builders ----------
 function buildSetupInputs() {
