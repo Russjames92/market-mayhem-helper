@@ -764,6 +764,26 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
     border-radius: 12px;
   }
 }
+    
+.pitControls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pitBulkRow {
+  display: flex;
+  gap: 8px;
+}
+
+.pitBulkRow button {
+  flex: 1;
+}
+
+#pitBulkAmt {
+  width: 70px;
+  text-align: center;
+}
 
 </style>
 </head>
@@ -891,23 +911,34 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
           <button id="btnPitToggle" class="pitToggle" type="button">Show Pit Board</button>
         </div>
           <div class="pitControls">
-            <span class="miniLabel">Filter:</span>
-            <select id="pitIndustryFilter">
-              <option value="ALL">All Industries</option>
-            </select>
-        
-            <button id="pitSortCur" type="button">Sort Current: Off</button>
-        
-            <div class="spacer"></div>
-        
-            <span class="countPill" id="pitSelectedCount">Selected: 0</span>
-        
-            <input id="pitBulkAmt" class="bulkAmt" type="number" step="1" value="5" />
-        
-            <button id="pitBulkMinus" type="button">- Apply</button>
-            <button id="pitBulkPlus" class="primary" type="button">+ Apply</button>
-            <button id="pitClearSelected" type="button">Clear</button>
+
+            <!-- ROW 1: bulk controls -->
+            <div class="pitBulkRow">
+              <button id="pitBulkMinus">- Apply</button>
+          
+              <input
+                id="pitBulkAmt"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                step="1"
+                value="5"
+              />
+          
+              <button id="pitBulkPlus">+ Apply</button>
+            </div>
+          
+            <!-- stacked controls -->
+            <select id="pitIndustryFilter"></select>
+          
+            <button id="pitSortCur">Sort Current: Off</button>
+          
+            <div id="pitSelectedCount" class="mini muted">Selected: 0</div>
+          
+            <button id="pitClearSelected">Clear</button>
+          
           </div>
+
 
         <!-- Pit Board Controls (Desktop + Mobile) -->
           <div class="row" id="pitControlsRow" style="align-items:center; margin-top:10px;">
