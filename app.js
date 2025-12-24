@@ -2199,6 +2199,7 @@ const COLLAPSE_KEY = "mm_collapsed_sections_v1";
 const COLLAPSIBLE_SECTIONS = [
   { key: "setup",      btnId: "btnToggleSetup",       bodyId: "sessionSetupBody" },
   { key: "mover",      btnId: "btnToggleMarketMover", bodyId: "marketMoverBody" },
+   { key: "tools", btnId: "btnToggleTools", bodyId: "toolsBody" },
   { key: "pit",        btnId: "btnTogglePitBoard",    bodyId: "pitBoardBody" },
   { key: "players",    btnId: "btnTogglePlayers",     bodyId: "playersBody" },
   { key: "log",        btnId: "btnToggleLog",         bodyId: "logBody" },
