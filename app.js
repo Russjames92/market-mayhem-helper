@@ -1698,9 +1698,16 @@ document.addEventListener("click", (e) => {
 if (elPitIndustryFilter) {
   elPitIndustryFilter.addEventListener("change", () => {
     pitFilterIndustry = elPitIndustryFilter.value || "ALL";
+
+    // 🔥 CLEAR SELECTIONS when filter changes
+    pitSelected.clear();
+    updatePitSelectedUI();
+    if (elPitSelectAll) elPitSelectAll.checked = false;
+
     renderPitBoard();
   });
 }
+
 
 // Pit board: sort toggle button
 function togglePitSort() {
