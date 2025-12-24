@@ -900,10 +900,14 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
       <div class="divider"></div>
     </div>
 
-      <h2>2) Market Mover</h2>
-      <div class="sub">
-        Select industries, choose up/down, then enter the 2d6 total. The app updates all affected prices.
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h2 style="margin:0;">2) Market Mover</h2>
+        <button type="button" id="btnToggleMarketMover" style="white-space:nowrap;">Collapse</button>
       </div>
+      <div class="sub">...</div>
+      
+      <div id="marketMoverBody">
+        <!-- Market Mover content goes here -->
 
       <div class="row">
         <div>
@@ -924,6 +928,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
           </select>
         </div>
       </div>
+    </div>
 
       <div class="divider"></div>
       <div class="industry-list" id="industryList"></div>
@@ -961,7 +966,13 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
       <section class="card">
         <div class="row" style="align-items:flex-start;">
           <div style="flex:1; min-width:220px;">
-            <h2>Players (Cash + Holdings + Total Assets)</h2>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <h2 style="margin:0;">Players</h2>
+              <button type="button" id="btnTogglePlayers" style="white-space:nowrap;">Collapse</button>
+            </div>
+            
+            <div id="playersBody">
+              <!-- players area -->
             <div class="sub">Buy/Sell in 100-share increments</div>
           </div>
           <div style="flex:0; min-width:180px;">
@@ -970,12 +981,20 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
         </div>
       
         <div id="playersArea"></div>
-      </section>
-
+      </div>
+    </section>
+  
       <section class="card" id="pitBoardSection">
         <div class="pitHead">
           <div>
-            <h2>Pit Board (Prices + Industries)</h2>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <h2 style="margin:0;">3) Pit Board</h2>
+              <button type="button" id="btnTogglePitBoard" style="white-space:nowrap;">Collapse</button>
+            </div>
+            
+            <div id="pitBoardBody">
+              <!-- Pit Board content goes here -->
+
             <div class="sub">Desktop shows the table. Mobile uses an expandable card view.</div>
           </div>
           <button id="btnPitToggle" class="pitToggle" type="button">Show Pit Board</button>
@@ -1007,7 +1026,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
             <div id="pitSelectedCount" class="mini muted">Selected: 0</div>
           
           </div>
-
+        </div>
 
         <!-- Pit Board Controls (Desktop + Mobile) -->
           <div class="row" id="pitControlsRow" style="align-items:center; margin-top:10px;">
@@ -1044,7 +1063,14 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
       <section class="card">
         <div class="row" style="align-items:flex-start;">
           <div style="flex:1; min-width:200px;">
-            <h2>Game Log</h2>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <h2 style="margin:0;">Game Log</h2>
+              <button type="button" id="btnToggleLog" style="white-space:nowrap;">Collapse</button>
+            </div>
+            
+            <div id="logBody">
+              <!-- your log panel -->
+
             <div class="sub">Every market move + trade is recorded here.</div>
           </div>
           <div style="flex:0; min-width:180px;">
@@ -1053,12 +1079,20 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
         </div>
       
         <div class="log" id="log"></div>
+      </div>
       </section>
 
       <section class="card">
         <div class="row" style="align-items:flex-start;">
           <div style="flex:1; min-width:220px;">
-            <h2>Leaderboard</h2>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <h2 style="margin:0;">Leaderboard</h2>
+              <button type="button" id="btnToggleLeaderboard" style="white-space:nowrap;">Collapse</button>
+            </div>
+            
+            <div id="leaderboardBody">
+              <!-- leaderboard panel -->
+
             <div class="sub">All completed sessions recorded on this device.</div>
           </div>
           <div style="flex:0; min-width:180px;">
@@ -1072,6 +1106,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
         </div>
         
         <div id="leaderboard"></div>
+        </div>
       </section>
     </section>
   </main>
