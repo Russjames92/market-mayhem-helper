@@ -126,6 +126,11 @@ function diceBand(total) {
 function getStock(symbol) {
   return STOCKS.find(s => s.symbol === symbol);
 }
+function getAllIndustries() {
+  const set = new Set();
+  for (const s of STOCKS) s.industries.forEach(i => set.add(i));
+  return [...set].sort();
+}
 function ensureHoldings(player) {
   if (!player.holdings) player.holdings = {};
   for (const s of STOCKS) {
@@ -281,12 +286,6 @@ function renderLeaderboard() {
         console.warn("No active session");
       }
   }
-
-function getAllIndustries() {
-  const set = new Set();
-  for (const s of STOCKS) s.industries.forEach(i => set.add(i));
-  return [...set].sort();
-}
 
 function updatePitSelectedUI() {
   if (elPitSelectedCount) elPitSelectedCount.textContent = `Selected: ${pitSelected.size}`;
