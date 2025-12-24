@@ -607,6 +607,11 @@ function renderStatus() {
 
 function renderPitBoard() {
   // desktop table
+   if (!state.started) {
+    elPitTableBody.innerHTML = "";
+    if (elPitCards) elPitCards.innerHTML = "";
+    return;
+  }
   elPitTableBody.innerHTML = "";
 
   // mobile cards
@@ -941,7 +946,11 @@ function startSession() {
   state.prices = prices;
   state.log = [];
    state.openingBells = 0;
-   
+
+   pitFilterIndustry = "ALL";
+   pitSortMode = "off";
+   pitSelected.clear();
+
    buildPitControlsUI();
    
   addLog(`Session started with ${n} player(s). Starting cash: $${fmtMoney(startingCash)} each.`);
