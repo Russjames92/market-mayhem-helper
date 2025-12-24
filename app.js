@@ -249,6 +249,7 @@ function renderLeaderboard() {
     elLeaderboard.innerHTML = `<div class="muted">No completed sessions yet.</div>`;
     return;
   }
+}
 
 function getAllIndustries() {
   const set = new Set();
