@@ -403,6 +403,26 @@ function applyBulkToSelected(delta) {
   }
 
   const signed = delta > 0 ? amt : -amt;
+   const directionLabel = delta > 0 ? "INCREASE" : "DECREASE";
+   const signedAmt = delta > 0 ? amt : -amt;
+   
+   const preview = [...pitSelected]
+     .map(sym => {
+       const before = state.prices[sym] ?? getStock(sym).start;
+       const after = clampPrice(before + signedAmt);
+       return `${sym}: $${fmtMoney(before)} → $${fmtMoney(after)}`;
+     })
+     .join("\n");
+   
+   const ok = confirm(
+     `Confirm Bulk ${directionLabel}\n\n` +
+     `Amount: ${signedAmt > 0 ? "+" : ""}${signedAmt}\n` +
+     `Stocks affected: ${pitSelected.size}\n\n` +
+     preview
+   );
+   
+   if (!ok) return;
+
 
   const touched = [];
   for (const sym of pitSelected) {
@@ -1046,12 +1066,21 @@ function payDividends() {
 }
 
 function shortMove() {
+  if (!state.started) return;
+
   const sym = elShortMoveSymbol.value;
   const dir = elShortMoveDir.value;
-  const before = state.prices[sym] ?? getStock(sym).start;
   const signed = dir === "up" ? 8 : -8;
+  const label = dir === "up" ? "Short Squeeze (+8)" : "Short Sell (-8)";
+
+  const before = state.prices[sym] ?? getStock(sym).start;
   const after = clampPrice(before + signed);
-  state.prices[sym] = after;
+
+  const ok = confirm(
+    `Confirm ${label}\n\n` +
+    `${sym}: $${fmtMoney(before)} → $${fmtMoney(after)}`
+  );
+  if (!ok) return;
 
   addLog(`Short Move: ${sym} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
   renderAll();
@@ -1108,6 +1137,17 @@ function doTrade(playerId, act, symbol, shares) {
     addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
   } else if (act === "SELL") {
     const owned = p.holdings[symbol] || 0;
+     const verb = act === "BUY" ? "BUY" : "SELL";
+
+      const confirmMsg =
+        `${p.name}\n\n` +
+        `${verb} ${shares} shares of ${symbol}\n` +
+        `@ $${fmtMoney(price)} per share\n\n` +
+        `Total: $${fmtMoney(cost)}\n\n` +
+        `Confirm this trade?`;
+      
+      if (!confirm(confirmMsg)) return;
+
     if (owned < shares) {
       alert(`${p.name} doesn’t have enough shares to sell. Has ${owned}.`);
       return;
