@@ -785,6 +785,34 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   text-align: center;
 }
 
+/* Make pit header controls share one consistent width on desktop */
+@media (min-width: 701px) {
+  .pitControls {
+    /* pick the width you want the header controls to be */
+    max-width: 760px;
+    width: 100%;
+    margin: 0 auto;              /* centers that block in the pit board */
+    align-items: stretch;         /* children can fill full width */
+  }
+
+  .pitBulkRow {
+    width: 100%;
+  }
+
+  /* Make these match the bulk row width */
+  .pitControls > #pitIndustryFilter,
+  .pitControls > #pitSortCur,
+  .pitControls > #pitClearSelected,
+  .pitControls > #pitSelectedCount {
+    width: 100%;
+  }
+
+  /* Optional: keep Selected aligned nicely */
+  #pitSelectedCount {
+    text-align: center;
+  }
+}
+
 </style>
 </head>
 
