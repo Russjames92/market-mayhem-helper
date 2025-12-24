@@ -2160,6 +2160,7 @@ if (elPitClearSelected) {
 
 // --------- FB Init --------
 function initFirebase() {
+   console.log("initFirebase() CALLED");
   const firebaseConfig = {
   apiKey: "AIzaSyC4VOmU6kXwYG-fIh0G2-m2LbJSNfaCCjs",
   authDomain: "market-mayhem-live.firebaseapp.com",
@@ -2187,8 +2188,8 @@ function init() {
   }
 
    setupPitToggle();
-   initFirebase();
-   setLiveUI();
    renderAll();
 }
 init();
+initFirebase();
+setLiveUI();
