@@ -1740,6 +1740,7 @@ function shortMove() {
 
 
 function openCashDialog(playerId) {
+   if (!assertHostAction()) return;
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
 
