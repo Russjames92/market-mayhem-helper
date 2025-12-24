@@ -659,6 +659,117 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   width:auto;
 }
 
+/* ===== Pit Board Mobile Cleanup ===== */
+@media (max-width: 700px) {
+  /* Controls area: stack cleanly */
+  .pit-controls,
+  .pitControls,
+  #pitControls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  /* If your controls are inside a row, force wrap */
+  .pit-controls .row,
+  .pitControls .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Put filter + sort on their own nice rows */
+  #pitIndustryFilter {
+    width: 100%;
+  }
+
+  #pitSortCur {
+    width: 100%;
+  }
+
+  /* Selected pill + bulk tools: 2-column grid */
+  .pitBulkRow,
+  .pit-bulk-row,
+  #pitBulkRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* Make number input behave */
+  #pitBulkAmt {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Buttons fill width and look uniform */
+  #pitBulkMinus,
+  #pitBulkPlus,
+  #pitClearSelected,
+  #btnPitToggle,
+  #pitSortCur {
+    width: 100%;
+  }
+
+  /* Hide any stray label text if it still exists anywhere */
+  .pitCard label {
+    display: none !important;
+  }
+
+  /* Card layout: tighten spacing */
+  .pitCard {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .pitRow1 {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* Checkbox lives in top-right, never floats away */
+  .pitSelectCard {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    margin: 2px 0 0 0;
+  }
+
+  /* Price button: larger tap target */
+  .pitPriceBtn.pitCur {
+    min-width: 120px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-weight: 900;
+    font-size: 20px;
+  }
+
+  /* Reduce tag clutter, wrap nicely */
+  .pitRow2 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  /* Bottom stats: clean 3-up grid */
+  .pitRow3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .pitRow3 > div {
+    padding: 10px;
+    border-radius: 12px;
+  }
+}
+
 </style>
 </head>
 
