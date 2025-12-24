@@ -57,6 +57,34 @@ let pitSelected = new Set();   // selected symbols for bulk ops
 const elSessionStatus = document.getElementById("sessionStatus");
 const elBtnSave = document.getElementById("btnSave");
 const elBtnReset = document.getElementById("btnReset");
+// ---------- Live Session (Firebase) ----------
+const elLiveRolePill = document.getElementById("liveRolePill");
+const elBtnLiveCreate = document.getElementById("btnLiveCreate");
+const elLiveJoinCode = document.getElementById("liveJoinCode");
+const elBtnLiveJoin = document.getElementById("btnLiveJoin");
+const elLiveShareLink = document.getElementById("liveShareLink");
+const elBtnCopyLiveLink = document.getElementById("btnCopyLiveLink");
+const elBtnLiveLeave = document.getElementById("btnLiveLeave");
+const elLiveHint = document.getElementById("liveHint");
+
+let fb = {
+  app: null,
+  auth: null,
+  db: null,
+  ready: false,
+  uid: null,
+};
+
+let live = {
+  enabled: false,
+  sid: null,
+  isHost: false,
+  unsub: null,
+  pushing: false,
+  pushTimer: null,
+  applyingRemote: false,
+};
+
 
 const elPlayerCount = document.getElementById("playerCount");
 const elStartingCash = document.getElementById("startingCash");
@@ -189,7 +217,8 @@ function clearMarketMoverSelections() {
 }
 
 function openPriceEditor(symbol) {
-  if (!state.started) {
+   if (!assertHostAction()) return;
+   if (!state.started) {
     alert("Start a session first to manually set prices.");
     return;
   }
@@ -801,11 +830,24 @@ function renderTradeModalPreview() {
 }
 
 // ---------- Save/Load ----------
-function saveState() {
+function saveState(opts = {}) {
+  const { silent = true } = opts;
+
+  // Always keep local backup (host + viewer)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  addLog("Saved session.");
+
+  if (!silent) {
+    addLog("Saved session.");
+  }
+
+  // If host is live, also push to cloud (debounced)
+  if (live.enabled && live.isHost) {
+    schedulePushToCloud();
+  }
+
   renderStatus();
 }
+
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return;
@@ -822,6 +864,291 @@ function resetState() {
   buildShortMoveUI();
   renderAll();
 }
+
+// ---------- Live Session (Firebase) ----------
+function setLiveUI() {
+  const role = !live.enabled ? "OFF" : (live.isHost ? `HOST • ${live.sid}` : `VIEWER • ${live.sid}`);
+  if (elLiveRolePill) elLiveRolePill.textContent = `Live: ${role}`;
+
+  const share = live.enabled ? `${location.origin}${location.pathname}?sid=${live.sid}` : "";
+  if (elLiveShareLink) elLiveShareLink.value = share;
+
+  if (elBtnLiveLeave) elBtnLiveLeave.disabled = !live.enabled;
+
+  // Disable create/join buttons while connected
+  if (elBtnLiveCreate) elBtnLiveCreate.disabled = live.enabled;
+  if (elBtnLiveJoin) elBtnLiveJoin.disabled = live.enabled;
+
+  // Viewer locks
+  applyViewerLocks();
+}
+
+function isReadOnlyViewer() {
+  return live.enabled && !live.isHost;
+}
+
+function applyViewerLocks() {
+  const ro = isReadOnlyViewer();
+
+  // Setup / session controls
+  if (elBtnStart) elBtnStart.disabled = ro;
+  if (elPlayerCount) elPlayerCount.disabled = ro;
+  if (elStartingCash) elStartingCash.disabled = ro;
+  if (elPlayerInputs) {
+    for (const inp of elPlayerInputs.querySelectorAll("input,select,button,textarea")) {
+      inp.disabled = ro;
+    }
+  }
+
+  // Market mover / tools
+  if (elDiceTotal) elDiceTotal.disabled = ro;
+  if (elIndustryList) {
+    for (const inp of elIndustryList.querySelectorAll("input,select,button")) {
+      inp.disabled = ro;
+    }
+  }
+  if (elBtnApplyMarketMover) elBtnApplyMarketMover.disabled = ro || !state.started;
+  if (elBtnPayDividends) elBtnPayDividends.disabled = ro || !state.started;
+  if (elBtnShortMove) elBtnShortMove.disabled = ro || !state.started;
+  if (elShortMoveSymbol) elShortMoveSymbol.disabled = ro;
+  if (elShortMoveDir) elShortMoveDir.disabled = ro;
+
+  if (elBtnEndSession) elBtnEndSession.disabled = ro || !state.started;
+
+  // Pit board controls
+  if (elPitIndustryFilter) elPitIndustryFilter.disabled = ro;
+  if (elPitSortCur) elPitSortCur.disabled = ro;
+  if (elPitSelectAll) elPitSelectAll.disabled = ro;
+  if (elPitBulkAmt) elPitBulkAmt.disabled = ro;
+  if (elPitBulkMinus) elPitBulkMinus.disabled = ro;
+  if (elPitBulkPlus) elPitBulkPlus.disabled = ro;
+  if (elPitClearSelected) elPitClearSelected.disabled = ro;
+
+  // Header controls (Save/Reset)
+  if (elBtnSave) elBtnSave.disabled = ro;   // viewers shouldn’t “save” host state
+  if (elBtnReset) elBtnReset.disabled = ro; // viewers shouldn’t reset the session
+}
+
+function assertHostAction() {
+  if (!isReadOnlyViewer()) return true;
+  alert("Viewer mode: only the host can perform actions.");
+  return false;
+}
+
+function initFirebase() {
+  // TODO: paste your Firebase config here (from Firebase Console → Project settings)
+  const firebaseConfig = {
+    apiKey: "PASTE_ME",
+    authDomain: "PASTE_ME",
+    projectId: "PASTE_ME",
+    storageBucket: "PASTE_ME",
+    messagingSenderId: "PASTE_ME",
+    appId: "PASTE_ME",
+  };
+
+  // If user hasn't configured it yet, don't crash the whole app
+  if (firebaseConfig.apiKey === "PASTE_ME") {
+    if (elLiveHint) elLiveHint.textContent =
+      "Firebase not configured yet. Paste firebaseConfig into app.js to enable Live Sessions.";
+    return;
+  }
+
+  fb.app = firebase.initializeApp(firebaseConfig);
+  fb.auth = firebase.auth();
+  fb.db = firebase.firestore();
+
+  return fb.auth.signInAnonymously()
+    .then(cred => {
+      fb.uid = cred.user.uid;
+      fb.ready = true;
+      if (elLiveHint) elLiveHint.textContent =
+        "Firebase ready. Host can create a live session, or viewers can join by code/link.";
+
+      // Auto-join if URL has ?sid=
+      const sid = new URLSearchParams(location.search).get("sid");
+      if (sid) {
+        joinLiveSession(String(sid).trim());
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      if (elLiveHint) elLiveHint.textContent = "Firebase auth failed. Check console.";
+    });
+}
+
+function normalizeSid(s) {
+  return String(s || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 8);
+}
+
+function genSid(len = 6) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no confusing 0/O/1/I
+  let out = "";
+  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
+function subscribeToSession(sid) {
+  if (!fb.ready) {
+    alert("Firebase not ready yet. Paste config + refresh.");
+    return;
+  }
+
+  // Clean up existing subscription
+  if (live.unsub) {
+    try { live.unsub(); } catch {}
+    live.unsub = null;
+  }
+
+  live.enabled = true;
+  live.sid = sid;
+
+  const ref = fb.db.collection("sessions").doc(sid);
+
+  live.unsub = ref.onSnapshot(snap => {
+    if (!snap.exists) {
+      // If viewer joined a bad code, bail out
+      if (!live.isHost) {
+        alert("Session not found. Check the code/link.");
+        leaveLiveSession();
+      }
+      return;
+    }
+
+    const data = snap.data() || {};
+    const remoteState = data.state;
+
+    // Determine role
+    live.isHost = (data.hostUid && fb.uid && data.hostUid === fb.uid);
+
+    // Apply remote state
+    if (remoteState) {
+      live.applyingRemote = true;
+      try {
+        state = remoteState;
+
+        // keep your defaults safe
+        if (state.openingBells == null) state.openingBells = 0;
+
+        renderAll();
+        renderStatus();
+      } finally {
+        live.applyingRemote = false;
+      }
+    }
+
+    setLiveUI();
+  });
+
+  setLiveUI();
+}
+
+function createLiveSession() {
+  if (!fb.ready) {
+    alert("Firebase not ready yet. Paste config + refresh.");
+    return;
+  }
+
+  const sid = genSid(6);
+  const ref = fb.db.collection("sessions").doc(sid);
+
+  // Host becomes authoritative
+  return ref.set({
+    hostUid: fb.uid,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    state: state
+  }).then(() => {
+    live.enabled = true;
+    live.sid = sid;
+    live.isHost = true;
+
+    // Subscribe (so host UI updates too)
+    subscribeToSession(sid);
+
+    // Update URL
+    const url = new URL(location.href);
+    url.searchParams.set("sid", sid);
+    history.replaceState({}, "", url.toString());
+
+    setLiveUI();
+  }).catch(err => {
+    console.error(err);
+    alert("Failed to create session. See console.");
+  });
+}
+
+function joinLiveSession(code) {
+  const sid = normalizeSid(code);
+  if (!sid) {
+    alert("Enter a valid join code.");
+    return;
+  }
+
+  live.enabled = true;
+  live.sid = sid;
+  live.isHost = false;
+
+  // Update URL
+  const url = new URL(location.href);
+  url.searchParams.set("sid", sid);
+  history.replaceState({}, "", url.toString());
+
+  subscribeToSession(sid);
+  setLiveUI();
+}
+
+function leaveLiveSession() {
+  if (live.unsub) {
+    try { live.unsub(); } catch {}
+  }
+
+  live = {
+    enabled: false,
+    sid: null,
+    isHost: false,
+    unsub: null,
+    pushing: false,
+    pushTimer: null,
+    applyingRemote: false,
+  };
+
+  // Remove sid param from URL
+  const url = new URL(location.href);
+  url.searchParams.delete("sid");
+  history.replaceState({}, "", url.toString());
+
+  setLiveUI();
+}
+
+function schedulePushToCloud() {
+  if (!live.enabled || !live.isHost || !fb.ready) return;
+  if (live.applyingRemote) return;
+
+  clearTimeout(live.pushTimer);
+  live.pushTimer = setTimeout(pushStateToCloud, 180);
+}
+
+function pushStateToCloud() {
+  if (!live.enabled || !live.isHost || !fb.ready) return;
+  if (!live.sid) return;
+
+  const ref = fb.db.collection("sessions").doc(live.sid);
+
+  live.pushing = true;
+
+  return ref.update({
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    state: state
+  }).catch(err => {
+    console.error(err);
+    // don’t annoy user with constant alerts; one console error is enough
+  }).finally(() => {
+    live.pushing = false;
+  });
+}
+
 
 // ---------- UI Builders ----------
 function buildSetupInputs() {
