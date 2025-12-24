@@ -288,7 +288,8 @@ function renderLeaderboard() {
   }
 
 function updatePitSelectedUI() {
-  if (elPitSelectedCount) elPitSelectedCount.textContent = `Selected: ${pitSelected.size}`;
+  if (!elPitSelectedCount) return;
+  elPitSelectedCount.textContent = `Selected: ${pitSelected.size}`;
 }
 
 function stockCurrentPrice(sym) {
