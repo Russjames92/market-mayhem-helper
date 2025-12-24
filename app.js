@@ -2193,23 +2193,66 @@ if (elBtnLiveLeave) {
   });
 }
 
-const SETUP_COLLAPSE_KEY = "mm_setup_collapsed_v1";
+// ---------- Collapsible Sections ----------
+const COLLAPSE_KEY = "mm_collapsed_sections_v1";
 
-function applySetupCollapsed(collapsed) {
-  if (!elSessionSetupBody || !elBtnToggleSetup) return;
+const COLLAPSIBLE_SECTIONS = [
+  { key: "setup",      btnId: "btnToggleSetup",       bodyId: "sessionSetupBody" },
+  { key: "mover",      btnId: "btnToggleMarketMover", bodyId: "marketMoverBody" },
+  { key: "pit",        btnId: "btnTogglePitBoard",    bodyId: "pitBoardBody" },
+  { key: "players",    btnId: "btnTogglePlayers",     bodyId: "playersBody" },
+  { key: "log",        btnId: "btnToggleLog",         bodyId: "logBody" },
+  { key: "leaderboard",btnId: "btnToggleLeaderboard", bodyId: "leaderboardBody" },
+];
 
-  elSessionSetupBody.style.display = collapsed ? "none" : "";
-  elBtnToggleSetup.textContent = collapsed ? "Show" : "Collapse";
-
-  localStorage.setItem(SETUP_COLLAPSE_KEY, collapsed ? "1" : "0");
+function loadCollapsedMap() {
+  try {
+    return JSON.parse(localStorage.getItem(COLLAPSE_KEY) || "{}") || {};
+  } catch {
+    return {};
+  }
 }
 
-if (elBtnToggleSetup) {
-  elBtnToggleSetup.addEventListener("click", () => {
-    const isCollapsed = elSessionSetupBody && elSessionSetupBody.style.display === "none";
-    applySetupCollapsed(!isCollapsed);
-  });
+function saveCollapsedMap(map) {
+  localStorage.setItem(COLLAPSE_KEY, JSON.stringify(map || {}));
 }
+
+function applySectionCollapsed(sectionKey, collapsed) {
+  const map = loadCollapsedMap();
+  map[sectionKey] = !!collapsed;
+  saveCollapsedMap(map);
+
+  const def = COLLAPSIBLE_SECTIONS.find(s => s.key === sectionKey);
+  if (!def) return;
+
+  const body = document.getElementById(def.bodyId);
+  const btn  = document.getElementById(def.btnId);
+  if (!body || !btn) return;
+
+  body.style.display = collapsed ? "none" : "";
+  btn.textContent = collapsed ? "Show" : "Collapse";
+}
+
+function initCollapsibleSections() {
+  const map = loadCollapsedMap();
+
+  for (const def of COLLAPSIBLE_SECTIONS) {
+    const btn = document.getElementById(def.btnId);
+    const body = document.getElementById(def.bodyId);
+    if (!btn || !body) continue;
+
+    // apply saved state (default expanded)
+    const collapsed = !!map[def.key];
+    body.style.display = collapsed ? "none" : "";
+    btn.textContent = collapsed ? "Show" : "Collapse";
+
+    btn.addEventListener("click", () => {
+      const isCollapsed = body.style.display === "none";
+      applySectionCollapsed(def.key, !isCollapsed);
+    });
+  }
+}
+
 
 // Pit board: filter
 if (elPitIndustryFilter) {
@@ -2303,6 +2346,7 @@ function init() {
 
    setupPitToggle();
    renderAll();
+   initCollapsibleSections();
 }
 init();
 initFirebase();
