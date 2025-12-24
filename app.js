@@ -1763,6 +1763,7 @@ function openCashDialog(playerId) {
 }
 
 function doTrade(playerId, act, symbol, shares) {
+   if (!assertHostAction()) return;
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
   ensureHoldings(p);
@@ -1984,7 +1985,7 @@ document.addEventListener("click", (e) => {
   openPriceEditor(btn.dataset.symbol);
 });
 
-elBtnSave.addEventListener("click", saveState);
+elBtnSave.addEventListener("click", () => saveState({ silent:false }));
 elBtnReset.addEventListener("click", resetState);
 
 elBtnPrintLog.addEventListener("click", printGameLog);
@@ -2044,6 +2045,47 @@ document.addEventListener("click", (e) => {
 
   openTradeModalForStock(trg.dataset.symbol);
 });
+
+// Live Session buttons
+if (elBtnLiveCreate) {
+  elBtnLiveCreate.addEventListener("click", () => {
+    if (!fb.ready) return alert("Firebase not ready. Paste config + refresh.");
+    createLiveSession();
+  });
+}
+
+if (elBtnLiveJoin) {
+  elBtnLiveJoin.addEventListener("click", () => {
+    if (!fb.ready) return alert("Firebase not ready. Paste config + refresh.");
+    joinLiveSession(elLiveJoinCode.value);
+  });
+}
+
+if (elBtnCopyLiveLink) {
+  elBtnCopyLiveLink.addEventListener("click", async () => {
+    const txt = (elLiveShareLink && elLiveShareLink.value) ? elLiveShareLink.value : "";
+    if (!txt) return alert("No live link yet. Create or join a session first.");
+    try {
+      await navigator.clipboard.writeText(txt);
+      alert("Link copied!");
+    } catch {
+      // fallback
+      prompt("Copy this link:", txt);
+    }
+  });
+}
+
+if (elBtnLiveLeave) {
+  elBtnLiveLeave.addEventListener("click", () => {
+    if (live.isHost) {
+      // Host leaving does not delete the session doc (keeps it simple).
+      // If you want host leaving to END the session for everyone, we can do that next.
+      if (!confirm("Leave live session? Viewers will stop receiving updates.")) return;
+    }
+    leaveLiveSession();
+  });
+}
+
 
 // Pit board: filter
 if (elPitIndustryFilter) {
@@ -2144,7 +2186,9 @@ function init() {
     for (const p of state.players) ensureHoldings(p);
   }
 
-  setupPitToggle();
-  renderAll();
+   setupPitToggle();
+   initFirebase();
+   setLiveUI();
+   renderAll();
 }
 init();
