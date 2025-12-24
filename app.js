@@ -996,10 +996,7 @@ function renderPitBoard() {
             </div>
           </div>
 
-          <label class="mini muted" style="display:flex; align-items:center; gap:8px;">
-            <input class="pitSelect" type="checkbox" data-symbol="${s.symbol}" ${cChecked} />
-            Select
-          </label>
+          <input class="pitSelect pitSelectCard" type="checkbox" data-symbol="${s.symbol}" ${cChecked} />
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px;">
