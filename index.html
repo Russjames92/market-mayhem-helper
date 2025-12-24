@@ -648,6 +648,17 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   font-weight: 900;
   border-radius: 14px;
 }
+
+#pitControlsRow{
+  flex-wrap:wrap;
+}
+#pitControlsRow label{
+  margin:0;
+}
+#pitSelectAll{
+  width:auto;
+}
+
 </style>
 </head>
 
@@ -792,14 +803,24 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
             <button id="pitClearSelected" type="button">Clear</button>
           </div>
 
+        <!-- Pit Board Controls (Desktop + Mobile) -->
+          <div class="row" id="pitControlsRow" style="align-items:center; margin-top:10px;">
+            <label class="mini muted" style="display:flex; align-items:center; gap:8px; width:auto;">
+              <input type="checkbox" id="pitSelectAll" />
+              Select all (filtered)
+            </label>
+          
+            <div class="mini muted" id="pitSelectedCount" style="width:auto;">Selected: 0</div>
+          </div>
+
         <!-- Desktop Table -->
         <div id="pitTableWrap">
           <table id="pitTable">
             <thead>
               <tr>
-                <th class="selectCol">
+                <!-- <th class="selectCol">
                   <input id="pitSelectAll" type="checkbox" title="Select all visible stocks" />
-                </th>
+                </th> -->
                 <th>Symbol</th>
                 <th>Company</th>
                 <th>Industries</th>
