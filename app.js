@@ -1355,10 +1355,14 @@ function shortMove() {
   );
   if (!ok) return;
 
+  // ✅ THIS was missing:
+  state.prices[sym] = after;
+
   addLog(`Short Move: ${sym} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
   renderAll();
   saveState();
 }
+
 
 function openCashDialog(playerId) {
   const p = state.players.find(x => x.id === playerId);
