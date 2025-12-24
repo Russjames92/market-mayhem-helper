@@ -1126,6 +1126,16 @@ function doTrade(playerId, act, symbol, shares) {
 
   const price = state.prices[symbol] ?? stock.start;
   const cost = shares * price;
+   const verb = act === "BUY" ? "BUY" : "SELL";
+
+      const confirmMsg =
+        `${p.name}\n\n` +
+        `${verb} ${shares} shares of ${symbol}\n` +
+        `@ $${fmtMoney(price)} per share\n\n` +
+        `Total: $${fmtMoney(cost)}\n\n` +
+        `Confirm this trade?`;
+      
+      if (!confirm(confirmMsg)) return;
 
   if (act === "BUY") {
     if (p.cash < cost) {
@@ -1137,16 +1147,6 @@ function doTrade(playerId, act, symbol, shares) {
     addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
   } else if (act === "SELL") {
     const owned = p.holdings[symbol] || 0;
-     const verb = act === "BUY" ? "BUY" : "SELL";
-
-      const confirmMsg =
-        `${p.name}\n\n` +
-        `${verb} ${shares} shares of ${symbol}\n` +
-        `@ $${fmtMoney(price)} per share\n\n` +
-        `Total: $${fmtMoney(cost)}\n\n` +
-        `Confirm this trade?`;
-      
-      if (!confirm(confirmMsg)) return;
 
     if (owned < shares) {
       alert(`${p.name} doesn’t have enough shares to sell. Has ${owned}.`);
