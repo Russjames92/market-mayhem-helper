@@ -491,6 +491,74 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
     border-color:rgba(255,255,255,.22);
     box-shadow:0 0 0 2px rgba(255,255,255,.08);
   }
+    /* =========================
+   PIT BOARD CONTROLS (Sort / Filter / Bulk Adjust)
+   ========================= */
+.pitControls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin:10px 0 12px;
+}
+.pitControls > *{ flex:0 0 auto; }
+
+.pitControls .spacer{
+  flex:1 1 auto;
+  min-width:120px;
+}
+
+.pitControls .miniLabel{
+  font-size:12px;
+  color:var(--muted);
+  margin-right:6px;
+  white-space:nowrap;
+}
+
+.pitControls select,
+.pitControls input{
+  width:auto;
+  min-width:180px;
+}
+
+.pitControls .bulkAmt{
+  min-width:120px;
+  width:120px;
+  text-align:center;
+  font-weight:900;
+}
+
+.pitControls button{
+  width:auto;
+  padding:10px 12px;
+  border-radius:12px;
+}
+
+.pitControls .countPill{
+  font-size:12px;
+  padding:6px 10px;
+  border:1px solid var(--border2);
+  border-radius:999px;
+  white-space:nowrap;
+  opacity:.9;
+}
+
+/* Checkbox column on pit table */
+#pitTable th.selectCol,
+#pitTable td.selectCol{
+  width:44px;
+  text-align:center;
+}
+#pitTable input.pitSelect{
+  width:auto;
+  transform:scale(1.15);
+}
+
+/* Make Current header look clickable-ish */
+#pitCurHeader{
+  cursor:pointer;
+  user-select:none;
+}
 
 </style>
 </head>
@@ -617,18 +685,39 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
           </div>
           <button id="btnPitToggle" class="pitToggle" type="button">Show Pit Board</button>
         </div>
+          <div class="pitControls">
+            <span class="miniLabel">Filter:</span>
+            <select id="pitIndustryFilter">
+              <option value="ALL">All Industries</option>
+            </select>
+        
+            <button id="pitSortCur" type="button">Sort Current: Off</button>
+        
+            <div class="spacer"></div>
+        
+            <span class="countPill" id="pitSelectedCount">Selected: 0</span>
+        
+            <input id="pitBulkAmt" class="bulkAmt" type="number" step="1" value="5" />
+        
+            <button id="pitBulkMinus" type="button">- Apply</button>
+            <button id="pitBulkPlus" class="primary" type="button">+ Apply</button>
+            <button id="pitClearSelected" type="button">Clear</button>
+          </div>
 
         <!-- Desktop Table -->
         <div id="pitTableWrap">
           <table id="pitTable">
             <thead>
               <tr>
+                <th class="selectCol">
+                  <input id="pitSelectAll" type="checkbox" title="Select all visible stocks" />
+                </th>
                 <th>Symbol</th>
                 <th>Company</th>
                 <th>Industries</th>
                 <th>Dividend</th>
                 <th>Start</th>
-                <th>Current</th>
+                <th id="pitCurHeader" title="Sort by Current Price">Current</th>
               </tr>
             </thead>
             <tbody></tbody>
