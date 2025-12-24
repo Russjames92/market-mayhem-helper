@@ -1087,10 +1087,13 @@ function renderPlayers() {
 
           <div style="display:flex; align-items:center; gap:6px;">
             <button type="button" data-role="sharesDown" data-player="${p.id}">-100</button>
+
             <div class="mini" style="min-width:120px; text-align:center;">
               Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
             </div>
+            
             <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
+            <button type="button" data-role="sharesMax" data-player="${p.id}">MAX</button>
           </div>
 
           <button type="button" class="primary" data-role="buy" data-player="${p.id}">Buy</button>
@@ -1155,6 +1158,28 @@ function renderPlayers() {
     wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`).addEventListener("click", () => {
       doTrade(p.id, "SELL", elSymbol.value, tradeShares);
     });
+
+     wrap.querySelector(`[data-role="sharesMax"][data-player="${p.id}"]`).addEventListener("click", () => {
+        const symbol = elSymbol.value;
+        const stock = getStock(symbol);
+        const price = state.prices[symbol] ?? stock.start;
+      
+        if (!Number.isFinite(price) || price <= 0) {
+          alert("Invalid stock price.");
+          return;
+        }
+      
+        // max shares they can afford, rounded DOWN to nearest 100
+        const maxLots = Math.floor(p.cash / (price * 100));
+        const maxShares = Math.max(100, maxLots * 100);
+      
+        // If they can't afford even 100 shares, set to 100 (and preview will show they can't buy)
+        // If you'd rather clamp to 0 in that case, tell me and I'll adjust.
+        tradeShares = maxShares;
+      
+        updatePreview();
+      });
+
 
      elSellAll.addEventListener("click", () => {
         const symbol = elSymbol.value;
