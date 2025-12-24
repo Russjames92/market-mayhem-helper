@@ -249,7 +249,38 @@ function renderLeaderboard() {
     elLeaderboard.innerHTML = `<div class="muted">No completed sessions yet.</div>`;
     return;
   }
-}
+// Toggle button styles
+  if (elBtnLeaderboardViewSummary && elBtnLeaderboardViewGames) {
+    elBtnLeaderboardViewSummary.classList.toggle("primary", leaderboardView === "summary");
+    elBtnLeaderboardViewGames.classList.toggle("primary", leaderboardView === "games");
+  }
+
+  if (leaderboardView === "games") {
+    // Recent games feed
+    elLeaderboard.innerHTML = leaderboard
+      .slice()
+      .reverse()
+      .map(game => {
+        const rows = game.placements
+          .map(p => `<div class="mini"><strong>#${p.place}</strong> ${p.name} — <strong>$${fmtMoney(p.assets)}</strong></div>`)
+          .join("");
+
+        return `
+          <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
+            <div class="mini muted">${game.ts}</div>
+            <div style="margin-top:6px; font-size:13px; font-weight:900;">
+              Winner: ${game.winner}
+            </div>
+            <div style="margin-top:8px;">${rows}</div>
+          </div>
+        `;
+      })
+      .join("");
+
+    if (!session) {
+        console.warn("No active session");
+      }
+  }
 
 function getAllIndustries() {
   const set = new Set();
@@ -322,39 +353,6 @@ function applyBulkToSelected(delta) {
   renderAll();
   saveState();
 }
-
-  // Toggle button styles
-  if (elBtnLeaderboardViewSummary && elBtnLeaderboardViewGames) {
-    elBtnLeaderboardViewSummary.classList.toggle("primary", leaderboardView === "summary");
-    elBtnLeaderboardViewGames.classList.toggle("primary", leaderboardView === "games");
-  }
-
-  if (leaderboardView === "games") {
-    // Recent games feed
-    elLeaderboard.innerHTML = leaderboard
-      .slice()
-      .reverse()
-      .map(game => {
-        const rows = game.placements
-          .map(p => `<div class="mini"><strong>#${p.place}</strong> ${p.name} — <strong>$${fmtMoney(p.assets)}</strong></div>`)
-          .join("");
-
-        return `
-          <div style="padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
-            <div class="mini muted">${game.ts}</div>
-            <div style="margin-top:6px; font-size:13px; font-weight:900;">
-              Winner: ${game.winner}
-            </div>
-            <div style="margin-top:8px;">${rows}</div>
-          </div>
-        `;
-      })
-      .join("");
-
-    if (!session) {
-        console.warn("No active session");
-      }
-  }
 
   // Summary rankings table
   const { totalGames, rows } = buildLeaderboardStats();
