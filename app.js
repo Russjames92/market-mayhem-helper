@@ -594,6 +594,186 @@ function openPitBuy(symbol) {
   doTrade(player.id, "BUY", symbol, shares);
 }
 
+// ---------- Trade Modal ----------
+let tradeModalEl = null;
+
+function ensureTradeModal() {
+  if (tradeModalEl) return;
+
+  const back = document.createElement("div");
+  back.className = "mmModalBack";
+  back.id = "mmTradeModalBack";
+
+  back.innerHTML = `
+    <div class="mmModal" role="dialog" aria-modal="true" aria-label="Trade Stock">
+      <div class="mmModalHeader">
+        <div class="mmModalTitle" id="mmTradeModalTitle">Trade</div>
+        <button type="button" class="mmModalClose" id="mmTradeModalClose">✕</button>
+      </div>
+      <div class="mmModalBody">
+        <div class="mmTradeRow">
+          <div class="field">
+            <div class="mini muted" style="min-width:52px;">Player</div>
+            <select id="mmTradePlayer"></select>
+          </div>
+
+          <div class="field">
+            <div class="mini muted" style="min-width:52px;">Stock</div>
+            <div style="font-weight:900;" id="mmTradeStockLabel">—</div>
+          </div>
+
+          <div class="mmTradeShares">
+            <button type="button" id="mmTradeDown">-100</button>
+            <div class="mini" style="min-width:140px; text-align:center;">
+              Shares: <strong id="mmTradeShares">100</strong>
+            </div>
+            <button type="button" id="mmTradeUp">+100</button>
+          </div>
+        </div>
+
+        <div class="mmTradePreview mini muted" id="mmTradePreview"></div>
+
+        <div class="mmTradeBtns">
+          <button type="button" class="primary" id="mmTradeBuy">Buy</button>
+          <button type="button" id="mmTradeSell">Sell</button>
+          <button type="button" class="danger" id="mmTradeSellAll">Sell All</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // click outside closes
+  back.addEventListener("click", (e) => {
+    if (e.target === back) closeTradeModal();
+  });
+
+  document.body.appendChild(back);
+  tradeModalEl = back;
+
+  document.getElementById("mmTradeModalClose").addEventListener("click", closeTradeModal);
+
+  // ESC closes
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && tradeModalEl?.classList.contains("open")) closeTradeModal();
+  });
+}
+
+let tradeModalState = {
+  symbol: null,
+  shares: 100,
+  playerId: null
+};
+
+function openTradeModalForStock(symbol) {
+  if (!state.started) {
+    alert("Start a session first.");
+    return;
+  }
+
+  ensureTradeModal();
+
+  const stock = getStock(symbol);
+  if (!stock) return;
+
+  tradeModalState.symbol = symbol;
+  tradeModalState.shares = 100;
+
+  // build player dropdown
+  const sel = document.getElementById("mmTradePlayer");
+  sel.innerHTML = state.players
+    .map(p => `<option value="${p.id}">${p.name}</option>`)
+    .join("");
+
+  // default to first player
+  tradeModalState.playerId = state.players[0]?.id || null;
+  sel.value = tradeModalState.playerId;
+
+  sel.onchange = () => {
+    tradeModalState.playerId = sel.value;
+    renderTradeModalPreview();
+  };
+
+  // set labels
+  document.getElementById("mmTradeModalTitle").textContent = `Trade — ${symbol}`;
+  document.getElementById("mmTradeStockLabel").textContent = `${symbol} — ${stock.name}`;
+
+  // share buttons
+  document.getElementById("mmTradeDown").onclick = () => {
+    tradeModalState.shares = Math.max(100, tradeModalState.shares - 100);
+    renderTradeModalPreview();
+  };
+  document.getElementById("mmTradeUp").onclick = () => {
+    tradeModalState.shares += 100;
+    renderTradeModalPreview();
+  };
+
+  // actions
+  document.getElementById("mmTradeBuy").onclick = () => {
+    const pid = tradeModalState.playerId;
+    if (!pid) return;
+    doTrade(pid, "BUY", tradeModalState.symbol, tradeModalState.shares);
+    renderTradeModalPreview(); // update owned/cash after trade
+  };
+
+  document.getElementById("mmTradeSell").onclick = () => {
+    const pid = tradeModalState.playerId;
+    if (!pid) return;
+    doTrade(pid, "SELL", tradeModalState.symbol, tradeModalState.shares);
+    renderTradeModalPreview();
+  };
+
+  document.getElementById("mmTradeSellAll").onclick = () => {
+    const pid = tradeModalState.playerId;
+    if (!pid) return;
+
+    const p = state.players.find(x => x.id === pid);
+    if (!p) return;
+    ensureHoldings(p);
+
+    const owned = p.holdings[tradeModalState.symbol] || 0;
+    if (owned <= 0) return;
+
+    doTrade(pid, "SELL", tradeModalState.symbol, owned);
+    renderTradeModalPreview();
+  };
+
+  renderTradeModalPreview();
+
+  tradeModalEl.classList.add("open");
+}
+
+function closeTradeModal() {
+  if (!tradeModalEl) return;
+  tradeModalEl.classList.remove("open");
+}
+
+function renderTradeModalPreview() {
+  const sym = tradeModalState.symbol;
+  const stock = getStock(sym);
+  if (!sym || !stock) return;
+
+  document.getElementById("mmTradeShares").textContent = String(tradeModalState.shares);
+
+  const price = state.prices[sym] ?? stock.start;
+  const total = tradeModalState.shares * price;
+
+  const p = state.players.find(x => x.id === tradeModalState.playerId);
+  if (!p) return;
+  ensureHoldings(p);
+
+  const owned = p.holdings[sym] || 0;
+
+  // enable/disable sell all
+  const sellAllBtn = document.getElementById("mmTradeSellAll");
+  if (sellAllBtn) sellAllBtn.disabled = owned <= 0;
+
+  document.getElementById("mmTradePreview").innerHTML =
+    `Price: <strong>$${fmtMoney(price)}</strong> • ` +
+    `Total: <strong>$${fmtMoney(total)}</strong> • ` +
+    `Owned: <strong>${owned} sh</strong> • ` +
+    `Cash: <strong>$${fmtMoney(p.cash)}</strong>`;
+}
+
 // ---------- Save/Load ----------
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -758,12 +938,12 @@ function renderPitBoard() {
         <input class="pitSelect" type="checkbox" data-symbol="${s.symbol}" ${checked} />
       </td>
       <td>
-        <button type="button" class="pitTradeBtn" data-action="pitBuy" data-symbol="${s.symbol}">
+        <button type="button" class="pitLink" data-action="tradeStock" data-symbol="${s.symbol}">
           <strong>${s.symbol}</strong>
         </button>
       </td>
       <td>
-        <button type="button" class="pitTradeBtn" data-action="pitBuy" data-symbol="${s.symbol}">
+        <button type="button" class="pitLink" data-action="tradeStock" data-symbol="${s.symbol}">
           ${s.name}
         </button>
       </td>
@@ -784,11 +964,9 @@ function renderPitBoard() {
       card.innerHTML = `
         <div class="pitRow1">
           <div class="pitLeft">
-            <div class="pitSymLine">
-              <button type="button" class="pitTradeBtn" data-action="pitBuy" data-symbol="${s.symbol}" style="background:transparent; border:none; padding:0; color:inherit; cursor:pointer; text-align:left;">
-                 <span class="pitSym">${s.symbol}</span>
-                 <span class="pitName">${s.name}</span>
-               </button>
+            <div class="pitSymLine" data-action="tradeStock" data-symbol="${s.symbol}" style="cursor:pointer;">
+               <span class="pitSym">${s.symbol}</span>
+               <span class="pitName">${s.name}</span>
             </div>
           </div>
 
@@ -1443,6 +1621,17 @@ document.addEventListener("click", (e) => {
   const btn = e.target.closest('[data-action="pitBuy"]');
   if (!btn) return;
   openPitBuy(btn.dataset.symbol);
+});
+
+document.addEventListener("click", (e) => {
+  // ignore clicks on checkboxes or edit price button
+  if (e.target.closest(".pitSelect")) return;
+  if (e.target.closest('[data-action="editPrice"]')) return;
+
+  const trg = e.target.closest('[data-action="tradeStock"]');
+  if (!trg) return;
+
+  openTradeModalForStock(trg.dataset.symbol);
 });
 
 // Pit board: filter
