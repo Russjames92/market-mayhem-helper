@@ -1638,6 +1638,17 @@ function renderPlayers() {
 
 function renderLog() {
   elLog.innerHTML = "";
+     if (live.enabled) {
+       const banner = document.createElement("div");
+       banner.className = "item";
+       const label = live.isHost ? "HOST" : "VIEWER";
+       banner.innerHTML = `
+         <div class="mini muted">LIVE</div>
+         <div><strong>🔴 LIVE SESSION</strong> — ${label} • Code: <strong>${live.sid}</strong></div>
+       `;
+       elLog.appendChild(banner);
+     }
+
   for (const item of state.log.slice(0, 200)) {
     const div = document.createElement("div");
     div.className = "item";
@@ -2179,6 +2190,23 @@ if (elBtnLiveLeave) {
   });
 }
 
+const SETUP_COLLAPSE_KEY = "mm_setup_collapsed_v1";
+
+function applySetupCollapsed(collapsed) {
+  if (!elSessionSetupBody || !elBtnToggleSetup) return;
+
+  elSessionSetupBody.style.display = collapsed ? "none" : "";
+  elBtnToggleSetup.textContent = collapsed ? "Show" : "Collapse";
+
+  localStorage.setItem(SETUP_COLLAPSE_KEY, collapsed ? "1" : "0");
+}
+
+if (elBtnToggleSetup) {
+  elBtnToggleSetup.addEventListener("click", () => {
+    const isCollapsed = elSessionSetupBody && elSessionSetupBody.style.display === "none";
+    applySetupCollapsed(!isCollapsed);
+  });
+}
 
 // Pit board: filter
 if (elPitIndustryFilter) {
@@ -2262,6 +2290,9 @@ function init() {
   buildIndustryUI();
   buildShortMoveUI();
   buildPitControlsUI();
+     // Restore setup collapsed state
+  const collapsed = localStorage.getItem(SETUP_COLLAPSE_KEY) === "1";
+  applySetupCollapsed(collapsed);
 
   if (state.started) {
     for (const p of state.players) ensureHoldings(p);
