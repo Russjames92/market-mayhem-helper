@@ -941,7 +941,9 @@ function startSession() {
   state.prices = prices;
   state.log = [];
    state.openingBells = 0;
-
+   
+   buildPitControlsUI();
+   
   addLog(`Session started with ${n} player(s). Starting cash: $${fmtMoney(startingCash)} each.`);
   renderAll();
   saveState();
