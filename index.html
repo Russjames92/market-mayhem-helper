@@ -22,6 +22,7 @@
       <div class="pill" id="sessionStatus">No session loaded</div>
       <button class="primary" id="btnSave">Save</button>
       <button class="danger" id="btnReset">Reset</button>
+      <button class="danger" id="btnEndSession" type="button" disabled>End Session</button>
     </div>
   </header>
 
@@ -31,7 +32,7 @@
       <!-- 1) Session Setup -->
       <section class="card" id="setupCard">
         <div class="sectionHead">
-          <h2>1) Session Setup</h2>
+          <h2>Session Setup</h2>
           <button type="button" class="btnToggle" id="btnToggleSetup">Collapse</button>
         </div>
         <div class="sub">Choose number of players (2–4), names, and starting cash. Then start session.</div>
@@ -101,7 +102,7 @@
       <!-- 2) Market Mover -->
       <section class="card" id="marketMoverCard">
         <div class="sectionHead">
-          <h2>2) Market Mover</h2>
+          <h2>Market Mover</h2>
           <button type="button" class="btnToggle" id="btnToggleMarketMover">Collapse</button>
         </div>
         <div class="sub">Select industries, choose up/down, then enter the 2d6 total.</div>
@@ -140,7 +141,7 @@
       <!-- 3) Quick Tools -->
       <section class="card" id="toolsCard">
         <div class="sectionHead">
-          <h2>3) Quick Tools</h2>
+          <h2>Quick Tools</h2>
           <button type="button" class="btnToggle" id="btnToggleTools">Collapse</button>
         </div>
         <div class="sub">Common actions: dividends and short move.</div>
@@ -181,7 +182,6 @@
           <div class="row" style="align-items:flex-start;">
             <div class="sub" style="flex:1; min-width:220px;">Buy/Sell in 100-share increments</div>
             <div style="flex:0; min-width:180px;">
-              <button class="danger" id="btnEndSession" type="button" disabled>End Session</button>
             </div>
           </div>
 
@@ -192,7 +192,7 @@
       <!-- Pit Board -->
       <section class="card" id="pitBoardSection">
         <div class="sectionHead">
-          <h2>4) Pit Board</h2>
+          <h2>Pit Board</h2>
           <button type="button" class="btnToggle" id="btnTogglePitBoard">Collapse</button>
         </div>
 
