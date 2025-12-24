@@ -2328,26 +2328,26 @@ if (elPitClearSelected) {
 // ---------- Init ----------
 function init() {
   loadState();
-   
-   loadLeaderboard();
-   renderLeaderboard();
+
+  loadLeaderboard();
+  renderLeaderboard();
 
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
   buildPitControlsUI();
-     // Restore setup collapsed state
-  const collapsed = localStorage.getItem(SETUP_COLLAPSE_KEY) === "1";
-  applySetupCollapsed(collapsed);
 
   if (state.started) {
     for (const p of state.players) ensureHoldings(p);
   }
 
-   setupPitToggle();
-   renderAll();
-   initCollapsibleSections();
+  setupPitToggle();
+  renderAll();
+
+  // ✅ this now runs, because init() no longer crashes
+  initCollapsibleSections();
 }
+
 init();
 initFirebase();
 setLiveUI();
