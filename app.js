@@ -936,14 +936,15 @@ function assertHostAction() {
 }
 
 function initFirebase() {
-  // TODO: paste your Firebase config here (from Firebase Console → Project settings)
+  console.log("initFirebase() CALLED");
+
   const firebaseConfig = {
-    apiKey: "PASTE_ME",
-    authDomain: "PASTE_ME",
-    projectId: "PASTE_ME",
-    storageBucket: "PASTE_ME",
-    messagingSenderId: "PASTE_ME",
-    appId: "PASTE_ME",
+    apiKey: "AIzaSyC4VOmU6kXwYG-fIh0G2-m2LbJSNfaCCjs",
+    authDomain: "market-mayhem-live.firebaseapp.com",
+    projectId: "market-mayhem-live",
+    storageBucket: "market-mayhem-live.appspot.com",
+    messagingSenderId: "1089674731126",
+    appId: "1:1089674731126:web:9a2825dac7f28c5be5c957"
   };
 
   // If user hasn't configured it yet, don't crash the whole app
@@ -2157,19 +2158,6 @@ if (elPitClearSelected) {
     renderPitBoard();
   });
 }
-
-// --------- FB Init --------
-function initFirebase() {
-   console.log("initFirebase() CALLED");
-  const firebaseConfig = {
-  apiKey: "AIzaSyC4VOmU6kXwYG-fIh0G2-m2LbJSNfaCCjs",
-  authDomain: "market-mayhem-live.firebaseapp.com",
-  projectId: "market-mayhem-live",
-  storageBucket: "market-mayhem-live.firebasestorage.app",
-  messagingSenderId: "1089674731126",
-  appId: "1:1089674731126:web:9a2825dac7f28c5be5c957"
-};
-  };
 
 // ---------- Init ----------
 function init() {
