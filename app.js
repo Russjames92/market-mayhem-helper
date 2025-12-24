@@ -707,20 +707,31 @@ function openTradeModalForStock(symbol) {
     tradeModalState.shares += 100;
     renderTradeModalPreview();
   };
+   // modal MAX button (use modal state, not player-card vars)
    const elMax = document.getElementById("modalSharesMax");
-
-elMax.addEventListener("click", () => {
-  const player = state.players.find(p => p.id === selectedPlayerId);
-  if (!player) return;
-
-  const stock = getStock(selectedSymbol);
-  const price = state.prices[selectedSymbol] ?? stock.start;
-
-  const maxShares = Math.floor(player.cash / price / 100) * 100;
-
-  tradeShares = Math.max(100, maxShares);
-  updatePreview();
-});
+   elMax.onclick = () => {
+     const pid = tradeModalState.playerId;
+     const sym = tradeModalState.symbol;
+   
+     const player = state.players.find(p => p.id === pid);
+     const stock = getStock(sym);
+     if (!player || !stock) return;
+   
+     const price = state.prices[sym] ?? stock.start;
+     if (!Number.isFinite(price) || price <= 0) {
+       alert("Invalid stock price.");
+       return;
+     }
+   
+     // max shares affordable, rounded DOWN to nearest 100
+     const maxLots = Math.floor(player.cash / (price * 100));
+     const maxShares = maxLots * 100;
+   
+     // if they can't afford 100, keep it at 100 (same behavior as player section)
+     tradeModalState.shares = Math.max(100, maxShares);
+   
+     renderTradeModalPreview();
+   };
 
   // actions
   document.getElementById("mmTradeBuy").onclick = () => {
