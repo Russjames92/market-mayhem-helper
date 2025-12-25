@@ -431,6 +431,26 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   #leaderboard th, #leaderboard td{ padding:10px 10px; font-size:12px; }
 }
 
+/* ===== Pit Card checkbox: force top-right (mobile + desktop safe) ===== */
+.pitCard{
+  position: relative;
+}
+
+/* the checkbox inside each mobile stock card */
+.pitCard input[type="checkbox"].pitSelectCard{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  margin: 0;
+}
+
+/* make sure the symbol line has space so it never sits under the checkbox */
+.pitCard .pitRow1{
+  padding-right: 44px;
+}
+
+
 /* Print log export */
 @media print{
   body{ background:#fff !important; color:#000 !important; }
