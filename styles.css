@@ -93,6 +93,27 @@ input,select,button,textarea{
   padding:10px;
   outline:none;
 }
+
+/* ✅ Critical: don't make checkboxes full-width */
+input[type="checkbox"]{
+  width:auto !important;
+  padding:0 !important;
+  background:transparent !important;
+  border-radius:8px;
+}
+
+/* Pit card checkbox: force it to the top-right and keep it there */
+.pitRow1{
+  align-items:flex-start; /* top align */
+}
+
+.pitSelectCard{
+  width:auto !important;
+  margin-left:auto;
+  flex:0 0 auto;
+  align-self:flex-start;
+}
+
 input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
 
 button{ cursor:pointer; font-weight:800; }
