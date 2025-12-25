@@ -1168,6 +1168,26 @@ function pushStateToCloud() {
   });
 }
 
+function pushLeaderboardEntryToCloud(entry) {
+  try {
+    const ref = fb.db.collection("sessions").doc(live.sid);
+
+    // Keep a capped array in the room doc (prevents doc bloat)
+    // We'll store up to 50 games.
+    ref.get().then(snap => {
+      const data = snap.exists ? (snap.data() || {}) : {};
+      const list = Array.isArray(data.leaderboard) ? data.leaderboard.slice() : [];
+      list.push(entry);
+
+      // cap
+      const capped = list.slice(-50);
+
+      return ref.set({ leaderboard: capped }, { merge: true });
+    }).catch(() => {});
+  } catch {}
+}
+
+
 function setViewersPill(n) {
   if (!elLiveViewersPill) return;
   if (!live.enabled) {
