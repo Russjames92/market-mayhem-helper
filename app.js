@@ -288,8 +288,15 @@ function rankLabel(idx){
 function renderLeaderboard() {
   if (!elLeaderboard) return;
 
-  if (!leaderboard.length) {
-    elLeaderboard.innerHTML = `<div class="muted">No completed sessions yet.</div>`;
+  // ✅ Source of truth:
+  // - Live viewer: show shared leaderboard from the live room
+  // - Host / offline: show local leaderboard (device)
+  const list = (live?.enabled && !live?.isHost && Array.isArray(live.leaderboard))
+    ? live.leaderboard
+    : leaderboard;
+
+  if (!list.length) {
+    elLeaderboard.innerHTML = `<div class="muted">No completed games yet.</div>`;
     return;
   }
 
@@ -299,11 +306,13 @@ function renderLeaderboard() {
     elBtnLeaderboardViewGames.classList.toggle("primary", leaderboardView === "games");
   }
 
+  const canDelete = !(live?.enabled && !live?.isHost); // viewers can't delete shared leaderboard entries
+
   // -------------------------
   // RECENT GAMES VIEW
   // -------------------------
   if (leaderboardView === "games") {
-    elLeaderboard.innerHTML = leaderboard
+    elLeaderboard.innerHTML = list
       .slice()
       .reverse()
       .map(game => {
@@ -312,36 +321,41 @@ function renderLeaderboard() {
           .join("");
 
         return `
-           <div style="position:relative; padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
-             
-             <button
-               type="button"
-               class="lbDel"
-               data-lb-del="${game.id}"
-               title="Delete this game"
-               style="
-                 position:absolute;
-                 top:10px;
-                 right:10px;
-                 width:34px;
-                 height:34px;
-                 border-radius:10px;
-                 border:1px solid var(--border2);
-                 background:rgba(0,0,0,.25);
-                 color:var(--text);
-                 font-weight:900;
-                 cursor:pointer;
-                 line-height:1;
-               "
-             >✕</button>
-         
-             <div class="mini muted">${game.ts}</div>
-             <div style="margin-top:6px; font-size:13px; font-weight:900;">
-               Winner: ${game.winner}
-             </div>
-             <div style="margin-top:8px;">${rows}</div>
-           </div>
-         `;
+          <div style="position:relative; padding:10px; border:1px solid var(--border2); border-radius:12px; background:var(--panel2); margin-bottom:10px;">
+            ${
+              canDelete
+                ? `
+                  <button
+                    type="button"
+                    class="lbDel"
+                    data-lb-del="${game.id}"
+                    title="Delete this game"
+                    style="
+                      position:absolute;
+                      top:10px;
+                      right:10px;
+                      width:34px;
+                      height:34px;
+                      border-radius:10px;
+                      border:1px solid var(--border2);
+                      background:rgba(0,0,0,.25);
+                      color:var(--text);
+                      font-weight:900;
+                      cursor:pointer;
+                      line-height:1;
+                    "
+                  >✕</button>
+                `
+                : ``
+            }
+
+            <div class="mini muted">${game.ts}</div>
+            <div style="margin-top:6px; font-size:13px; font-weight:900;">
+              Winner: ${game.winner}
+            </div>
+            <div style="margin-top:8px;">${rows}</div>
+          </div>
+        `;
       })
       .join("");
 
@@ -351,7 +365,8 @@ function renderLeaderboard() {
   // -------------------------
   // SUMMARY VIEW (ALL-TIME)
   // -------------------------
-  const { totalGames, rows } = buildLeaderboardStats();
+  // build stats from whichever list we're rendering
+  const { totalGames, rows } = buildLeaderboardStatsFrom(list);
   const isMobileLb = window.matchMedia("(max-width: 700px)").matches;
 
   if (isMobileLb) {
@@ -419,18 +434,6 @@ function renderLeaderboard() {
   `;
 }
 
-function deleteLeaderboardGameById(gameId) {
-  const idx = leaderboard.findIndex(g => g && g.id === gameId);
-  if (idx === -1) return;
-
-  const g = leaderboard[idx];
-  const ok = confirm(`Delete this recorded game?\n\n${g?.ts || ""}\nWinner: ${g?.winner || "—"}`);
-  if (!ok) return;
-
-  leaderboard.splice(idx, 1);
-  saveLeaderboard();
-  renderLeaderboard();
-}
 
 function updatePitSelectedUI() {
   if (!elPitSelectedCount) return;
