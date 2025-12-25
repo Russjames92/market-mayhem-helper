@@ -581,6 +581,35 @@ function buildLeaderboardStats() {
   return { totalGames, rows };
 }
 
+function buildLeaderboardStatsFrom(list) {
+  const games = Array.isArray(list) ? list : [];
+  const stats = new Map();
+
+  for (const g of games) {
+    const winner = g?.winner;
+    const placements = Array.isArray(g?.placements) ? g.placements : [];
+
+    for (const p of placements) {
+      const name = p?.name || "Unknown";
+      const assets = Number(p?.assets || 0);
+
+      if (!stats.has(name)) {
+        stats.set(name, { name, games: 0, wins: 0, totalAssets: 0 });
+      }
+
+      const row = stats.get(name);
+      row.games += 1;
+      row.totalAssets += assets;
+      if (winner && winner === name) row.wins += 1;
+    }
+  }
+
+  const rows = Array.from(stats.values())
+    .sort((a, b) => (b.wins - a.wins) || (b.totalAssets - a.totalAssets));
+
+  return { totalGames: games.length, rows };
+}
+
 function fmt1(n) {
   const x = Number(n || 0);
   return x.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
