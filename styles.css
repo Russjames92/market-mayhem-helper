@@ -471,7 +471,6 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   padding-right: 44px;
 }
 
-
 /* Print log export */
 @media print{
   body{ background:#fff !important; color:#000 !important; }
@@ -483,3 +482,98 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   .item{ border-bottom:1px solid #ddd !important; }
   .mini{ color:#333 !important; }
 }
+
+/* --- Trade Modal --- */
+.mmModalBack {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 9999;
+}
+
+.mmModalBack.open { 
+  display: flex; 
+}
+
+.mmModal {
+  width: min(980px, 100%);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  background: var(--panel2);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.mmModalHeader {
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.mmModalTitle {
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.mmModalClose {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+}
+
+.mmModalBody { 
+  padding: 14px; 
+}
+
+.mmTradeRow {
+  display:flex;
+  gap: 12px;
+  align-items:center;
+  flex-wrap: wrap;
+}
+
+.mmTradeRow .field {
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex: 1;
+  min-width: 260px;
+}
+
+.mmTradeRow select {
+  width: 100%;
+}
+
+.mmTradeShares {
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.mmTradePreview {
+  margin-top: 10px;
+}
+
+.mmTradeBtns {
+  margin-top: 14px;
+  display:grid;
+  gap: 10px;
+}
+
+.mmTradeBtns button {
+  width: 100%;
+  padding: 16px 14px;
+  font-weight: 900;
+  border-radius: 14px;
+}
+
