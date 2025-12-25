@@ -1982,12 +1982,13 @@ function printGameLog() {
   win.document.close();
 }
 
-function endSession(force = false) {
+function endGame(force = false) {
   if (!state.started) return;
 
   if (!force) {
-    if (!confirm("End session and record results to the leaderboard?")) return;
+    if (!confirm("End game and record results to the leaderboard?")) return;
   }
+
   // compute standings
   const standings = state.players.map(p => ({
     id: p.id,
@@ -1997,39 +1998,48 @@ function endSession(force = false) {
 
   standings.sort((a, b) => b.assets - a.assets);
 
-  const placements = standings.map((p, idx) => ({
-    place: idx + 1,
-    name: String(p.name || "").trim(),
-    assets: p.assets
+  const winner = standings[0]?.name || "Unknown";
+  const placements = standings.map((s, i) => ({
+    place: i + 1,
+    name: s.name,
+    assets: s.assets
   }));
 
-  const winner = placements[0]?.name || "—";
-
-  // store on leaderboard
+  // leaderboard entry
   const entry = {
-     id: crypto.randomUUID ? crypto.randomUUID() : `g_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-     ts: nowTs(),
-     winner,
-     placements
-   };
+    id: crypto.randomUUID ? crypto.randomUUID() : `g_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+    ts: nowTs(),
+    winner,
+    placements
+  };
 
+  // ✅ Always store locally (host device)
   leaderboard.push(entry);
   saveLeaderboard();
+
+  // ✅ ALSO store to the live room (shared) if host is live
+  if (live.enabled && live.isHost && fb.ready && live.sid) {
+    pushLeaderboardEntryToCloud(entry);
+  }
+
   renderLeaderboard();
 
-  // log it too
   addLog(
-    `🏁 Session Ended — Winner: <strong>${winner}</strong><br>` +
+    `🏁 Game Ended — Winner: <strong>${winner}</strong><br>` +
     `<span class="mini muted">` +
     placements.map(p => `#${p.place} ${p.name} ($${fmtMoney(p.assets)})`).join(" • ") +
     `</span>`
   );
 
-  // mark session ended (but don't delete it unless you want to)
+  // end THIS GAME, but keep the live room
   state.started = false;
   renderAll();
   saveState();
+
+  // Push final state to viewers (so they see game ended + can view leaderboard)
+  if (live.enabled && live.isHost) pushStateToCloud();
 }
+
 
 function payDividendsConfirmed() {
   if (!state.started) return;
