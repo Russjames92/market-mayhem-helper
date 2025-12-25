@@ -1815,9 +1815,10 @@ function payDividends() {
   saveState();
 
   if (state.openingBells >= MAX_OPENING_BELLS) {
-    addLog(`⏱️ Year ${MAX_OPENING_BELLS} reached — ending session.`);
-    endSession(true); // force end + record winner
-  }
+     addLog(`⏱️ Year ${MAX_OPENING_BELLS} reached — ending game.`);
+     endGame(true); // force end + record winner (does NOT leave live)
+   }
+
 }
 
 function shortMove() {
