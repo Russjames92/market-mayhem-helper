@@ -1064,6 +1064,9 @@ function subscribeToSession(sid) {
 
     const data = snap.data() || {};
     const remoteState = data.state;
+     live.leaderboard = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+      renderLeaderboard();
+
 
     // Determine role
     live.isHost = (data.hostUid && fb.uid && data.hostUid === fb.uid);
@@ -2174,7 +2177,7 @@ elBtnEndSession.addEventListener("click", () => {
 
   if (!ok) return;
 
-  endSession();
+    endGame();
 });
 
 elBtnClearLeaderboard.addEventListener("click", clearLeaderboard);
