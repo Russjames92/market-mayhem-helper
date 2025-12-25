@@ -324,6 +324,25 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
 }
 .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
 
+/* Mobile pit cards: put checkbox in top-right */
+.pitRow1{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.pitLeft{
+  flex:1 1 auto;
+  min-width:0;
+}
+
+.pitSelectCard{
+  margin-left:auto;
+  flex:0 0 auto;
+  align-self:flex-start;
+}
+
 /* pit price button */
 .pitPriceBtn{
   width:auto;
