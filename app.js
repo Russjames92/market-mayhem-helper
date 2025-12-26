@@ -60,7 +60,11 @@ const elBtnSave = document.getElementById("btnSave");
 const elBtnReset = document.getElementById("btnReset");
 const elLogTicker = document.getElementById("logTicker");
 const elLogTickerText = document.getElementById("logTickerText");
+
+let logTickerQueue = [];
+let logTickerRunning = false;
 let logTickerTimer = null;
+
 // ---------- Live Session (Firebase) ----------
 const elLiveRolePill = document.getElementById("liveRolePill");
 const elBtnLiveCreate = document.getElementById("btnLiveCreate");
