@@ -559,6 +559,20 @@ function renderLeaderboard() {
   `;
 }
 
+function deleteLeaderboardGameById(gameId) {
+  const idx = leaderboard.findIndex(g => g && g.id === gameId);
+  if (idx === -1) return;
+
+  const g = leaderboard[idx];
+  const ok = confirm(
+    `Delete this recorded game?\n\n${g?.ts || ""}\nWinner: ${g?.winner || "—"}`
+  );
+  if (!ok) return;
+
+  leaderboard.splice(idx, 1);
+  saveLeaderboard();
+  renderLeaderboard();
+}
 
 function updatePitSelectedUI() {
   if (!elPitSelectedCount) return;
