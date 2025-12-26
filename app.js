@@ -509,6 +509,22 @@ function renderOpeningBellCounter() {
   elBtnPayDividends.textContent = label;
 }
 
+function wireVolatilityModeEnhancers() {
+  const elVol = document.getElementById("volatilityMode");
+  const elCash = document.getElementById("startingCash");
+  if (!elVol || !elCash) return;
+
+  const applyDefaults = () => {
+    if (state.started) return;
+    elCash.value = elVol.checked ? "1000000" : "50000";
+    renderOpeningBellCounter();
+  };
+
+  elVol.addEventListener("change", applyDefaults);
+  applyDefaults();
+}
+
+
 let leaderboard = []; // [{ ts, placements:[{place,name,assets}], winner }]
 let leaderboardView = "summary"; // "summary" | "games"
 
