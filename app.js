@@ -1055,6 +1055,57 @@ function renderTradeModalPreview() {
     `Cash: <strong>$${fmtMoney(p.cash)}</strong>`;
 }
 
+// ---------- Setup Modals ----------
+function initSetupModals() {
+  const liveModal = document.getElementById("liveModal");
+  const newGameModal = document.getElementById("newGameModal");
+  const btnOpenLive = document.getElementById("btnOpenLiveModal");
+  const btnOpenNewGame = document.getElementById("btnOpenNewGameModal");
+
+  function openModal(el) {
+    if (!el) return;
+    el.hidden = false;
+    el.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modalOpen");
+  }
+
+  function closeModal(el) {
+    if (!el) return;
+    el.hidden = true;
+    el.setAttribute("aria-hidden", "true");
+    // if both modals are closed, unlock body
+    if ((liveModal?.hidden ?? true) && (newGameModal?.hidden ?? true)) {
+      document.body.classList.remove("modalOpen");
+    }
+  }
+
+  btnOpenLive?.addEventListener("click", () => openModal(liveModal));
+  btnOpenNewGame?.addEventListener("click", () => openModal(newGameModal));
+
+  // Close buttons + overlay click
+  document.addEventListener("click", (e) => {
+    const closeId = e.target?.getAttribute?.("data-close-modal");
+    if (!closeId) return;
+
+    const el = document.getElementById(closeId);
+    closeModal(el);
+  });
+
+  // ESC closes whichever is open
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (liveModal && !liveModal.hidden) closeModal(liveModal);
+    if (newGameModal && !newGameModal.hidden) closeModal(newGameModal);
+  });
+
+  // If the Setup section is collapsed while a modal is open, close them
+  const btnToggleSetup = document.getElementById("btnToggleSetup");
+  btnToggleSetup?.addEventListener("click", () => {
+    closeModal(liveModal);
+    closeModal(newGameModal);
+  });
+}
+
 // ---------- Save/Load ----------
 function saveState(opts = {}) {
   const { silent = true } = opts;
@@ -2614,7 +2665,8 @@ function init() {
   renderAll();
 
   // ✅ this now runs, because init() no longer crashes
-  initCollapsibleSections();
+    initCollapsibleSections();
+     initSetupModals();
 }
 
 init();
