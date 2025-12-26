@@ -42,10 +42,11 @@ const STOCKS = [
 let state = {
   started: false,
   createdAt: null,
-  players: [],     // { id, name, cash, holdings: {SYM: shares} }
-  prices: {},      // { SYM: currentPrice }
-  log: [],         // { ts, text }
-   openingBells: 0,
+  players: [],
+  prices: {},
+  dissolved: {},   // ✅ { SYM: { ts, reason } }
+  log: [],
+  openingBells: 0,
 };
 
 // ---------- Pit Board View State ----------
