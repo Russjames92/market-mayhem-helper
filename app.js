@@ -1868,13 +1868,13 @@ function renderPlayers() {
 
   ensureHoldings(p);
 
-  // ---- Helpers for avatar locking ----
+  // ---- Avatar locking helpers ----
   function getTakenAvatarIds(exceptPlayerId) {
     const taken = new Set();
     for (const pl of (state.players || [])) {
       if (!pl) continue;
       if (pl.id === exceptPlayerId) continue;
-      if (pl.avatar) taken.add(pl.avatar); // avatar is the preset id, e.g. "avatar-003"
+      if (pl.avatar) taken.add(pl.avatar); // e.g. "avatar-003"
     }
     return taken;
   }
@@ -1958,7 +1958,7 @@ function renderPlayers() {
 
         <div class="avatarPicker" hidden>
           <div class="mini muted" style="margin-bottom:8px;">
-            Choose an avatar (unique per game) or upload a photo (local only).
+            Select a unique avatar (one per player).
           </div>
 
           <div class="avatarGrid">
@@ -1975,22 +1975,9 @@ function renderPlayers() {
                   style="background-image:url('${a.src}')"
                   ${disabled ? "disabled" : ""}
                   title="${disabled ? "Taken" : "Select"}"
-                  aria-label="${disabled ? "Taken avatar" : "Select avatar"}"
                 ></button>
               `;
             }).join("")}
-          </div>
-
-          <div class="avatarUploadRow">
-            <input type="file" accept="image/*" class="avatarFile" />
-            <button type="button" class="avatarApplyBtn primary" disabled>Apply Upload</button>
-            <button type="button" class="avatarCancelBtn" disabled>Cancel</button>
-            <button type="button" class="avatarClear danger">Clear Upload</button>
-          </div>
-
-          <div class="avatarUploadPreview" hidden>
-            <div class="mini muted" style="margin-top:10px;">Preview</div>
-            <div class="avatarPreviewBox"></div>
           </div>
         </div>
       </div>
@@ -2034,39 +2021,19 @@ function renderPlayers() {
     </div>
   `;
 
-  // ---- Mount ----
   elPlayersArea.appendChild(wrap);
 
   // ---- Cash dialog ----
   wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
 
-  // ---- Avatar interactions ----
+  // ---- Avatar picker interactions ----
   const btnAvatar = wrap.querySelector('[data-action="toggleAvatar"]');
   const picker = wrap.querySelector(".avatarPicker");
-  const clearBtn = wrap.querySelector(".avatarClear");
-  const fileInput = wrap.querySelector(".avatarFile");
-  const applyBtn = wrap.querySelector(".avatarApplyBtn");
-  const cancelBtn = wrap.querySelector(".avatarCancelBtn");
-  const previewWrap = wrap.querySelector(".avatarUploadPreview");
-  const previewBox = wrap.querySelector(".avatarPreviewBox");
-
-  let pendingUploadDataUrl = "";
-
-  function resetPendingUpload() {
-    pendingUploadDataUrl = "";
-    applyBtn.disabled = true;
-    cancelBtn.disabled = true;
-    previewWrap.hidden = true;
-    previewBox.style.backgroundImage = "";
-    fileInput.value = "";
-  }
 
   btnAvatar.addEventListener("click", () => {
     picker.hidden = !picker.hidden;
-    if (!picker.hidden) resetPendingUpload();
   });
 
-  // Preset selection with duplicate prevention
   wrap.querySelectorAll(".avatarOption").forEach(btn => {
     btn.addEventListener("click", () => {
       if (btn.disabled) return;
@@ -2074,57 +2041,16 @@ function renderPlayers() {
       const id = btn.getAttribute("data-avatar");
       if (!id) return;
 
-      // Safety check: prevent selecting a taken avatar (in case DOM was stale)
+      // prevent race/stale DOM
       const takenNow = getTakenAvatarIds(p.id);
       if (takenNow.has(id) && p.avatar !== id) return;
 
-      p.avatar = id; // store the chosen preset id on player
+      p.avatar = id;
+
       if (typeof saveState === "function") saveState();
       if (typeof renderAll === "function") renderAll();
       else renderPlayers();
     });
-  });
-
-  // Upload: local-only override stored in localStorage (does NOT participate in "taken")
-  // (You already have these helpers in your file; if not, remove the setPlayerAvatarLocal lines)
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files?.[0];
-    if (!file) {
-      resetPendingUpload();
-      return;
-    }
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file.");
-      resetPendingUpload();
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingUploadDataUrl = String(reader.result || "");
-      if (!pendingUploadDataUrl) return;
-
-      applyBtn.disabled = false;
-      cancelBtn.disabled = false;
-      previewWrap.hidden = false;
-      previewBox.style.backgroundImage = `url('${pendingUploadDataUrl}')`;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  applyBtn.addEventListener("click", () => {
-    if (!pendingUploadDataUrl) return;
-    if (typeof setPlayerAvatarLocal === "function") {
-      setPlayerAvatarLocal(p.id, pendingUploadDataUrl);
-    }
-    renderPlayers();
-  });
-
-  cancelBtn.addEventListener("click", () => resetPendingUpload());
-
-  clearBtn.addEventListener("click", () => {
-    if (typeof setPlayerAvatarLocal === "function") setPlayerAvatarLocal(p.id, "");
-    renderPlayers();
   });
 
   // ---- Trade preview + controls ----
