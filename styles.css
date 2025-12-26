@@ -759,3 +759,21 @@ body.modalOpen{ overflow:hidden; }
   background:#1e1e24;
   border-color:#3a3a3a;
 }
+
+/* Player card transition on tab switch */
+.playerCardAnim{
+  animation: playerCardIn 160ms ease-out;
+}
+
+@keyframes playerCardIn{
+  from{
+    opacity: 0;
+    transform: translateY(6px) scale(.992);
+    filter: blur(6px);
+  }
+  to{
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
