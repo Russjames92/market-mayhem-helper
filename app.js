@@ -228,6 +228,18 @@ function defaultAvatarForPlayer(p){
   return AVATAR_PRESETS[idx].src;
 }
 
+function getTakenAvatarIds(exceptPlayerId = null) {
+  const taken = new Set();
+  for (const pl of (state.players || [])) {
+    if (!pl) continue;
+    if (exceptPlayerId && pl.id === exceptPlayerId) continue;
+
+    const a = pl.avatarId || pl.avatar || ""; // support either field name
+    if (a) taken.add(a);
+  }
+  return taken;
+}
+
 // ---------- Helpers ----------
 function getActiveStocks() {
   return state?.volatilityMode ? ALL_STOCKS : BASE_STOCKS;
@@ -1821,7 +1833,6 @@ function renderPitBoard() {
 }
 
 function renderPlayers() {
-  // Safety: if these are not defined for some reason, don't hard-crash
   if (!elPlayersArea) return;
 
   elPlayersArea.innerHTML = "";
@@ -1832,44 +1843,55 @@ function renderPlayers() {
     return;
   }
 
-  // Ensure activePlayerId is valid
+  // Ensure active player id is valid
   if (!activePlayerId || !state.players.some(p => p.id === activePlayerId)) {
     activePlayerId = state.players[0]?.id || null;
   }
 
-  // ----- Tabs -----
+  // ---- Tabs ----
   if (typeof elPlayerTabs !== "undefined" && elPlayerTabs) {
-    for (const p of state.players) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "playerTab" + (p.id === activePlayerId ? " isActive" : "");
-      btn.textContent = p.name;
-      btn.addEventListener("click", () => {
-        activePlayerId = p.id;
+    for (const pl of state.players) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "playerTab" + (pl.id === activePlayerId ? " isActive" : "");
+      b.textContent = pl.name;
+      b.addEventListener("click", () => {
+        activePlayerId = pl.id;
         renderPlayers();
       });
-      elPlayerTabs.appendChild(btn);
+      elPlayerTabs.appendChild(b);
     }
   }
 
-  // ----- Render only the active player -----
   const p = state.players.find(x => x.id === activePlayerId);
   if (!p) return;
 
   ensureHoldings(p);
 
-  const wrap = document.createElement("div");
-  wrap.className = "card";
+  // ---- Helpers for avatar locking ----
+  function getTakenAvatarIds(exceptPlayerId) {
+    const taken = new Set();
+    for (const pl of (state.players || [])) {
+      if (!pl) continue;
+      if (pl.id === exceptPlayerId) continue;
+      if (pl.avatar) taken.add(pl.avatar); // avatar is the preset id, e.g. "avatar-003"
+    }
+    return taken;
+  }
 
-  // Compute stats / lines
+  const taken = getTakenAvatarIds(p.id);
+  const currentAvatarId = p.avatar || "";
+  const avatarObj =
+    AVATAR_PRESETS.find(a => a.id === currentAvatarId) ||
+    AVATAR_PRESETS[0] ||
+    { id: "", src: "" };
+
+  const avatarSrc = avatarObj.src;
+
+  // ---- Stats / holdings ----
   const { total: divTotal } = computePlayerDividendDue(p);
   const investedIndustries = computePlayerIndustries(p);
   const totalAssets = computePlayerNetWorth(p);
-
-  // Avatar source (local map + deterministic fallback)
-  const idx = state.players.findIndex(x => x.id === p.id);
-  const defaultAvatar = AVATAR_PRESETS[(idx >= 0 ? idx : 0) % AVATAR_PRESETS.length]?.src || "";
-  const avatarSrc = getPlayerAvatarLocal(p.id) || defaultAvatar;
 
   const industryLine = investedIndustries.length
     ? `
@@ -1910,10 +1932,14 @@ function renderPlayers() {
     </div>
   `;
 
-  // Build card (same overall layout as before)
+  // ---- Build card ----
+  const wrap = document.createElement("div");
+  wrap.className = "card playerCardAnim";
+
   wrap.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-      <!-- LEFT SIDE (identity) -->
+
+      <!-- LEFT -->
       <div style="flex:1; min-width:260px;">
         <div class="playerIdentity">
           <div class="playerAvatar" style="background-image:url('${avatarSrc}')"></div>
@@ -1931,20 +1957,35 @@ function renderPlayers() {
         </div>
 
         <div class="avatarPicker" hidden>
-          <div class="mini muted" style="margin-bottom:8px;">Choose an avatar or upload a photo.</div>
+          <div class="mini muted" style="margin-bottom:8px;">
+            Choose an avatar (unique per game) or upload a photo (local only).
+          </div>
 
           <div class="avatarGrid">
-            ${AVATAR_PRESETS.map(a => `
-              <button type="button" class="avatarOption" data-avatar="${a.id}" style="background-image:url('${a.src}')"></button>
-            `).join("")}
+            ${AVATAR_PRESETS.map(a => {
+              const isTaken = taken.has(a.id);
+              const isMine = currentAvatarId === a.id;
+              const disabled = isTaken && !isMine;
+
+              return `
+                <button
+                  type="button"
+                  class="avatarOption ${disabled ? "isTaken" : ""} ${isMine ? "isSelected" : ""}"
+                  data-avatar="${a.id}"
+                  style="background-image:url('${a.src}')"
+                  ${disabled ? "disabled" : ""}
+                  title="${disabled ? "Taken" : "Select"}"
+                  aria-label="${disabled ? "Taken avatar" : "Select avatar"}"
+                ></button>
+              `;
+            }).join("")}
           </div>
 
           <div class="avatarUploadRow">
             <input type="file" accept="image/*" class="avatarFile" />
-            <button type="button" class="avatarUploadBtn">Upload</button>
-            <button type="button" class="avatarApplyBtn primary" disabled>Apply</button>
+            <button type="button" class="avatarApplyBtn primary" disabled>Apply Upload</button>
             <button type="button" class="avatarCancelBtn" disabled>Cancel</button>
-            <button type="button" class="avatarClear danger">Clear</button>
+            <button type="button" class="avatarClear danger">Clear Upload</button>
           </div>
 
           <div class="avatarUploadPreview" hidden>
@@ -1954,7 +1995,7 @@ function renderPlayers() {
         </div>
       </div>
 
-      <!-- RIGHT SIDE (trade controls) -->
+      <!-- RIGHT (trade controls) -->
       <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
         <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
           Stock
@@ -1987,36 +2028,32 @@ function renderPlayers() {
     </div>
 
     <div class="divider"></div>
-
     <div>
       ${holdingLines}
       ${dividendSummary}
     </div>
   `;
 
-  // Add entry animation on every re-render
-  wrap.classList.add("playerCardAnim");
+  // ---- Mount ----
+  elPlayersArea.appendChild(wrap);
 
   // ---- Cash dialog ----
   wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
 
-  // ---- Avatar logic (single block, no duplicates) ----
+  // ---- Avatar interactions ----
   const btnAvatar = wrap.querySelector('[data-action="toggleAvatar"]');
   const picker = wrap.querySelector(".avatarPicker");
-  const fileInput = wrap.querySelector(".avatarFile");
   const clearBtn = wrap.querySelector(".avatarClear");
-
-  const uploadBtn = wrap.querySelector(".avatarUploadBtn");
+  const fileInput = wrap.querySelector(".avatarFile");
   const applyBtn = wrap.querySelector(".avatarApplyBtn");
   const cancelBtn = wrap.querySelector(".avatarCancelBtn");
-
   const previewWrap = wrap.querySelector(".avatarUploadPreview");
   const previewBox = wrap.querySelector(".avatarPreviewBox");
 
-  let pendingAvatarDataUrl = "";
+  let pendingUploadDataUrl = "";
 
   function resetPendingUpload() {
-    pendingAvatarDataUrl = "";
+    pendingUploadDataUrl = "";
     applyBtn.disabled = true;
     cancelBtn.disabled = true;
     previewWrap.hidden = true;
@@ -2026,62 +2063,71 @@ function renderPlayers() {
 
   btnAvatar.addEventListener("click", () => {
     picker.hidden = !picker.hidden;
-    // when opening, reset the pending upload UI
     if (!picker.hidden) resetPendingUpload();
   });
 
+  // Preset selection with duplicate prevention
   wrap.querySelectorAll(".avatarOption").forEach(btn => {
     btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+
       const id = btn.getAttribute("data-avatar");
-      const found = AVATAR_PRESETS.find(a => a.id === id);
-      if (!found) return;
-      setPlayerAvatarLocal(p.id, found.src);
-      renderPlayers();
+      if (!id) return;
+
+      // Safety check: prevent selecting a taken avatar (in case DOM was stale)
+      const takenNow = getTakenAvatarIds(p.id);
+      if (takenNow.has(id) && p.avatar !== id) return;
+
+      p.avatar = id; // store the chosen preset id on player
+      if (typeof saveState === "function") saveState();
+      if (typeof renderAll === "function") renderAll();
+      else renderPlayers();
     });
   });
 
+  // Upload: local-only override stored in localStorage (does NOT participate in "taken")
+  // (You already have these helpers in your file; if not, remove the setPlayerAvatarLocal lines)
   fileInput.addEventListener("change", () => {
-     const file = fileInput.files?.[0];
-     if (!file) {
-       resetPendingUpload();
-       return;
-     }
-     if (!file.type.startsWith("image/")) {
-       alert("Please upload an image file.");
-       resetPendingUpload();
-       return;
-     }
-   
-     const reader = new FileReader();
-     reader.onload = () => {
-       pendingAvatarDataUrl = String(reader.result || "");
-       applyBtn.disabled = !pendingAvatarDataUrl;
-       cancelBtn.disabled = !pendingAvatarDataUrl;
-   
-       previewWrap.hidden = false;
-       previewBox.style.backgroundImage = `url('${pendingAvatarDataUrl}')`;
-     };
-     reader.readAsDataURL(file);
-   });
+    const file = fileInput.files?.[0];
+    if (!file) {
+      resetPendingUpload();
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file.");
+      resetPendingUpload();
+      return;
+    }
 
-   uploadBtn.addEventListener("click", () => fileInput.click());
+    const reader = new FileReader();
+    reader.onload = () => {
+      pendingUploadDataUrl = String(reader.result || "");
+      if (!pendingUploadDataUrl) return;
+
+      applyBtn.disabled = false;
+      cancelBtn.disabled = false;
+      previewWrap.hidden = false;
+      previewBox.style.backgroundImage = `url('${pendingUploadDataUrl}')`;
+    };
+    reader.readAsDataURL(file);
+  });
 
   applyBtn.addEventListener("click", () => {
-    if (!pendingAvatarDataUrl) return;
-    setPlayerAvatarLocal(p.id, pendingAvatarDataUrl);
+    if (!pendingUploadDataUrl) return;
+    if (typeof setPlayerAvatarLocal === "function") {
+      setPlayerAvatarLocal(p.id, pendingUploadDataUrl);
+    }
     renderPlayers();
   });
 
-  cancelBtn.addEventListener("click", () => {
-    resetPendingUpload();
-  });
+  cancelBtn.addEventListener("click", () => resetPendingUpload());
 
   clearBtn.addEventListener("click", () => {
-    setPlayerAvatarLocal(p.id, "");
+    if (typeof setPlayerAvatarLocal === "function") setPlayerAvatarLocal(p.id, "");
     renderPlayers();
   });
 
-  // ---- Trade preview + controls (same behavior as before) ----
+  // ---- Trade preview + controls ----
   const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
   const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
   const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
@@ -2147,9 +2193,6 @@ function renderPlayers() {
   });
 
   updatePreview();
-
-  // Finally mount the card
-  elPlayersArea.appendChild(wrap);
 }
 
 function renderLog() {
