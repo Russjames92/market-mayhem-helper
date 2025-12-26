@@ -178,14 +178,30 @@ function showLogTicker(messageHtml) {
     elLogTicker.classList.remove("show");
   }, 2600);
 }
-function addLog(html) {
-  state.log.push({ ts: nowTs(), html });
-  renderLog();
-  saveState();
-  if (live.enabled && live.isHost) pushStateToCloud();
+function addLog(text) {
+  // store the log entry
+  state.log.unshift({ ts: nowTs(), text });
 
-  // ✅ NEW: show top ticker
-  showLogTicker(html);
+  // keep log from growing forever
+  if (state.log.length > 400) state.log.length = 400;
+
+  // update UI
+  renderLog();
+
+  // persist
+  saveState?.();
+
+  // live sync (host only)
+  if (live?.enabled && live?.isHost) {
+    pushStateToCloud?.();
+  }
+
+  // ticker should NEVER be allowed to break logging
+  try {
+    showLogTicker?.(text); // ✅ use the correct variable: text
+  } catch (e) {
+    // ignore ticker errors
+  }
 }
 function clampPrice(n) {
   return Math.max(0, Math.round(n));
