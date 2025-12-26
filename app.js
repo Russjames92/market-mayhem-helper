@@ -2232,20 +2232,28 @@ function executeTradeWithSlippage(symbol, signedShares) {
   let execTotal = 0;
   let current = price;
 
-  for (let i = 0; i < lots; i++) {
-    const lotShares = Math.min(VOL_LOT_SIZE, remaining);
-    remaining -= lotShares;
+    let remaining = totalShares;
+     let execTotal = 0;
+     let current = price; // float during fill
+   
+     for (let i = 0; i < lots; i++) {
+       const lotShares = Math.min(VOL_LOT_SIZE, remaining);
+       remaining -= lotShares;
+   
+       // execute this lot at current price
+       execTotal += lotShares * current;
+   
+       // move price for next lot (NO rounding here)
+       current = current + (isBuy ? +ticksPerLot : -ticksPerLot);
+       if (current <= 0) {
+         current = 0;
+         break;
+       }
+     }
 
-    // execute this lot at current price
-    execTotal += lotShares * current;
-
-    // move price for next lot
-    current = clampPrice(current + (isBuy ? +ticksPerLot : -ticksPerLot));
-    if (current <= 0) {
-      current = 0;
-      break;
-    }
-  }
+  // round once at end
+  const finalPrice = clampPrice(current);
+  state.prices[symbol] = finalPrice;
 
   // end price becomes the new market price
   const finalPrice = clampPrice(current);
