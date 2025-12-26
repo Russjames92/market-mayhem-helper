@@ -319,7 +319,7 @@ function getAllIndustries() {
 }
 function ensureHoldings(player) {
   if (!player.holdings) player.holdings = {};
-  for (const s of STOCKS) {
+  for (const s of getActiveStocks()) {
     if (player.holdings[s.symbol] == null) player.holdings[s.symbol] = 0;
   }
 }
@@ -337,7 +337,7 @@ function computePlayerDividendDue(player) {
   let total = 0;
   const perStock = {};
 
-  for (const s of STOCKS) {
+  for (const s of getActiveStocks()) {
     const shares = player.holdings[s.symbol] || 0;
     const due = shares > 0 ? (shares * s.dividend) : 0;
     if (due > 0) perStock[s.symbol] = due;
@@ -351,7 +351,7 @@ function computePlayerIndustries(player) {
 
   const set = new Set();
 
-  for (const s of STOCKS) {
+  for (const s of getActiveStocks()) {
     const shares = player.holdings[s.symbol] || 0;
     if (shares > 0) {
       s.industries.forEach(ind => set.add(ind));
@@ -1520,7 +1520,7 @@ function buildIndustryUI() {
 
 function buildShortMoveUI() {
   elShortMoveSymbol.innerHTML = "";
-  for (const s of STOCKS) {
+  for (const s of getActiveStocks()) {
    if (isDissolved(s.symbol)) continue;
     const opt = document.createElement("option");
     opt.value = s.symbol;
@@ -2028,7 +2028,7 @@ function payDividends() {
   for (const p of state.players) {
     ensureHoldings(p);
     let paid = 0;
-    for (const s of STOCKS) {
+    for (const s of getActiveStocks()) {
      if (isDissolved(s.symbol)) continue;
       const shares = p.holdings[s.symbol] || 0;
       if (shares <= 0) continue;
