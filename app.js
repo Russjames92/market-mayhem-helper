@@ -2472,7 +2472,13 @@ function doTrade(playerId, act, symbol, shares) {
     }
     p.cash -= cost;
     p.holdings[symbol] = (p.holdings[symbol] || 0) + shares;
-    addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
+    const impact = applyOrderFlowImpact(symbol, +shares);
+      const impactLine = impact.delta
+        ? `<br><span class="mini muted">Order Flow Impact: ${symbol} ${impact.delta > 0 ? "+" : ""}${impact.delta} → $${fmtMoney(impact.after)}</span>`
+        : "";
+      
+      addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.${impactLine}`);
+
   } else if (act === "SELL") {
     const owned = p.holdings[symbol] || 0;
     if (owned < shares) {
@@ -2481,7 +2487,13 @@ function doTrade(playerId, act, symbol, shares) {
     }
     p.holdings[symbol] = owned - shares;
     p.cash += cost;
-    addLog(`${p.name} SELL ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
+    const impact = applyOrderFlowImpact(symbol, -shares);
+      const impactLine = impact.delta
+        ? `<br><span class="mini muted">Order Flow Impact: ${symbol} ${impact.delta > 0 ? "+" : ""}${impact.delta} → $${fmtMoney(impact.after)}</span>`
+        : "";
+      
+      addLog(`${p.name} SELL ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.${impactLine}`);
+
   } else {
     alert("Invalid trade action.");
     return false;
