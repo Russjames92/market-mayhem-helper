@@ -990,33 +990,38 @@ function openTradeModalForStock(symbol) {
 
   // actions
   document.getElementById("mmTradeBuy").onclick = () => {
-    const pid = tradeModalState.playerId;
-    if (!pid) return;
-    doTrade(pid, "BUY", tradeModalState.symbol, tradeModalState.shares);
-    renderTradeModalPreview(); // update owned/cash after trade
-  };
-
-  document.getElementById("mmTradeSell").onclick = () => {
-    const pid = tradeModalState.playerId;
-    if (!pid) return;
-    doTrade(pid, "SELL", tradeModalState.symbol, tradeModalState.shares);
-    renderTradeModalPreview();
-  };
-
-  document.getElementById("mmTradeSellAll").onclick = () => {
-    const pid = tradeModalState.playerId;
-    if (!pid) return;
-
-    const p = state.players.find(x => x.id === pid);
-    if (!p) return;
-    ensureHoldings(p);
-
-    const owned = p.holdings[tradeModalState.symbol] || 0;
-    if (owned <= 0) return;
-
-    doTrade(pid, "SELL", tradeModalState.symbol, owned);
-    renderTradeModalPreview();
-  };
+     const pid = tradeModalState.playerId;
+     if (!pid) return;
+   
+     const ok = doTrade(pid, "BUY", tradeModalState.symbol, tradeModalState.shares);
+     if (ok) closeTradeModal();
+     else renderTradeModalPreview();
+   };
+   
+   document.getElementById("mmTradeSell").onclick = () => {
+     const pid = tradeModalState.playerId;
+     if (!pid) return;
+   
+     const ok = doTrade(pid, "SELL", tradeModalState.symbol, tradeModalState.shares);
+     if (ok) closeTradeModal();
+     else renderTradeModalPreview();
+   };
+   
+   document.getElementById("mmTradeSellAll").onclick = () => {
+     const pid = tradeModalState.playerId;
+     if (!pid) return;
+   
+     const p = state.players.find(x => x.id === pid);
+     if (!p) return;
+     ensureHoldings(p);
+   
+     const owned = p.holdings[tradeModalState.symbol] || 0;
+     if (owned <= 0) return;
+   
+     const ok = doTrade(pid, "SELL", tradeModalState.symbol, owned);
+     if (ok) closeTradeModal();
+     else renderTradeModalPreview();
+   };
 
   renderTradeModalPreview();
 
@@ -2179,59 +2184,61 @@ function openCashDialog(playerId) {
 }
 
 function doTrade(playerId, act, symbol, shares) {
-   if (!assertHostAction()) return;
+  if (!assertHostAction()) return false;
+
   const p = state.players.find(x => x.id === playerId);
-  if (!p) return;
+  if (!p) return false;
   ensureHoldings(p);
 
   const stock = getStock(symbol);
   if (!stock) {
     alert("Unknown symbol.");
-    return;
+    return false;
   }
+
   if (!Number.isFinite(shares) || shares <= 0 || shares % 100 !== 0) {
     alert("Shares must be 100, 200, 300...");
-    return;
+    return false;
   }
 
   const price = state.prices[symbol] ?? stock.start;
   const cost = shares * price;
-   const verb = act === "BUY" ? "BUY" : "SELL";
+  const verb = act === "BUY" ? "BUY" : "SELL";
 
-      const confirmMsg =
-        `${p.name}\n\n` +
-        `${verb} ${shares} shares of ${symbol}\n` +
-        `@ $${fmtMoney(price)} per share\n\n` +
-        `Total: $${fmtMoney(cost)}\n\n` +
-        `Confirm this trade?`;
-      
-      if (!confirm(confirmMsg)) return;
+  const confirmMsg =
+    `${p.name}\n\n` +
+    `${verb} ${shares} shares of ${symbol}\n` +
+    `@ $${fmtMoney(price)} per share\n\n` +
+    `Total: $${fmtMoney(cost)}\n\n` +
+    `Confirm this trade?`;
+
+  if (!confirm(confirmMsg)) return false;
 
   if (act === "BUY") {
     if (p.cash < cost) {
       alert(`${p.name} doesn’t have enough cash. Needs $${fmtMoney(cost)}, has $${fmtMoney(p.cash)}.`);
-      return;
+      return false;
     }
     p.cash -= cost;
     p.holdings[symbol] = (p.holdings[symbol] || 0) + shares;
     addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
   } else if (act === "SELL") {
     const owned = p.holdings[symbol] || 0;
-
     if (owned < shares) {
       alert(`${p.name} doesn’t have enough shares to sell. Has ${owned}.`);
-      return;
+      return false;
     }
     p.holdings[symbol] = owned - shares;
     p.cash += cost;
     addLog(`${p.name} SELL ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.`);
   } else {
     alert("Invalid trade action.");
-    return;
+    return false;
   }
 
   renderAll();
   saveState();
+  return true;
 }
 
 function printGameLog() {
