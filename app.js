@@ -1868,6 +1868,7 @@ function applyMarketMover() {
       const before = state.prices[stock.symbol] ?? stock.start;
       const after = clampPrice(before + signed);
       state.prices[stock.symbol] = after;
+      if (after === 0) dissolveCompany(stock.symbol, `Market mover (${sel.industry} ${sel.dir === "up" ? "↑" : "↓"}) moved it to $0`);
 
       deltas.push(`${stock.symbol} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
     }
@@ -1900,6 +1901,7 @@ function payDividends() {
     ensureHoldings(p);
     let paid = 0;
     for (const s of STOCKS) {
+     if (isDissolved(s.symbol)) continue;
       const shares = p.holdings[s.symbol] || 0;
       if (shares <= 0) continue;
       paid += shares * s.dividend;
@@ -1942,6 +1944,7 @@ function shortMove() {
 
   // ✅ THIS was missing:
   state.prices[sym] = after;
+   if (after === 0) dissolveCompany(sym, `Short move (${signed >= 0 ? "+" : ""}${signed}) moved it to $0`);
 
   addLog(`Short Move: ${sym} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
   renderAll();
