@@ -279,12 +279,23 @@ input[type="checkbox"]{
   font-weight:900;
 }
 
+/* Default (desktop) */
 #pitCards{ display:none; }
 
+/* Mobile */
 @media (max-width:700px){
-  .pitToggle{ display:inline-block; }
   #pitTableWrap{ display:none; }
-  #pitBoardSection.expanded #pitCards{ display:grid; gap:10px; }
+
+  /* SHOW pit cards by default */
+  #pitCards{
+    display:grid;
+    gap:10px;
+  }
+
+  /* Collapse state (controlled by collapse button) */
+  #pitBoardSection.collapsed #pitCards{
+    display:none;
+  }
 }
 
 .pitCard{
