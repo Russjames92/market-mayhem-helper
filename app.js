@@ -310,12 +310,9 @@ function diceBand(total) {
   if (total >= 6 && total <= 8) return "mid";
   return "high";
 }
-function getStock(symbol) {
-  return STOCKS.find(s => s.symbol === symbol);
-}
 function getAllIndustries() {
   const set = new Set();
-  for (const s of STOCKS) s.industries.forEach(i => set.add(i));
+  for (const s of getActiveStocks()) s.industries.forEach(i => set.add(i));
   return [...set].sort();
 }
 function ensureHoldings(player) {
