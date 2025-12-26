@@ -1076,6 +1076,10 @@ function resetState() {
   renderAll();
 }
 
+function syncVolatilityUIFromState() {
+  const elVol = document.getElementById("volatilityMode");
+  if (elVol) elVol.checked = !!state.volatilityMode;
+}
 // ---------- Live Session (Firebase) ----------
 function setLiveUI() {
   const role = !live.enabled ? "OFF" : (live.isHost ? `HOST • ${live.sid}` : `VIEWER • ${live.sid}`);
