@@ -1268,6 +1268,7 @@ function subscribeToSession(sid) {
         // keep your defaults safe
         if (state.openingBells == null) state.openingBells = 0;
 
+         ensurePricesForActiveStocks();
         renderAll();
         renderStatus();
       } finally {
