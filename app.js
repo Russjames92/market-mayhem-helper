@@ -156,6 +156,45 @@ function addLog(text) {
 function clampPrice(n) {
   return Math.max(0, Math.round(n));
 }
+function isDissolved(sym) {
+  return !!state.dissolved?.[sym];
+}
+
+function dissolveCompany(sym, reason = "Price hit $0") {
+  if (!state.dissolved) state.dissolved = {};
+  if (state.dissolved[sym]) return false; // already dissolved
+
+  // mark dissolved
+  state.dissolved[sym] = { ts: nowTs(), reason };
+
+  // force price to 0
+  state.prices[sym] = 0;
+
+  // remove from selection set if selected
+  pitSelected.delete(sym);
+
+  // wipe all player holdings
+  const losers = [];
+  for (const p of state.players) {
+    ensureHoldings(p);
+    const lost = Number(p.holdings?.[sym] || 0);
+    if (lost > 0) {
+      p.holdings[sym] = 0;
+      losers.push(`${p.name} lost ${lost} shares`);
+    }
+  }
+
+  const stock = getStock(sym);
+  addLog(
+    `💥 <strong>${sym}</strong> (${stock?.name || "Company"}) dissolved — price hit <strong>$0</strong>.<br>` +
+    `<span class="mini muted">${reason}${losers.length ? " • " + losers.join(" • ") : ""}</span>`
+  );
+
+  // if host is live, push to viewers
+  if (live?.enabled && live?.isHost) pushStateToCloud?.();
+
+  return true;
+}
 function diceBand(total) {
   if (total >= 2 && total <= 5) return "low";
   if (total >= 6 && total <= 8) return "mid";
