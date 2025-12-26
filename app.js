@@ -15,7 +15,7 @@ const CANON_INDUSTRIES = [
 const MAX_OPENING_BELLS = 4;
 
 // Stock definitions (start price, dividend, dice move table)
-const STOCKS = [
+const BASE_STOCKS = [
   { symbol:"EE",   name:"Evanston Electric",   industries:["Manufacturing","Energy"], start:95,  dividend:5,  moves:{low:12, mid:10, high:8} },
   { symbol:"ABE",  name:"Alberta Energy",      industries:["Energy"], start:125, dividend:10, moves:{low:16, mid:12, high:10} },
   { symbol:"SLR",  name:"Stuart Solar",        industries:["Energy"], start:90,  dividend:6,  moves:{low:12, mid:10, high:8} },
@@ -38,16 +38,33 @@ const STOCKS = [
   { symbol:"LB",   name:"Liberty Logistix",    industries:["Transportation"], start:90, dividend:5, moves:{low:12, mid:10, high:8} },
 ];
 
+const VOLATILITY_STOCKS = [
+  { symbol: "NOVA", name: "NovaDyne Systems", industries: ["Technology"], start: 18, dividend: 0 },
+  { symbol: "VOLT", name: "VoltEdge Energy", industries: ["Energy"], start: 22, dividend: 1 },
+  { symbol: "CRSH", name: "CrashLoop Logistics", industries: ["Transportation"], start: 16, dividend: 0 },
+  { symbol: "PULSE", name: "PulseWave Biotech", industries: ["Healthcare"], start: 24, dividend: 1 },
+  { symbol: "STACK", name: "StackHammer Construction", industries: ["Manufacturing"], start: 20, dividend: 1 },
+  { symbol: "FLUX", name: "Flux Materials", industries: ["Manufacturing"], start: 19, dividend: 0 },
+  { symbol: "SPRK", name: "SparkRoute Media", industries: ["Technology"], start: 17, dividend: 0 },
+  { symbol: "DRIFT", name: "DriftNet Retail", industries: ["Consumer"], start: 21, dividend: 1 },
+  { symbol: "FORGE", name: "IronForge Industrial", industries: ["Manufacturing"], start: 26, dividend: 2 },
+  { symbol: "SKY",  name: "SkyPierce Aerospace", industries: ["Transportation", "Technology"], start: 28, dividend: 0 }
+];
+
+const ALL_STOCKS = [...BASE_STOCKS, ...VOLATILITY_STOCKS];
+
 // ---------- State ----------
 let state = {
   started: false,
   createdAt: null,
   players: [],
   prices: {},
-  dissolved: {},   // ✅ { SYM: { ts, reason } }
+  dissolved: {},
+  volatilityMode: false, // ✅ NEW
   log: [],
   openingBells: 0,
 };
+
 
 // ---------- Pit Board View State ----------
 let pitFilterIndustry = "ALL"; // "ALL" or industry name
@@ -149,6 +166,13 @@ const elPitBulkPlus = document.getElementById("pitBulkPlus");
 const elPitClearSelected = document.getElementById("pitClearSelected");
 
 // ---------- Helpers ----------
+function getActiveStocks() {
+  return state?.volatilityMode ? ALL_STOCKS : BASE_STOCKS;
+}
+
+function getStock(sym) {
+  return ALL_STOCKS.find(s => s.symbol === sym);
+}
 function nowTs() {
   return new Date().toLocaleString();
 }
