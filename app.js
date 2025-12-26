@@ -552,6 +552,29 @@ function renderLeaderboard() {
 
   const canDelete = !(live?.enabled && !live?.isHost); // viewers can't delete shared leaderboard entries
 
+function wireVolatilityModeEnhancers() {
+  const elVol = document.getElementById("volatilityMode");
+  const elCash = document.getElementById("startingCash");
+  if (!elVol || !elCash) return;
+
+  const applyDefaults = () => {
+    // Only adjust setup defaults BEFORE a session starts
+    if (state.started) return;
+
+    if (elVol.checked) {
+      elCash.value = "1000000";
+    } else {
+      elCash.value = "50000";
+    }
+
+    renderOpeningBellCounter();
+  };
+
+  elVol.addEventListener("change", applyDefaults);
+  applyDefaults();
+}
+
+
   // -------------------------
   // RECENT GAMES VIEW
   // -------------------------
@@ -2282,7 +2305,8 @@ function payDividends() {
 
   const nextBell = Number(state.openingBells || 0) + 1;
 
-  if (!confirm(`Confirm Opening Bell #${nextBell} of ${MAX_OPENING_BELLS}?\n\nThis will pay dividends to all players.`)) {
+  const maxBells = getMaxOpeningBells();
+   if (!confirm(`Confirm Opening Bell #${nextBell} of ${maxBells}?\n\nThis will pay dividends to all players.`)) {
     return;
   }
 
@@ -2309,8 +2333,8 @@ function payDividends() {
   renderAll();
   saveState();
 
-  if (state.openingBells >= MAX_OPENING_BELLS) {
-     addLog(`⏱️ Year ${MAX_OPENING_BELLS} reached — ending game.`);
+  if (state.openingBells >= maxBells) {
+     addLog(`⏱️ Year ${maxBells} reached — ending game.`);
      endGame(true); // force end + record winner (does NOT leave live)
    }
 
@@ -2821,6 +2845,7 @@ function init() {
   renderLeaderboard();
 
   buildSetupInputs();
+   wireVolatilityModeEnhancers();
   buildIndustryUI();
   buildShortMoveUI();
   buildPitControlsUI();
