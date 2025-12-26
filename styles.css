@@ -855,3 +855,21 @@ body.modalOpen{ overflow:hidden; }
   width:auto;
   padding:10px 12px;
 }
+.avatarUploadRow button{
+  width:auto !important;
+  padding:10px 12px;
+}
+
+.avatarUploadPreview{
+  margin-top:10px;
+}
+
+.avatarPreviewBox{
+  width:80px;
+  height:80px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  background-size:cover;
+  background-position:center;
+  margin-top:6px;
+}
