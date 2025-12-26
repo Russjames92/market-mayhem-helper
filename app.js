@@ -1059,6 +1059,7 @@ function saveState(opts = {}) {
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
+   if (state.volatilityMode == null) state.volatilityMode = false;
   if (!raw) return;
   try { state = JSON.parse(raw); } catch { /* ignore */ }
 
@@ -1068,7 +1069,7 @@ function loadState() {
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { started:false, createdAt:null, players:[], prices:{}, dissolved:{}, log:[], openingBells:0 };
+  state = { started:false, createdAt:null, players:[], prices:{}, dissolved:{}, volatilityMode: false, log:[], openingBells:0 };
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
