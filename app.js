@@ -548,7 +548,8 @@ function applyBulkToSelected(delta) {
 
     const before = state.prices[sym] ?? s.start;
     const after = clampPrice(before + signed);
-    state.prices[sym] = after;
+      state.prices[sym] = after;
+      if (after === 0) dissolveCompany(sym, `Bulk adjust ${signed >= 0 ? "+" : ""}${signed} moved it to $0`);
 
     touched.push(`${sym} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
   }
