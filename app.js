@@ -1909,13 +1909,37 @@ function renderPlayers() {
   wrap.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
       <div>
-         <div style="font-size:14px; font-weight:800;">${p.name}</div>
-         <div class="mini muted">
-           Cash: <strong>$${fmtMoney(p.cash)}</strong> •
-           Total Assets: <strong>$${fmtMoney(totalAssets)}</strong>
+         <div class="playerLeft">
+           <div class="playerIdentity">
+             <div class="playerAvatar" style="background-image:url('${avatarSrc}')"></div>
+         
+             <div>
+               <div style="font-size:14px; font-weight:800;">${p.name}</div>
+               <div class="mini muted">
+                 Cash: <strong>$${fmtMoney(p.cash)}</strong> •
+                 Total Assets: <strong>$${fmtMoney(totalAssets)}</strong>
+               </div>
+               ${industryLine}
+             </div>
+         
+             <button type="button" class="avatarBtn" data-action="toggleAvatar">Avatar</button>
+           </div>
+         
+           <div class="avatarPicker" hidden>
+             <div class="mini muted" style="margin-bottom:8px;">Choose an avatar or upload a photo.</div>
+         
+             <div class="avatarGrid">
+               ${AVATAR_PRESETS.map(a => `
+                 <button type="button" class="avatarOption" data-avatar="${a.id}" style="background-image:url('${a.src}')"></button>
+               `).join("")}
+             </div>
+         
+             <div class="avatarUploadRow">
+               <input type="file" accept="image/*" class="avatarFile" />
+               <button type="button" class="avatarClear">Clear</button>
+             </div>
+           </div>
          </div>
-         ${industryLine}
-       </div>
 
       <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
         <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
@@ -1957,6 +1981,53 @@ function renderPlayers() {
 
   // Adjust cash
   wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
+
+   // Avatar picker
+   const btnAvatar = wrap.querySelector('[data-action="toggleAvatar"]');
+   const picker = wrap.querySelector('.avatarPicker');
+   const fileInput = wrap.querySelector('.avatarFile');
+   const clearBtn = wrap.querySelector('.avatarClear');
+   
+   btnAvatar.addEventListener("click", () => {
+     picker.hidden = !picker.hidden;
+   });
+   
+   // preset click
+   wrap.querySelectorAll(".avatarOption").forEach(btn => {
+     btn.addEventListener("click", () => {
+       const id = btn.getAttribute("data-avatar");
+       const found = AVATAR_PRESETS.find(a => a.id === id);
+       if (!found) return;
+       setPlayerAvatarLocal(p.id, found.src);
+       renderPlayers(); // re-render to update avatar immediately
+     });
+   });
+   
+   // upload
+   fileInput.addEventListener("change", async (e) => {
+     const file = e.target.files?.[0];
+     if (!file) return;
+   
+     if (!file.type.startsWith("image/")) {
+       alert("Please upload an image file.");
+       return;
+     }
+   
+     const reader = new FileReader();
+     reader.onload = () => {
+       const dataUrl = String(reader.result || "");
+       setPlayerAvatarLocal(p.id, dataUrl);
+       renderPlayers();
+     };
+     reader.readAsDataURL(file);
+   });
+   
+   // clear
+   clearBtn.addEventListener("click", () => {
+     setPlayerAvatarLocal(p.id, "");
+     renderPlayers();
+   });
+
 
   const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
   const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
