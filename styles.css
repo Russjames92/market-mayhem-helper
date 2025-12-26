@@ -577,3 +577,60 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   border-radius: 14px;
 }
 
+/* ===== Log Ticker (top-of-viewport) ===== */
+.logTicker{
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  z-index: 9998;
+  width: min(980px, calc(100% - 20px));
+  pointer-events: none; /* ✅ never blocks gameplay clicks */
+  opacity: 0;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.logTicker.show{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.logTickerInner{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(12,12,14,.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.38);
+}
+
+.logTickerLabel{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .35px;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+  flex: 0 0 auto;
+}
+
+#logTickerText{
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 700px){
+  #logTickerText{ font-size: 12px; }
+}
