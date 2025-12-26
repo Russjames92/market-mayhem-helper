@@ -1824,8 +1824,11 @@ function renderPitBoard() {
 }
 
 function renderPlayers() {
+  // Safety: if these are not defined for some reason, don't hard-crash
+  if (!elPlayersArea) return;
+
   elPlayersArea.innerHTML = "";
-  if (elPlayerTabs) elPlayerTabs.innerHTML = "";
+  if (typeof elPlayerTabs !== "undefined" && elPlayerTabs) elPlayerTabs.innerHTML = "";
 
   if (!state.started) {
     elPlayersArea.innerHTML = `<div class="muted">Start a session to track players.</div>`;
@@ -1838,21 +1841,21 @@ function renderPlayers() {
   }
 
   // ----- Tabs -----
-  if (elPlayerTabs) {
+  if (typeof elPlayerTabs !== "undefined" && elPlayerTabs) {
     for (const p of state.players) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "playerTab" + (p.id === activePlayerId ? " isActive" : "");
       btn.textContent = p.name;
       btn.addEventListener("click", () => {
-        setActivePlayer(p.id);
+        activePlayerId = p.id;
         renderPlayers();
       });
       elPlayerTabs.appendChild(btn);
     }
   }
 
-  // ----- Render only selected player card (same layout as before) -----
+  // ----- Render only the active player -----
   const p = state.players.find(x => x.id === activePlayerId);
   if (!p) return;
 
@@ -1860,36 +1863,16 @@ function renderPlayers() {
 
   const wrap = document.createElement("div");
   wrap.className = "card";
-  wrap.style.marginBottom = "12px";
 
+  // Compute stats / lines
   const { total: divTotal } = computePlayerDividendDue(p);
-
-  const holdingLines = getActiveStocks()
-    .map(s => {
-      const shares = p.holdings[s.symbol] || 0;
-      if (shares === 0) return null;
-
-      const price = state.prices[s.symbol] ?? s.start;
-      const val = shares * price;
-
-      const divDue = shares * s.dividend;
-
-      return `
-        <div class="mini">
-          <strong>${s.symbol}</strong>:
-          ${shares} sh @ $${fmtMoney(price)} = $${fmtMoney(val)}
-          <span class="muted"> • Div Due: $${fmtMoney(divDue)}</span>
-        </div>
-      `;
-    })
-    .filter(Boolean)
-    .join("") || `<div class="mini muted">No holdings yet.</div>`;
-
-  const dividendSummary = divTotal > 0
-    ? `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$${fmtMoney(divTotal)}</strong></div>`
-    : `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$0</strong></div>`;
-
   const investedIndustries = computePlayerIndustries(p);
+  const totalAssets = computePlayerNetWorth(p);
+
+  // Avatar source (local map + deterministic fallback)
+  const idx = state.players.findIndex(x => x.id === p.id);
+  const defaultAvatar = AVATAR_PRESETS[(idx >= 0 ? idx : 0) % AVATAR_PRESETS.length]?.src || "";
+  const avatarSrc = getPlayerAvatarLocal(p.id) || defaultAvatar;
 
   const industryLine = investedIndustries.length
     ? `
@@ -1904,55 +1887,77 @@ function renderPlayers() {
       </div>
     `;
 
-  const totalAssets = computePlayerNetWorth(p);
-  const idx = state.players.findIndex(x => x.id === p.id);
-  const defaultAvatar = AVATAR_PRESETS[(idx >= 0 ? idx : 0) % AVATAR_PRESETS.length]?.src || "";
-  const avatarSrc = getPlayerAvatarLocal(p.id) || defaultAvatar;
+  const holdingLines = getActiveStocks()
+    .map(s => {
+      const shares = p.holdings[s.symbol] || 0;
+      if (shares === 0) return null;
 
+      const price = state.prices[s.symbol] ?? s.start;
+      const val = shares * price;
+      const divDue = shares * s.dividend;
+
+      return `
+        <div class="mini">
+          <strong>${s.symbol}</strong>:
+          ${shares} sh @ $${fmtMoney(price)} = $${fmtMoney(val)}
+          <span class="muted"> • Div Due: $${fmtMoney(divDue)}</span>
+        </div>
+      `;
+    })
+    .filter(Boolean)
+    .join("") || `<div class="mini muted">No holdings yet.</div>`;
+
+  const dividendSummary = `
+    <div class="mini muted" style="margin-top:8px;">
+      Total Dividends Due: <strong>$${fmtMoney(divTotal || 0)}</strong>
+    </div>
+  `;
+
+  // Build card (same overall layout as before)
   wrap.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-      <div>
-         <div class="playerLeft">
-           <div class="playerIdentity">
-             <div class="playerAvatar" style="background-image:url('${avatarSrc}')"></div>
-         
-             <div>
-               <div style="font-size:14px; font-weight:800;">${p.name}</div>
-               <div class="mini muted">
-                 Cash: <strong>$${fmtMoney(p.cash)}</strong> •
-                 Total Assets: <strong>$${fmtMoney(totalAssets)}</strong>
-               </div>
-               ${industryLine}
-             </div>
-         
-             <button type="button" class="avatarBtn" data-action="toggleAvatar">Avatar</button>
-           </div>
-         
-           <div class="avatarPicker" hidden>
-             <div class="mini muted" style="margin-bottom:8px;">Choose an avatar or upload a photo.</div>
-         
-             <div class="avatarGrid">
-               ${AVATAR_PRESETS.map(a => `
-                 <button type="button" class="avatarOption" data-avatar="${a.id}" style="background-image:url('${a.src}')"></button>
-               `).join("")}
-             </div>
-         
-             <div class="avatarUploadRow">
-              <input type="file" accept="image/*" class="avatarFile" />
-              <button type="button" class="avatarUploadBtn">Upload</button>
-              <button type="button" class="avatarApplyBtn primary" disabled>Apply</button>
-              <button type="button" class="avatarCancelBtn" disabled>Cancel</button>
-              <button type="button" class="avatarClear danger">Clear</button>
-            </div>
-            
-            <div class="avatarUploadPreview" hidden>
-              <div class="mini muted" style="margin-top:10px;">Preview</div>
-              <div class="avatarPreviewBox"></div>
-            </div>
-            </div>
-           </div>
-         </div>
+      <!-- LEFT SIDE (identity) -->
+      <div style="flex:1; min-width:260px;">
+        <div class="playerIdentity">
+          <div class="playerAvatar" style="background-image:url('${avatarSrc}')"></div>
 
+          <div style="min-width:0;">
+            <div style="font-size:14px; font-weight:800;">${p.name}</div>
+            <div class="mini muted">
+              Cash: <strong>$${fmtMoney(p.cash)}</strong> •
+              Total Assets: <strong>$${fmtMoney(totalAssets)}</strong>
+            </div>
+            ${industryLine}
+          </div>
+
+          <button type="button" class="avatarBtn" data-action="toggleAvatar">Avatar</button>
+        </div>
+
+        <div class="avatarPicker" hidden>
+          <div class="mini muted" style="margin-bottom:8px;">Choose an avatar or upload a photo.</div>
+
+          <div class="avatarGrid">
+            ${AVATAR_PRESETS.map(a => `
+              <button type="button" class="avatarOption" data-avatar="${a.id}" style="background-image:url('${a.src}')"></button>
+            `).join("")}
+          </div>
+
+          <div class="avatarUploadRow">
+            <input type="file" accept="image/*" class="avatarFile" />
+            <button type="button" class="avatarUploadBtn">Upload</button>
+            <button type="button" class="avatarApplyBtn primary" disabled>Apply</button>
+            <button type="button" class="avatarCancelBtn" disabled>Cancel</button>
+            <button type="button" class="avatarClear danger">Clear</button>
+          </div>
+
+          <div class="avatarUploadPreview" hidden>
+            <div class="mini muted" style="margin-top:10px;">Preview</div>
+            <div class="avatarPreviewBox"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE (trade controls) -->
       <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
         <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
           Stock
@@ -1967,7 +1972,7 @@ function renderPlayers() {
           <div class="mini" style="min-width:120px; text-align:center;">
             Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
           </div>
-          
+
           <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
           <button type="button" data-role="sharesMax" data-player="${p.id}">MAX</button>
         </div>
@@ -1985,139 +1990,98 @@ function renderPlayers() {
     </div>
 
     <div class="divider"></div>
+
     <div>
       ${holdingLines}
       ${dividendSummary}
     </div>
   `;
 
-  // Adjust cash
+  // Add entry animation on every re-render
+  wrap.classList.add("playerCardAnim");
+
+  // ---- Cash dialog ----
   wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
 
-   // Avatar picker
-   const btnAvatar = wrap.querySelector('[data-action="toggleAvatar"]');
-   const picker = wrap.querySelector('.avatarPicker');
-   const fileInput = wrap.querySelector('.avatarFile');
-   const clearBtn = wrap.querySelector('.avatarClear');
-   
-   btnAvatar.addEventListener("click", () => {
-     picker.hidden = !picker.hidden;
-   });
-   
-   // preset click
-   wrap.querySelectorAll(".avatarOption").forEach(btn => {
-     btn.addEventListener("click", () => {
-       const id = btn.getAttribute("data-avatar");
-       const found = AVATAR_PRESETS.find(a => a.id === id);
-       if (!found) return;
-       setPlayerAvatarLocal(p.id, found.src);
-       renderPlayers(); // re-render to update avatar immediately
-     });
-   });
-   
-   // upload
-   fileInput.addEventListener("change", async (e) => {
-     const file = e.target.files?.[0];
-     if (!file) return;
-   
-     if (!file.type.startsWith("image/")) {
-       alert("Please upload an image file.");
-       return;
-     }
-   
-     const reader = new FileReader();
-     reader.onload = () => {
-       const dataUrl = String(reader.result || "");
-       setPlayerAvatarLocal(p.id, dataUrl);
-       renderPlayers();
-     };
-     reader.readAsDataURL(file);
-   });
-   
-   // clear
-   clearBtn.addEventListener("click", () => {
-     setPlayerAvatarLocal(p.id, "");
-     renderPlayers();
-   });
-   // Avatar picker
-   const btnAvatar = wrap.querySelector('[data-action="toggleAvatar"]');
-   const picker = wrap.querySelector('.avatarPicker');
-   const fileInput = wrap.querySelector('.avatarFile');
-   const clearBtn = wrap.querySelector('.avatarClear');
-   
-   const uploadBtn = wrap.querySelector('.avatarUploadBtn');
-   const applyBtn = wrap.querySelector('.avatarApplyBtn');
-   const cancelBtn = wrap.querySelector('.avatarCancelBtn');
-   
-   const previewWrap = wrap.querySelector('.avatarUploadPreview');
-   const previewBox = wrap.querySelector('.avatarPreviewBox');
-   
-   let pendingAvatarDataUrl = "";
-   
-   // open/close
-   btnAvatar.addEventListener("click", () => {
-     picker.hidden = !picker.hidden;
-   });
-   
-   // preset click
-   wrap.querySelectorAll(".avatarOption").forEach(btn => {
-     btn.addEventListener("click", () => {
-       const id = btn.getAttribute("data-avatar");
-       const found = AVATAR_PRESETS.find(a => a.id === id);
-       if (!found) return;
-       setPlayerAvatarLocal(p.id, found.src);
-       renderPlayers();
-     });
-   });
-   
-   function resetPendingUpload() {
-     pendingAvatarDataUrl = "";
-     applyBtn.disabled = true;
-     cancelBtn.disabled = true;
-     if (previewWrap) previewWrap.hidden = true;
-     if (previewBox) previewBox.style.backgroundImage = "";
-     if (fileInput) fileInput.value = "";
-   }
-   
-   uploadBtn.addEventListener("click", () => {
-     const file = fileInput.files?.[0];
-     if (!file) {
-       alert("Choose an image first.");
-       return;
-     }
-     if (!file.type.startsWith("image/")) {
-       alert("Please upload an image file.");
-       return;
-     }
-   
-     const reader = new FileReader();
-     reader.onload = () => {
-       pendingAvatarDataUrl = String(reader.result || "");
-       applyBtn.disabled = !pendingAvatarDataUrl;
-       cancelBtn.disabled = !pendingAvatarDataUrl;
-   
-       if (previewWrap) previewWrap.hidden = false;
-       if (previewBox) previewBox.style.backgroundImage = `url('${pendingAvatarDataUrl}')`;
-     };
-     reader.readAsDataURL(file);
-   });
-   
-   applyBtn.addEventListener("click", () => {
-     if (!pendingAvatarDataUrl) return;
-     setPlayerAvatarLocal(p.id, pendingAvatarDataUrl);
-     renderPlayers();
-   });
-   
-   cancelBtn.addEventListener("click", () => {
-     resetPendingUpload();
-   });
-   
-   // clear avatar
-   clearBtn.addEventListener("click", () => {
-     setPlayerAvatarLocal(p.id, "");
-     renderPlayers();
-   });
+  // ---- Avatar logic (single block, no duplicates) ----
+  const btnAvatar = wrap.querySelector('[data-action="toggleAvatar"]');
+  const picker = wrap.querySelector(".avatarPicker");
+  const fileInput = wrap.querySelector(".avatarFile");
+  const clearBtn = wrap.querySelector(".avatarClear");
 
+  const uploadBtn = wrap.querySelector(".avatarUploadBtn");
+  const applyBtn = wrap.querySelector(".avatarApplyBtn");
+  const cancelBtn = wrap.querySelector(".avatarCancelBtn");
+
+  const previewWrap = wrap.querySelector(".avatarUploadPreview");
+  const previewBox = wrap.querySelector(".avatarPreviewBox");
+
+  let pendingAvatarDataUrl = "";
+
+  function resetPendingUpload() {
+    pendingAvatarDataUrl = "";
+    applyBtn.disabled = true;
+    cancelBtn.disabled = true;
+    previewWrap.hidden = true;
+    previewBox.style.backgroundImage = "";
+    fileInput.value = "";
+  }
+
+  btnAvatar.addEventListener("click", () => {
+    picker.hidden = !picker.hidden;
+    // when opening, reset the pending upload UI
+    if (!picker.hidden) resetPendingUpload();
+  });
+
+  wrap.querySelectorAll(".avatarOption").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-avatar");
+      const found = AVATAR_PRESETS.find(a => a.id === id);
+      if (!found) return;
+      setPlayerAvatarLocal(p.id, found.src);
+      renderPlayers();
+    });
+  });
+
+  uploadBtn.addEventListener("click", () => {
+    const file = fileInput.files?.[0];
+    if (!file) {
+      alert("Choose an image first.");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      pendingAvatarDataUrl = String(reader.result || "");
+      applyBtn.disabled = !pendingAvatarDataUrl;
+      cancelBtn.disabled = !pendingAvatarDataUrl;
+
+      previewWrap.hidden = false;
+      previewBox.style.backgroundImage = `url('${pendingAvatarDataUrl}')`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  applyBtn.addEventListener("click", () => {
+    if (!pendingAvatarDataUrl) return;
+    setPlayerAvatarLocal(p.id, pendingAvatarDataUrl);
+    renderPlayers();
+  });
+
+  cancelBtn.addEventListener("click", () => {
+    resetPendingUpload();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    setPlayerAvatarLocal(p.id, "");
+    renderPlayers();
+  });
+
+  // ---- Trade preview + controls (same behavior as before) ----
   const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
   const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
   const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
@@ -2132,7 +2096,6 @@ function renderPlayers() {
     const cost = tradeShares * price;
     const owned = p.holdings[symbol] || 0;
 
-    // Enable Sell All only if they own shares of the selected stock
     elSellAll.disabled = owned <= 0;
 
     elShares.textContent = String(tradeShares);
@@ -2173,7 +2136,6 @@ function renderPlayers() {
     const maxLots = Math.floor(p.cash / (price * 100));
     const maxShares = Math.max(100, maxLots * 100);
     tradeShares = maxShares;
-
     updatePreview();
   });
 
@@ -2185,11 +2147,9 @@ function renderPlayers() {
   });
 
   updatePreview();
-  elPlayersArea.appendChild(wrap);
-   requestAnimationFrame(() => {
-     wrap.classList.add("playerCardAnim");
-   });
 
+  // Finally mount the card
+  elPlayersArea.appendChild(wrap);
 }
 
 function renderLog() {
