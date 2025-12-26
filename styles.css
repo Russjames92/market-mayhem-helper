@@ -873,3 +873,14 @@ body.modalOpen{ overflow:hidden; }
   background-position:center;
   margin-top:6px;
 }
+.avatarOption.isTaken{
+  opacity:.35;
+  filter: grayscale(1);
+  cursor:not-allowed;
+  transform:none !important;
+}
+
+.avatarOption.isSelected{
+  outline: 2px solid rgba(255,255,255,.55);
+  outline-offset: 2px;
+}
