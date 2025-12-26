@@ -198,7 +198,7 @@ function runLogTickerQueue() {
   if (logTickerTimer) clearTimeout(logTickerTimer);
 
   // display time + gap time
-  const SHOW_MS = 2200;
+  const SHOW_MS = 3200;
   const GAP_MS  = 220;
 
   logTickerTimer = setTimeout(() => {
