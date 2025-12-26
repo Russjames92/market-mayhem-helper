@@ -1938,9 +1938,17 @@ function renderPlayers() {
              </div>
          
              <div class="avatarUploadRow">
-               <input type="file" accept="image/*" class="avatarFile" />
-               <button type="button" class="avatarClear">Clear</button>
-             </div>
+              <input type="file" accept="image/*" class="avatarFile" />
+              <button type="button" class="avatarUploadBtn">Upload</button>
+              <button type="button" class="avatarApplyBtn primary" disabled>Apply</button>
+              <button type="button" class="avatarCancelBtn" disabled>Cancel</button>
+              <button type="button" class="avatarClear danger">Clear</button>
+            </div>
+            
+            <div class="avatarUploadPreview" hidden>
+              <div class="mini muted" style="margin-top:10px;">Preview</div>
+              <div class="avatarPreviewBox"></div>
+            </div>
             </div>
            </div>
          </div>
@@ -2031,7 +2039,84 @@ function renderPlayers() {
      setPlayerAvatarLocal(p.id, "");
      renderPlayers();
    });
-
+   // Avatar picker
+   const btnAvatar = wrap.querySelector('[data-action="toggleAvatar"]');
+   const picker = wrap.querySelector('.avatarPicker');
+   const fileInput = wrap.querySelector('.avatarFile');
+   const clearBtn = wrap.querySelector('.avatarClear');
+   
+   const uploadBtn = wrap.querySelector('.avatarUploadBtn');
+   const applyBtn = wrap.querySelector('.avatarApplyBtn');
+   const cancelBtn = wrap.querySelector('.avatarCancelBtn');
+   
+   const previewWrap = wrap.querySelector('.avatarUploadPreview');
+   const previewBox = wrap.querySelector('.avatarPreviewBox');
+   
+   let pendingAvatarDataUrl = "";
+   
+   // open/close
+   btnAvatar.addEventListener("click", () => {
+     picker.hidden = !picker.hidden;
+   });
+   
+   // preset click
+   wrap.querySelectorAll(".avatarOption").forEach(btn => {
+     btn.addEventListener("click", () => {
+       const id = btn.getAttribute("data-avatar");
+       const found = AVATAR_PRESETS.find(a => a.id === id);
+       if (!found) return;
+       setPlayerAvatarLocal(p.id, found.src);
+       renderPlayers();
+     });
+   });
+   
+   function resetPendingUpload() {
+     pendingAvatarDataUrl = "";
+     applyBtn.disabled = true;
+     cancelBtn.disabled = true;
+     if (previewWrap) previewWrap.hidden = true;
+     if (previewBox) previewBox.style.backgroundImage = "";
+     if (fileInput) fileInput.value = "";
+   }
+   
+   uploadBtn.addEventListener("click", () => {
+     const file = fileInput.files?.[0];
+     if (!file) {
+       alert("Choose an image first.");
+       return;
+     }
+     if (!file.type.startsWith("image/")) {
+       alert("Please upload an image file.");
+       return;
+     }
+   
+     const reader = new FileReader();
+     reader.onload = () => {
+       pendingAvatarDataUrl = String(reader.result || "");
+       applyBtn.disabled = !pendingAvatarDataUrl;
+       cancelBtn.disabled = !pendingAvatarDataUrl;
+   
+       if (previewWrap) previewWrap.hidden = false;
+       if (previewBox) previewBox.style.backgroundImage = `url('${pendingAvatarDataUrl}')`;
+     };
+     reader.readAsDataURL(file);
+   });
+   
+   applyBtn.addEventListener("click", () => {
+     if (!pendingAvatarDataUrl) return;
+     setPlayerAvatarLocal(p.id, pendingAvatarDataUrl);
+     renderPlayers();
+   });
+   
+   cancelBtn.addEventListener("click", () => {
+     resetPendingUpload();
+   });
+   
+   // clear avatar
+   clearBtn.addEventListener("click", () => {
+     setPlayerAvatarLocal(p.id, "");
+     renderPlayers();
+   });
 
   const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
   const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
