@@ -2033,6 +2033,7 @@ function startSession() {
    state.started = true;
    state.createdAt = nowTs();
    state.players = players;
+   setActivePlayer(players[0]?.id || null);
    state.prices = prices;
    state.dissolved = {};
    state.log = [];
