@@ -1645,7 +1645,7 @@ function renderPitBoard() {
         </button>
       </td>
       <td>${industries}</td>
-      <td>$${fmtMoney(s.dividend)}</td>
+      <td>$${fmtMoney2(s.dividend)}</td>
       <td>$${fmtMoney(s.start)}</td>
       ${curCell}
     `;
@@ -1690,7 +1690,7 @@ function renderPitBoard() {
         </div>
 
         <div class="pitRow3">
-          <div><b>Div</b>$${fmtMoney(s.dividend)}</div>
+          <div><b>Div</b>$${fmtMoney2(s.dividend)}</div>
           <div><b>Move</b>${s.moves.low}/${s.moves.mid}/${s.moves.high}</div>
           <div><b>Now</b>$${fmtMoney(cur)}</div>
         </div>
