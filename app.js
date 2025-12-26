@@ -1511,7 +1511,7 @@ function buildIndustryUI() {
       </div>
     `;
 
-    const syms = STOCKS.filter(s => s.industries.includes(ind)).map(s => s.symbol).join(", ");
+    const syms = getActiveStocks().filter(s => s.industries.includes(ind)).map(s => s.symbol).join(", ");
     box.querySelector(".affects").textContent = syms || "—";
 
     elIndustryList.appendChild(box);
