@@ -1990,7 +1990,7 @@ function applyMarketMover() {
   const deltas = [];
 
   for (const sel of selections) {
-    const affected = STOCKS.filter(s => s.industries.includes(sel.industry));
+    const affected = getActiveStocks().filter(s => s.industries.includes(sel.industry));
     for (const stock of affected) {
       const move = stock.moves[band];
       const signed = sel.dir === "up" ? move : -move;
