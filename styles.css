@@ -625,6 +625,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   font-size: 13px;
   font-weight: 800;
   color: var(--text);
+  text-align: center;        /* ✅ center text */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
