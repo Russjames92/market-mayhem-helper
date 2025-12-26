@@ -305,6 +305,22 @@ function dissolveCompany(sym, reason = "Price hit $0") {
    buildShortMoveUI();
   return true;
 }
+
+function ensurePricesForActiveStocks() {
+  if (!state.prices) state.prices = {};
+
+  for (const s of getActiveStocks()) {
+    // if price missing (or not a number), restore to start price
+    const v = Number(state.prices[s.symbol]);
+    if (!Number.isFinite(v)) {
+      state.prices[s.symbol] = Number(s.start) || 0;
+    }
+  }
+
+  // also ensure dissolved map exists
+  if (!state.dissolved) state.dissolved = {};
+}
+
 function diceBand(total) {
   if (total >= 2 && total <= 5) return "low";
   if (total >= 6 && total <= 8) return "mid";
