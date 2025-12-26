@@ -1698,7 +1698,7 @@ function renderPlayers() {
 
     const { total: divTotal } = computePlayerDividendDue(p);
 
-      const holdingLines = STOCKS
+      const holdingLines = getActiveStocks
         .map(s => {
           const shares = p.holdings[s.symbol] || 0;
           if (shares === 0) return null;
@@ -1755,7 +1755,7 @@ function renderPlayers() {
           <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
             Stock
             <select data-role="tradeSymbol" data-player="${p.id}">
-              ${STOCKS.map(s => `<option value="${s.symbol}">${s.symbol} — ${s.name}</option>`).join("")}
+              ${getActiveStocks().map(s => `<option value="${s.symbol}">${s.symbol} — ${s.name}</option>`).join("")}
             </select>
           </label>
 
