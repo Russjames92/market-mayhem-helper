@@ -456,58 +456,100 @@ input[type="checkbox"]{
 
 /* ===================================================================== */
 /* ============================ TRADE MODAL ============================ */
-/*  IMPORTANT: scope everything so it DOES NOT affect setup modals        */
+/*   Make trade modal match setup modals (floating centered dialog)       */
 /* ===================================================================== */
-.mmModalBack {
+
+.mmModalBack{
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.55);
-  display: none;
+  z-index: 9999;
+  display: none;               /* toggled by .open */
   align-items: center;
   justify-content: center;
   padding: 18px;
-  z-index: 9999;
 }
-.mmModalBack.open { display: flex; }
 
-/* scoped: ONLY the trade dialog box */
-.mmModalBack .mmModal {
-  width: min(980px, 100%);
-  border: 1px solid var(--border2);
+.mmModalBack.open{ display: flex; }
+
+/* overlay look identical to setup modals */
+.mmModalBack::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* the actual dialog box */
+.mmModalBack .mmModal{
+  position: relative;
+  width: min(860px, calc(100% - 28px));
+  max-height: 84vh;
+  overflow: auto;
+
+  background: rgba(14,14,18,.96);
+  border: 1px solid rgba(255,255,255,.14);
   border-radius: 18px;
-  background: var(--panel2);
-  box-shadow: var(--shadow);
-  overflow: hidden;
+
+  padding: 18px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.72),
+    0 0 0 1px rgba(255,255,255,.05);
+
+  animation: modalPop .16s ease-out;
 }
 
-.mmModalHeader {
+/* trade header should match setup header */
+.mmModalHeader{
   display:flex;
+  align-items:flex-start;
   justify-content: space-between;
-  align-items:center;
-  padding: 14px 14px;
-  border-bottom: 1px solid var(--border2);
-}
-.mmModalTitle {
-  font-weight: 900;
-  font-size: 14px;
-}
-.mmModalClose {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 12px;
-  border: 1px solid var(--border2);
-  background: transparent;
-  color: var(--text);
-  padding: 0 !important;
-}
-.mmModalBody { padding: 14px; }
+  gap: 12px;
+  margin-bottom: 8px;
 
+  padding: 0;                 /* remove old panel padding */
+  border-bottom: none;        /* remove old divider */
+}
+
+.mmModalTitle{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+/* X button top-right, icon-sized (prevents full-width stretch) */
+.mmModalClose{
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  padding: 0 !important;
+
+  border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: var(--text) !important;
+  cursor: pointer;
+  line-height: 1;
+}
+.mmModalClose:hover{
+  background: rgba(255,255,255,.10) !important;
+}
+
+.mmModalBody{
+  padding: 0; /* card padding already handled by .mmModal */
+}
+
+/* keep trade content readable inside a floating dialog */
 .mmTradeRow{
   display:flex;
   gap: 12px;
   align-items:center;
   flex-wrap: wrap;
 }
+
 .mmTradeRow .field{
   display:flex;
   align-items:center;
@@ -515,7 +557,6 @@ input[type="checkbox"]{
   flex: 1;
   min-width: 260px;
 }
-.mmTradeRow select{ width:100%; }
 
 .mmTradeShares{
   display:flex;
@@ -531,6 +572,7 @@ input[type="checkbox"]{
   display:grid;
   gap: 10px;
 }
+
 .mmTradeBtns button{
   width: 100%;
   padding: 16px 14px;
