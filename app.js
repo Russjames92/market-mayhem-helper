@@ -168,7 +168,6 @@ const elBtnLeaderboardViewGames = document.getElementById("btnLeaderboardViewGam
 
 // Pit toggle (mobile only)
 const pitBoardSection = document.getElementById("pitBoardSection");
-const pitToggleBtn = document.getElementById("btnPitToggle");
 
 // Pit board controls
 const elPitIndustryFilter = document.getElementById("pitIndustryFilter");
@@ -2546,28 +2545,6 @@ function payDividendsConfirmed() {
   payDividends();
 }
 
-// ---------- Pit toggle logic ----------
-function setupPitToggle() {
-  if (!pitToggleBtn || !pitBoardSection) return;
-
-  function isMobile() {
-    return window.matchMedia("(max-width: 700px)").matches;
-  }
-
-  // Default state on load:
-  // - mobile: collapsed
-  // - desktop: doesn't matter (table is always visible; button hidden)
-  if (isMobile()) {
-    pitBoardSection.classList.remove("expanded");
-    pitToggleBtn.textContent = "Show Pit Board";
-  }
-
-  pitToggleBtn.addEventListener("click", () => {
-    const nowExpanded = pitBoardSection.classList.toggle("expanded");
-    pitToggleBtn.textContent = nowExpanded ? "Hide Pit Board" : "Show Pit Board";
-  });
-}
-
 // ---------- Events ----------
 elPlayerCount.addEventListener("change", buildSetupInputs);
 elBtnStart.addEventListener("click", () => {
@@ -2846,8 +2823,7 @@ function init() {
   if (state.started) {
     for (const p of state.players) ensureHoldings(p);
   }
-
-  setupPitToggle();
+   
   renderAll();
 
   // ✅ this now runs, because init() no longer crashes
