@@ -651,27 +651,27 @@ function renderLeaderboard() {
     .join("");
 
   elLeaderboard.innerHTML = `
-    <div class="mini muted" style="margin-bottom:10px;">
-      Total completed games: <strong>${totalGames}</strong>
-    </div>
-
-    <div style="overflow:auto; border:1px solid var(--border2); border-radius:12px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Rank</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Player</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Games</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Wins</th>
-            <th style="text-align:left; padding:10px 8px; border-bottom:1px solid #222;">Total Assets</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${tableRows}
-        </tbody>
-      </table>
-    </div>
-  `;
+     <div class="mini muted" style="margin-bottom:10px;">
+       Total completed games: <strong>${totalGames}</strong>
+     </div>
+   
+     <div class="tableWrap">
+       <table>
+         <thead>
+           <tr>
+             <th>Rank</th>
+             <th>Player</th>
+             <th>Games</th>
+             <th>Wins</th>
+             <th>Total Assets</th>
+           </tr>
+         </thead>
+         <tbody>
+           ${tableRows}
+         </tbody>
+       </table>
+     </div>
+   `;
 }
 
 function deleteLeaderboardGameById(gameId) {
