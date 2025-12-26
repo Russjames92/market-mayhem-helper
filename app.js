@@ -1905,6 +1905,9 @@ function renderPlayers() {
     `;
 
   const totalAssets = computePlayerNetWorth(p);
+  const idx = state.players.findIndex(x => x.id === p.id);
+  const defaultAvatar = AVATAR_PRESETS[(idx >= 0 ? idx : 0) % AVATAR_PRESETS.length]?.src || "";
+  const avatarSrc = getPlayerAvatarLocal(p.id) || defaultAvatar;
 
   wrap.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
@@ -1938,6 +1941,7 @@ function renderPlayers() {
                <input type="file" accept="image/*" class="avatarFile" />
                <button type="button" class="avatarClear">Clear</button>
              </div>
+            </div>
            </div>
          </div>
 
