@@ -374,28 +374,6 @@ function dissolveCompany(sym, reason = "Price hit $0") {
     }
   }
 
-   function wireVolatilityModeEnhancers() {
-     const elVol = document.getElementById("volatilityMode");
-     const elCash = document.getElementById("startingCash");
-     if (!elVol || !elCash) return;
-   
-     const applyDefaults = () => {
-       // Only adjust setup defaults BEFORE a session starts
-       if (state.started) return;
-   
-       if (elVol.checked) {
-         elCash.value = "1000000";
-       } else {
-         elCash.value = "50000";
-       }
-   
-       renderOpeningBellCounter();
-     };
-   
-     elVol.addEventListener("change", applyDefaults);
-     applyDefaults();
-   }
-
   const stock = getStock(sym);
   addLog(
     `💥 <strong>${sym}</strong> (${stock?.name || "Company"}) dissolved — price hit <strong>$0</strong>.<br>` +
