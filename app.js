@@ -505,7 +505,7 @@ function renderOpeningBellCounter() {
   if (!elBtnPayDividends) return;
 
   const n = Number(state.openingBells || 0);
-  const label = `Pay Dividends (Opening Bell) — ${n}/${MAX_OPENING_BELLS}`;
+  const label = `Pay Dividends (Opening Bell) — ${n}/${getMaxOpeningBells()}`;
   elBtnPayDividends.textContent = label;
 }
 
