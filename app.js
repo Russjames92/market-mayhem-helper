@@ -896,11 +896,12 @@ function loadState() {
   try { state = JSON.parse(raw); } catch { /* ignore */ }
 
    if (state.openingBells == null) state.openingBells = 0;
+   if (!state.dissolved) state.dissolved = {};
 }
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { started:false, createdAt:null, players:[], prices:{}, log:[], openingBells:0 };
+  state = { started:false, createdAt:null, players:[], prices:{}, dissolved:{}, log:[], openingBells:0 };
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
