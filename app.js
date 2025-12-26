@@ -14,6 +14,14 @@ const CANON_INDUSTRIES = [
 
 const MAX_OPENING_BELLS = 4;
 
+const AVATAR_PRESETS = Array.from({ length: 12 }, (_, i) => {
+  const num = String(i + 1).padStart(3, "0");
+  return {
+    id: `avatar-${num}`,
+    src: `./avatars/${num}.png`
+  };
+});
+
 // Stock definitions (start price, dividend, dice move table)
 const BASE_STOCKS = [
   { symbol:"EE",   name:"Evanston Electric",   industries:["Manufacturing","Energy"], start:95,  dividend:5,  moves:{low:12, mid:10, high:8} },
@@ -213,17 +221,6 @@ function svgAvatar(label, hue){
 </svg>`;
   return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
 }
-
-const AVATAR_PRESETS = [
-  { id:"A", src: svgAvatar("A", 210) },
-  { id:"B", src: svgAvatar("B", 140) },
-  { id:"C", src: svgAvatar("C", 20)  },
-  { id:"D", src: svgAvatar("D", 290) },
-  { id:"E", src: svgAvatar("E", 330) },
-  { id:"F", src: svgAvatar("F", 60)  },
-  { id:"G", src: svgAvatar("G", 110) },
-  { id:"H", src: svgAvatar("H", 250) }
-];
 
 function defaultAvatarForPlayer(p){
   // deterministic-ish default based on id
