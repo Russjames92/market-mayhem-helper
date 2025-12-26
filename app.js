@@ -161,27 +161,57 @@ function stripHtmlToText(html) {
   tmp.innerHTML = String(html || "");
   return (tmp.textContent || tmp.innerText || "").trim();
 }
-function showLogTicker(messageHtml) {
+
+function enqueueLogTicker(messageHtml) {
   if (!elLogTicker || !elLogTickerText) return;
 
   const txt = stripHtmlToText(messageHtml);
-
-  // ignore empty
   if (!txt) return;
 
   // keep it short
-  const shortTxt = txt.length > 120 ? (txt.slice(0, 117) + "…") : txt;
+  const shortTxt = txt.length > 140 ? (txt.slice(0, 137) + "…") : txt;
 
-  elLogTickerText.textContent = shortTxt;
+  // enqueue
+  logTickerQueue.push(shortTxt);
 
-  // restart animation/timer
+  // start runner if not already running
+  if (!logTickerRunning) runLogTickerQueue();
+}
+
+function runLogTickerQueue() {
+  if (!elLogTicker || !elLogTickerText) return;
+
+  if (!logTickerQueue.length) {
+    logTickerRunning = false;
+    return;
+  }
+
+  logTickerRunning = true;
+
+  const msg = logTickerQueue.shift();
+  elLogTickerText.textContent = msg;
+
+  // show
   elLogTicker.classList.add("show");
+
+  // clear previous timer
   if (logTickerTimer) clearTimeout(logTickerTimer);
 
+  // display time + gap time
+  const SHOW_MS = 2200;
+  const GAP_MS  = 220;
+
   logTickerTimer = setTimeout(() => {
+    // hide
     elLogTicker.classList.remove("show");
-  }, 2600);
+
+    // wait a beat, then show next
+    logTickerTimer = setTimeout(() => {
+      runLogTickerQueue();
+    }, GAP_MS);
+  }, SHOW_MS);
 }
+
 function addLog(text) {
   // store the log entry
   state.log.unshift({ ts: nowTs(), text });
@@ -202,7 +232,7 @@ function addLog(text) {
 
   // ticker should NEVER be allowed to break logging
   try {
-    showLogTicker?.(text); // ✅ use the correct variable: text
+    enqueueLogTicker?.(text); // ✅ use the correct variable: text
   } catch (e) {
     // ignore ticker errors
   }
