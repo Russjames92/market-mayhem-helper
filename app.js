@@ -1939,18 +1939,19 @@ function startSession() {
     });
   }
    const elVol = document.getElementById("volatilityMode");
-  const prices = {};
-  for (const s of getActiveStocks()) {
+   state.volatilityMode = !!elVol?.checked;
+   
+   const prices = {};
+   for (const s of getActiveStocks()) {
      prices[s.symbol] = s.start;
    }
-
-  state.started = true;
-  state.createdAt = nowTs();
-  state.players = players;
-   state.volatilityMode = !!elVol?.checked;
-  state.prices = prices;
+   
+   state.started = true;
+   state.createdAt = nowTs();
+   state.players = players;
+   state.prices = prices;
    state.dissolved = {};
-  state.log = [];
+   state.log = [];
    state.openingBells = 0;
 
    pitFilterIndustry = "ALL";
