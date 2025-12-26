@@ -777,3 +777,81 @@ body.modalOpen{ overflow:hidden; }
     filter: blur(0);
   }
 }
+/* ===== Player Avatar ===== */
+.playerIdentity{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.playerAvatar{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.14);
+  background-size:cover;
+  background-position:center;
+  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+  flex:0 0 auto;
+}
+
+.avatarBtn{
+  width:auto;
+  padding:8px 12px;
+  border-radius:999px;
+  font-weight:900;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.12);
+}
+.avatarBtn:hover{
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.18);
+}
+
+.avatarPicker{
+  margin-top:10px;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.03);
+}
+
+.avatarGrid{
+  display:grid;
+  grid-template-columns:repeat(8, 1fr);
+  gap:10px;
+}
+@media (max-width:700px){
+  .avatarGrid{ grid-template-columns:repeat(4, 1fr); }
+}
+
+.avatarOption{
+  width:100%;
+  aspect-ratio:1 / 1;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background-size:cover;
+  background-position:center;
+  cursor:pointer;
+}
+.avatarOption:hover{
+  border-color:rgba(255,255,255,.22);
+  transform: translateY(-1px);
+}
+
+.avatarUploadRow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+.avatarUploadRow .avatarFile{
+  flex:1;
+  min-width:220px;
+}
+.avatarUploadRow .avatarClear{
+  width:auto;
+  padding:10px 12px;
+}
