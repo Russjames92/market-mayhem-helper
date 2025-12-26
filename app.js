@@ -14,6 +14,9 @@ const CANON_INDUSTRIES = [
 
 const BASE_OPENING_BELLS = 4;
 const VOL_OPENING_BELLS  = 7;
+const VOL_LOT_SIZE = 100;          // match your UI lots
+const VOL_SHARES_PER_TICK = 2000;  // every 2,000 shares moves $1 (tune this)
+const VOL_MAX_PCT_PER_TRADE = 0.25; // cap impact per trade at 25%
 
 function getMaxOpeningBells() {
   return state?.volatilityMode ? VOL_OPENING_BELLS : BASE_OPENING_BELLS;
