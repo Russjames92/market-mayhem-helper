@@ -12,7 +12,12 @@ const CANON_INDUSTRIES = [
   "Healthcare","Manufacturing","Technology","Transportation"
 ];
 
-const MAX_OPENING_BELLS = 4;
+const BASE_OPENING_BELLS = 4;
+const VOL_OPENING_BELLS  = 7;
+
+function getMaxOpeningBells() {
+  return state?.volatilityMode ? VOL_OPENING_BELLS : BASE_OPENING_BELLS;
+}
 
 const AVATAR_PRESETS = Array.from({ length: 12 }, (_, i) => {
   const num = String(i + 1).padStart(3, "0");
