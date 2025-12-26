@@ -181,6 +181,9 @@ function fmtMoney(n) {
   const x = Number(n || 0);
   return x.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
+function fmtMoney2(n) {
+  return Number(n || 0).toFixed(2);
+}
 function stripHtmlToText(html) {
   const tmp = document.createElement("div");
   tmp.innerHTML = String(html || "");
