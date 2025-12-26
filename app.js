@@ -2200,42 +2200,64 @@ function clearLeaderboard() {
   localStorage.removeItem(LEADERBOARD_KEY);
   renderLeaderboard();
 }
-function applyOrderFlowImpact(symbol, signedShares) {
-  // Only in volatility mode
-  if (!state.volatilityMode) return { delta: 0, before: null, after: null };
-
-  if (isDissolved(symbol)) return { delta: 0, before: null, after: null };
+function executeTradeWithSlippage(symbol, signedShares) {
+  // Returns { execTotal, avgPrice, finalPrice, ticksApplied }
+  if (!state.volatilityMode) return null;
 
   const stock = getStock(symbol);
-  if (!stock) return { delta: 0, before: null, after: null };
+  if (!stock) return null;
+  if (isDissolved(symbol)) return null;
 
-  const before = state.prices[symbol] ?? stock.start;
+  let price = state.prices[symbol] ?? stock.start;
+  if (!Number.isFinite(price)) price = stock.start;
 
-  // Threshold model:
-  // Every 500 shares net bought/sold moves price by $1, capped at 5% per trade.
-  const SHARES_PER_DOLLAR = 500;
-  const absShares = Math.abs(Number(signedShares || 0));
+  const isBuy = signedShares > 0;
+  const totalShares = Math.abs(signedShares);
 
-  const ticks = Math.floor(absShares / SHARES_PER_DOLLAR);
-  if (ticks <= 0) return { delta: 0, before, after: before };
+  // how many $1 ticks should happen over the whole order
+  const ticksTotal = Math.floor(totalShares / VOL_SHARES_PER_TICK);
+  if (ticksTotal <= 0) {
+    return { execTotal: totalShares * price, avgPrice: price, finalPrice: price, ticksApplied: 0 };
+  }
 
-  let delta = (signedShares > 0 ? +ticks : -ticks);
+  // cap total move per trade (prevents insane nukes)
+  const capTicks = Math.max(1, Math.round(price * VOL_MAX_PCT_PER_TRADE));
+  const ticksApplied = Math.min(ticksTotal, capTicks);
 
-  // cap: max 5% of current price per trade (minimum $1)
-  const cap = Math.max(1, Math.round(before * 0.05));
-  if (delta > cap) delta = cap;
-  if (delta < -cap) delta = -cap;
+  // distribute ticks across lots evenly
+  const lots = Math.ceil(totalShares / VOL_LOT_SIZE);
+  const ticksPerLot = ticksApplied / lots; // fractional ticks allowed
 
-  const after = clampPrice(before + delta);
-  state.prices[symbol] = after;
+  let remaining = totalShares;
+  let execTotal = 0;
+  let current = price;
 
-  if (after === 0) {
+  for (let i = 0; i < lots; i++) {
+    const lotShares = Math.min(VOL_LOT_SIZE, remaining);
+    remaining -= lotShares;
+
+    // execute this lot at current price
+    execTotal += lotShares * current;
+
+    // move price for next lot
+    current = clampPrice(current + (isBuy ? +ticksPerLot : -ticksPerLot));
+    if (current <= 0) {
+      current = 0;
+      break;
+    }
+  }
+
+  // end price becomes the new market price
+  const finalPrice = clampPrice(current);
+  state.prices[symbol] = finalPrice;
+
+  if (finalPrice === 0) {
     dissolveCompany(symbol, "Order flow impact pushed it to $0");
   }
 
-  return { delta, before, after };
+  const avgPrice = execTotal / totalShares;
+  return { execTotal, avgPrice, finalPrice, ticksApplied };
 }
-
 
 // ---------- Actions ----------
 function startSession() {
