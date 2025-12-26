@@ -46,69 +46,103 @@
 
         <div id="sessionSetupBody">
           <div class="divider"></div>
-
-          <h2>Live Session (Host + Viewers)</h2>
-          <div class="sub">
-            Host creates a live session and shares the link/code so everyone can view the same game state in real time.
+        
+          <div class="setupLaunch">
+            <button class="primary" id="btnOpenLiveModal" type="button">Start Live Session</button>
+            <button class="primary" id="btnOpenNewGameModal" type="button">Start New Game</button>
           </div>
-
-          <div class="row">
-            <div class="pill" id="liveRolePill">Live: OFF</div>
-            <div class="pill" id="liveViewersPill">Viewers: —</div>
+        
+          <div class="mini muted" style="margin-top:10px;">
+            Live session is for Host + Viewers. Start new game is for local play setup.
           </div>
-
-          <div class="row">
-            <button class="primary" id="btnLiveCreate" type="button">Create Live Session (Host)</button>
-
-            <div>
-              <label>Join code</label>
-              <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2" />
+        </div>
+        
+        <!-- ✅ Live Session Modal -->
+        <div class="mmModal" id="liveModal" hidden aria-hidden="true">
+          <div class="mmModalOverlay" data-close-modal="liveModal"></div>
+        
+          <div class="mmModalCard" role="dialog" aria-modal="true" aria-labelledby="liveModalTitle">
+            <div class="mmModalHead">
+              <h3 id="liveModalTitle">Live Session (Host + Viewers)</h3>
+              <button class="btnIcon" type="button" data-close-modal="liveModal" aria-label="Close">✕</button>
             </div>
-
-            <button id="btnLiveJoin" type="button">Join Live Session (Viewer)</button>
-          </div>
-
-          <div class="row">
-            <div style="flex:1; min-width:260px;">
-              <label>Share link</label>
-              <input id="liveShareLink" type="text" readonly value="" />
+        
+            <div class="sub">
+              Host creates a live session and shares the link/code so everyone can view the same game state in real time.
             </div>
-            <button id="btnCopyLiveLink" type="button">Copy Link</button>
-            <button class="danger" id="btnLiveLeave" type="button" disabled>Leave Live</button>
-          </div>
-
-          <div class="mini muted" id="liveHint">
-            Tip: Viewers should open the share link on their phone. Host controls all actions.
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="row">
-            <div>
-              <label>Number of players</label>
-              <select id="playerCount">
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4" selected>4</option>
-              </select>
+        
+            <div class="row">
+              <div class="pill" id="liveRolePill">Live: OFF</div>
+              <div class="pill" id="liveViewersPill">Viewers: —</div>
             </div>
-            <div>
-              <label>Starting cash per player</label>
-              <input id="startingCash" type="number" min="0" step="1000" value="50000" />
+        
+            <div class="row">
+              <button class="primary" id="btnLiveCreate" type="button">Create Live Session (Host)</button>
+        
+              <div>
+                <label>Join code</label>
+                <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2" />
+              </div>
+        
+              <button id="btnLiveJoin" type="button">Join Live Session (Viewer)</button>
             </div>
-            <div class="row" style="align-items:center;">
-              <label style="display:flex; align-items:center; gap:10px; margin:0; width:auto;">
-                <input type="checkbox" id="volatilityMode" />
-                Enable Volatility Mode (adds 10 high-risk stocks)
-              </label>
+        
+            <div class="row">
+              <div style="flex:1; min-width:260px;">
+                <label>Share link</label>
+                <input id="liveShareLink" type="text" readonly value="" />
+              </div>
+              <button id="btnCopyLiveLink" type="button">Copy Link</button>
+              <button class="danger" id="btnLiveLeave" type="button" disabled>Leave Live</button>
+            </div>
+        
+            <div class="mini muted" id="liveHint">
+              Tip: Viewers should open the share link on their phone. Host controls all actions.
             </div>
           </div>
-
-          <div class="divider"></div>
-          <div id="playerInputs" class="grid2"></div>
-          <div class="divider"></div>
-
-          <button class="primary" id="btnStart">Start New Game</button>
+        </div>
+        
+        <!-- ✅ New Game Modal -->
+        <div class="mmModal" id="newGameModal" hidden aria-hidden="true">
+          <div class="mmModalOverlay" data-close-modal="newGameModal"></div>
+        
+          <div class="mmModalCard" role="dialog" aria-modal="true" aria-labelledby="newGameModalTitle">
+            <div class="mmModalHead">
+              <h3 id="newGameModalTitle">Start New Game</h3>
+              <button class="btnIcon" type="button" data-close-modal="newGameModal" aria-label="Close">✕</button>
+            </div>
+        
+            <div class="sub">Choose number of players (2–4), names, and starting cash. Then start session.</div>
+        
+            <div class="row">
+              <div>
+                <label>Number of players</label>
+                <select id="playerCount">
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4" selected>4</option>
+                </select>
+              </div>
+        
+              <div>
+                <label>Starting cash per player</label>
+                <input id="startingCash" type="number" min="0" step="1000" value="50000" />
+              </div>
+        
+              <div class="row" style="align-items:center;">
+                <label style="display:flex; align-items:center; gap:10px; margin:0; width:auto;">
+                  <input type="checkbox" id="volatilityMode" />
+                  Enable Volatility Mode (adds 10 high-risk stocks)
+                </label>
+              </div>
+            </div>
+        
+            <div class="divider"></div>
+            <div id="playerInputs" class="grid2"></div>
+            <div class="divider"></div>
+        
+            <button class="primary" id="btnStart">Start New Game</button>
+          </div>
         </div>
       </section>
 
