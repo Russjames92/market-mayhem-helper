@@ -2043,28 +2043,31 @@ function renderPlayers() {
     });
   });
 
-  uploadBtn.addEventListener("click", () => {
-    const file = fileInput.files?.[0];
-    if (!file) {
-      alert("Choose an image first.");
-      return;
-    }
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file.");
-      return;
-    }
+  fileInput.addEventListener("change", () => {
+     const file = fileInput.files?.[0];
+     if (!file) {
+       resetPendingUpload();
+       return;
+     }
+     if (!file.type.startsWith("image/")) {
+       alert("Please upload an image file.");
+       resetPendingUpload();
+       return;
+     }
+   
+     const reader = new FileReader();
+     reader.onload = () => {
+       pendingAvatarDataUrl = String(reader.result || "");
+       applyBtn.disabled = !pendingAvatarDataUrl;
+       cancelBtn.disabled = !pendingAvatarDataUrl;
+   
+       previewWrap.hidden = false;
+       previewBox.style.backgroundImage = `url('${pendingAvatarDataUrl}')`;
+     };
+     reader.readAsDataURL(file);
+   });
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      pendingAvatarDataUrl = String(reader.result || "");
-      applyBtn.disabled = !pendingAvatarDataUrl;
-      cancelBtn.disabled = !pendingAvatarDataUrl;
-
-      previewWrap.hidden = false;
-      previewBox.style.backgroundImage = `url('${pendingAvatarDataUrl}')`;
-    };
-    reader.readAsDataURL(file);
-  });
+   uploadBtn.addEventListener("click", () => fileInput.click());
 
   applyBtn.addEventListener("click", () => {
     if (!pendingAvatarDataUrl) return;
