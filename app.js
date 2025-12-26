@@ -42,7 +42,7 @@ const VOLATILITY_STOCKS = [
   { symbol:"NOVA",  name:"NovaDyne Systems",        industries:["Technology", "Defense"], start:18, dividend:0.5, moves:{low:10, mid:8, high:6} },
   { symbol:"VOLT",  name:"VoltEdge Energy",        industries:["Energy"], start:22, dividend:1, moves:{low:10, mid:8, high:6} },
   { symbol:"CRSH",  name:"CrashLoop Logistics",    industries:["Transportation"], start:16, dividend:0.25, moves:{low:10, mid:8, high:6} },
-  { symbol:"PULSE", name:"PulseWave Biotech",      industries:["Healthcare"], start:24, dividend:1, moves:{low:10, mid:8, high:6} },
+  { symbol:"PULSE", name:"PulseWave Biotech",      industries:["Healthcare", "Defense", "Technology", "Manufacturing", "Energy"], start:6, dividend:0, moves:{low:10, mid:8, high:6} },
   { symbol:"STACK", name:"StackHammer Construction",industries:["Manufacturing"], start:20, dividend:1, moves:{low:10, mid:8, high:6} },
   { symbol:"FLUX",  name:"Flux Materials",         industries:["Manufacturing"], start:19, dividend:0.75, moves:{low:10, mid:8, high:6} },
   { symbol:"SPRK",  name:"SparkRoute Media",       industries:["Technology"], start:17, dividend:0.5, moves:{low:10, mid:8, high:6} },
