@@ -58,6 +58,9 @@ let pitSelected = new Set();   // selected symbols for bulk ops
 const elSessionStatus = document.getElementById("sessionStatus");
 const elBtnSave = document.getElementById("btnSave");
 const elBtnReset = document.getElementById("btnReset");
+const elLogTicker = document.getElementById("logTicker");
+const elLogTickerText = document.getElementById("logTickerText");
+let logTickerTimer = null;
 // ---------- Live Session (Firebase) ----------
 const elLiveRolePill = document.getElementById("liveRolePill");
 const elBtnLiveCreate = document.getElementById("btnLiveCreate");
