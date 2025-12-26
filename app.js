@@ -1968,6 +1968,10 @@ function renderPlayers() {
 
   updatePreview();
   elPlayersArea.appendChild(wrap);
+   requestAnimationFrame(() => {
+     wrap.classList.add("playerCardAnim");
+   });
+
 }
 
 function renderLog() {
