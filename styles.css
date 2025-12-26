@@ -579,6 +579,58 @@ input[type="checkbox"]{
   font-weight: 900;
   border-radius: 14px;
 }
+/* --- Trade modal header (match setup modal) --- */
+.mmModalBack .mmModalHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
+  margin: 0 0 10px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+/* Title should be a single clean line */
+.mmModalBack .mmModalTitle{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  line-height: 1.2;
+
+  /* prevent that weird stacked “Trade — EE” block look */
+  display: block !important;
+  white-space: nowrap;
+}
+
+/* If your title has a dash span or ticker styling inside, keep it inline */
+.mmModalBack .mmModalTitle *{
+  display: inline !important;
+}
+
+/* Close button pinned top-right like setup modals */
+.mmModalBack .mmModalClose{
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  padding: 0 !important;
+
+  border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: var(--text) !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  cursor:pointer;
+}
+.mmModalBack .mmModalClose:hover{
+  background: rgba(255,255,255,.10) !important;
+}
 
 /* ===== Log Ticker ===== */
 .logTicker{
