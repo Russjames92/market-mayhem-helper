@@ -776,6 +776,10 @@ let tradeModalState = {
 };
 
 function openTradeModalForStock(symbol) {
+   if (isDissolved(symbol)) {
+     alert(`${symbol} has dissolved (price hit $0). It cannot be traded.`);
+     return;
+   }
   if (!state.started) {
     alert("Start a session first.");
     return;
