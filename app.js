@@ -2470,51 +2470,134 @@ function doTrade(playerId, act, symbol, shares) {
     return false;
   }
 
-  const price = state.prices[symbol] ?? stock.start;
-  const cost = shares * price;
-  const verb = act === "BUY" ? "BUY" : "SELL";
+  const isBuy = act === "BUY";
+  const isSell = act === "SELL";
+  if (!isBuy && !isSell) {
+    alert("Invalid trade action.");
+    return false;
+  }
 
+  // ---- Slippage simulator (does NOT mutate state) ----
+  function simulateSlippage(symbol, signedShares) {
+    const s = getStock(symbol);
+    if (!s) return null;
+
+    let start = state.prices[symbol] ?? s.start;
+    if (!Number.isFinite(start)) start = s.start;
+
+    const totalShares = Math.abs(signedShares);
+    const buy = signedShares > 0;
+
+    // Tune knobs (you can tweak these)
+    const LOT_SIZE = 100;               // matches your UI
+    const SHARES_PER_TICK = 2000;       // every 2,000 shares => $1 move
+    const MAX_PCT_PER_TRADE = 0.25;     // cap total move per trade (25%)
+
+    const ticksTotal = Math.floor(totalShares / SHARES_PER_TICK);
+    if (ticksTotal <= 0) {
+      const execTotal = totalShares * start;
+      return { execTotal, avgPrice: start, finalPrice: start, ticksApplied: 0 };
+    }
+
+    const capTicks = Math.max(1, Math.round(start * MAX_PCT_PER_TRADE));
+    const ticksApplied = Math.min(ticksTotal, capTicks);
+
+    const lots = Math.ceil(totalShares / LOT_SIZE);
+    const ticksPerLot = ticksApplied / lots; // fractional tick distribution
+
+    let remaining = totalShares;
+    let execTotal = 0;
+    let current = start;
+
+    for (let i = 0; i < lots; i++) {
+      const lotShares = Math.min(LOT_SIZE, remaining);
+      remaining -= lotShares;
+
+      execTotal += lotShares * current;
+
+      current = clampPrice(current + (buy ? +ticksPerLot : -ticksPerLot));
+      if (current <= 0) {
+        current = 0;
+        break;
+      }
+    }
+
+    const finalPrice = clampPrice(current);
+    const avgPrice = execTotal / totalShares;
+    return { execTotal, avgPrice, finalPrice, ticksApplied };
+  }
+
+  // ---- Compute pricing (volatility mode = slippage; normal = flat price) ----
+  const startPrice = state.prices[symbol] ?? stock.start;
+  let exec = null;
+
+  if (state.volatilityMode) {
+    exec = simulateSlippage(symbol, isBuy ? +shares : -shares);
+    if (!exec) {
+      alert("Unable to price this trade.");
+      return false;
+    }
+  }
+
+  const flatTotal = shares * startPrice;
+  const total = exec ? exec.execTotal : flatTotal;
+  const avgPrice = exec ? exec.avgPrice : startPrice;
+  const endPrice = exec ? exec.finalPrice : startPrice;
+
+  // ---- Confirm message (shows slippage details when enabled) ----
+  const verb = isBuy ? "BUY" : "SELL";
   const confirmMsg =
     `${p.name}\n\n` +
     `${verb} ${shares} shares of ${symbol}\n` +
-    `@ $${fmtMoney(price)} per share\n\n` +
-    `Total: $${fmtMoney(cost)}\n\n` +
+    `Avg Price: $${fmtMoney(avgPrice)} per share\n` +
+    (state.volatilityMode
+      ? `Start: $${fmtMoney(startPrice)}  →  End: $${fmtMoney(endPrice)}\n`
+      : `@ $${fmtMoney(startPrice)} per share\n`) +
+    `\nTotal: $${fmtMoney(total)}\n\n` +
     `Confirm this trade?`;
 
   if (!confirm(confirmMsg)) return false;
 
-  if (act === "BUY") {
-    if (p.cash < cost) {
-      alert(`${p.name} doesn’t have enough cash. Needs $${fmtMoney(cost)}, has $${fmtMoney(p.cash)}.`);
+  // ---- Validation (cash/owned) based on FINAL slippage total ----
+  if (isBuy) {
+    if (p.cash < total) {
+      alert(`${p.name} doesn’t have enough cash. Needs $${fmtMoney(total)}, has $${fmtMoney(p.cash)}.`);
       return false;
     }
-    p.cash -= cost;
-    p.holdings[symbol] = (p.holdings[symbol] || 0) + shares;
-    const impact = applyOrderFlowImpact(symbol, +shares);
-      const impactLine = impact.delta
-        ? `<br><span class="mini muted">Order Flow Impact: ${symbol} ${impact.delta > 0 ? "+" : ""}${impact.delta} → $${fmtMoney(impact.after)}</span>`
-        : "";
-      
-      addLog(`${p.name} BUY ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.${impactLine}`);
-
-  } else if (act === "SELL") {
+  } else {
     const owned = p.holdings[symbol] || 0;
     if (owned < shares) {
       alert(`${p.name} doesn’t have enough shares to sell. Has ${owned}.`);
       return false;
     }
-    p.holdings[symbol] = owned - shares;
-    p.cash += cost;
-    const impact = applyOrderFlowImpact(symbol, -shares);
-      const impactLine = impact.delta
-        ? `<br><span class="mini muted">Order Flow Impact: ${symbol} ${impact.delta > 0 ? "+" : ""}${impact.delta} → $${fmtMoney(impact.after)}</span>`
-        : "";
-      
-      addLog(`${p.name} SELL ${shares} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(cost)}.${impactLine}`);
+  }
 
+  // ---- Apply trade ----
+  if (isBuy) {
+    p.cash -= total;
+    p.holdings[symbol] = (p.holdings[symbol] || 0) + shares;
   } else {
-    alert("Invalid trade action.");
-    return false;
+    p.holdings[symbol] = (p.holdings[symbol] || 0) - shares;
+    p.cash += total;
+  }
+
+  // ---- Apply market price impact AFTER fill (vol mode only) ----
+  if (state.volatilityMode && exec) {
+    state.prices[symbol] = endPrice;
+
+    if (endPrice === 0) {
+      dissolveCompany(symbol, "Order flow impact pushed it to $0");
+    }
+  }
+
+  // ---- Log ----
+  if (state.volatilityMode && exec) {
+    addLog(
+      `${p.name} ${verb} ${shares} ${symbol} avg $${fmtMoney(avgPrice)} = $${fmtMoney(total)} ` +
+      `(start $${fmtMoney(startPrice)} → end $${fmtMoney(endPrice)}).`
+    );
+  } else {
+    addLog(`${p.name} ${verb} ${shares} ${symbol} @ $${fmtMoney(startPrice)} = $${fmtMoney(total)}.`);
   }
 
   renderAll();
