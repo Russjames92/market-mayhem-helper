@@ -39,7 +39,7 @@ const BASE_STOCKS = [
 ];
 
 const VOLATILITY_STOCKS = [
-  { symbol:"NOVA",  name:"NovaDyne Systems",        industries:["Technology, Defense"], start:18, dividend:0, moves:{low:10, mid:8, high:6} },
+  { symbol:"NOVA",  name:"NovaDyne Systems",        industries:["Technology", "Defense"], start:18, dividend:0, moves:{low:10, mid:8, high:6} },
   { symbol:"VOLT",  name:"VoltEdge Energy",        industries:["Energy"], start:22, dividend:1, moves:{low:10, mid:8, high:6} },
   { symbol:"CRSH",  name:"CrashLoop Logistics",    industries:["Transportation"], start:16, dividend:0, moves:{low:10, mid:8, high:6} },
   { symbol:"PULSE", name:"PulseWave Biotech",      industries:["Healthcare"], start:24, dividend:1, moves:{low:10, mid:8, high:6} },
@@ -1715,7 +1715,7 @@ function renderPlayers() {
 
     const { total: divTotal } = computePlayerDividendDue(p);
 
-      const holdingLines = getActiveStocks
+      const holdingLines = getActiveStocks()
         .map(s => {
           const shares = p.holdings[s.symbol] || 0;
           if (shares === 0) return null;
