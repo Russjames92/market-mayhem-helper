@@ -2523,7 +2523,11 @@ function doTrade(playerId, act, symbol, shares) {
 
       execTotal += lotShares * current;
 
-      current = clampPrice(current + (buy ? +ticksPerLot : -ticksPerLot));
+      current = current + (buy ? +ticksPerLot : -ticksPerLot);
+         if (current <= 0) {
+           current = 0;
+           break;
+         }
       if (current <= 0) {
         current = 0;
         break;
