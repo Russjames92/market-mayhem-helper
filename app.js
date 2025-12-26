@@ -1397,6 +1397,7 @@ function buildIndustryUI() {
 function buildShortMoveUI() {
   elShortMoveSymbol.innerHTML = "";
   for (const s of STOCKS) {
+   if (isDissolved(s.symbol)) continue;
     const opt = document.createElement("option");
     opt.value = s.symbol;
     opt.textContent = `${s.symbol} — ${s.name}`;
