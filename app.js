@@ -173,6 +173,64 @@ const elPitBulkMinus = document.getElementById("pitBulkMinus");
 const elPitBulkPlus = document.getElementById("pitBulkPlus");
 const elPitClearSelected = document.getElementById("pitClearSelected");
 
+const AVATAR_KEY = "mm_player_avatars_v1";
+
+/** local avatars map: { [playerId]: dataUrl } */
+function loadAvatarMap(){
+  try { return JSON.parse(localStorage.getItem(AVATAR_KEY) || "{}"); }
+  catch { return {}; }
+}
+function saveAvatarMap(map){
+  localStorage.setItem(AVATAR_KEY, JSON.stringify(map || {}));
+}
+let avatarMap = loadAvatarMap();
+
+function setPlayerAvatarLocal(playerId, dataUrl){
+  avatarMap[playerId] = dataUrl;
+  saveAvatarMap(avatarMap);
+}
+
+function getPlayerAvatarLocal(playerId){
+  return avatarMap[playerId] || "";
+}
+
+// simple built-in avatar set (SVG data URIs)
+function svgAvatar(label, hue){
+  const svg =
+`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="hsl(${hue} 80% 55%)"/>
+      <stop offset="1" stop-color="hsl(${(hue+40)%360} 80% 45%)"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#g)"/>
+  <circle cx="64" cy="56" r="26" fill="rgba(0,0,0,.18)"/>
+  <rect x="26" y="82" width="76" height="30" rx="15" fill="rgba(0,0,0,.18)"/>
+  <text x="64" y="70" text-anchor="middle"
+        font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        font-weight="900" font-size="34" fill="rgba(255,255,255,.92)">${label}</text>
+</svg>`;
+  return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+}
+
+const AVATAR_PRESETS = [
+  { id:"A", src: svgAvatar("A", 210) },
+  { id:"B", src: svgAvatar("B", 140) },
+  { id:"C", src: svgAvatar("C", 20)  },
+  { id:"D", src: svgAvatar("D", 290) },
+  { id:"E", src: svgAvatar("E", 330) },
+  { id:"F", src: svgAvatar("F", 60)  },
+  { id:"G", src: svgAvatar("G", 110) },
+  { id:"H", src: svgAvatar("H", 250) }
+];
+
+function defaultAvatarForPlayer(p){
+  // deterministic-ish default based on id
+  const idx = (Number(p.id) || 1) % AVATAR_PRESETS.length;
+  return AVATAR_PRESETS[idx].src;
+}
+
 // ---------- Helpers ----------
 function getActiveStocks() {
   return state?.volatilityMode ? ALL_STOCKS : BASE_STOCKS;
