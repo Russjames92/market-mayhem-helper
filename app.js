@@ -193,6 +193,7 @@ function dissolveCompany(sym, reason = "Price hit $0") {
   // if host is live, push to viewers
   if (live?.enabled && live?.isHost) pushStateToCloud?.();
 
+   buildShortMoveUI();
   return true;
 }
 function diceBand(total) {
