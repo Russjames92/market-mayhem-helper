@@ -1917,7 +1917,8 @@ function updateMarketMoverButton() {
 }
 
 function renderAll() {
-  renderStatus();
+  ensurePricesForActiveStocks();
+   renderStatus();
   renderPitBoard();
   renderPlayers();
   renderLog();
