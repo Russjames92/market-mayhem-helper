@@ -2204,11 +2204,57 @@ function clearLeaderboard() {
   localStorage.removeItem(LEADERBOARD_KEY);
   renderLeaderboard();
 }
+function applyOrderFlowImpact(symbol, signedShares) {
+  // Only in volatility mode
+  if (!state.volatilityMode) return { delta: 0, before: null, after: null };
+
+  if (isDissolved(symbol)) return { delta: 0, before: null, after: null };
+
+  const stock = getStock(symbol);
+  if (!stock) return { delta: 0, before: null, after: null };
+
+  const before = state.prices[symbol] ?? stock.start;
+
+  // Threshold model:
+  // Every 500 shares net bought/sold moves price by $1, capped at 5% per trade.
+  const SHARES_PER_DOLLAR = 500;
+  const absShares = Math.abs(Number(signedShares || 0));
+
+  const ticks = Math.floor(absShares / SHARES_PER_DOLLAR);
+  if (ticks <= 0) return { delta: 0, before, after: before };
+
+  let delta = (signedShares > 0 ? +ticks : -ticks);
+
+  // cap: max 5% of current price per trade (minimum $1)
+  const cap = Math.max(1, Math.round(before * 0.05));
+  if (delta > cap) delta = cap;
+  if (delta < -cap) delta = -cap;
+
+  const after = clampPrice(before + delta);
+  state.prices[symbol] = after;
+
+  if (after === 0) {
+    dissolveCompany(symbol, "Order flow impact pushed it to $0");
+  }
+
+  return { delta, before, after };
+}
+
 
 // ---------- Actions ----------
 function startSession() {
   const n = Number(elPlayerCount.value);
-  const startingCash = Number(elStartingCash.value || 0);
+  const elVol = document.getElementById("volatilityMode");
+   state.volatilityMode = !!elVol?.checked;
+   
+   let startingCash = Number(elStartingCash.value || 0);
+   
+   // if volatility mode is enabled and starting cash is blank or still the base default,
+   // force the enhanced default
+   if (state.volatilityMode && (!elStartingCash.value || startingCash === 50000)) {
+     startingCash = 1000000;
+     elStartingCash.value = "1000000";
+   }
 
   const players = [];
   for (let i = 0; i < n; i++) {
@@ -2220,8 +2266,6 @@ function startSession() {
       holdings: {}
     });
   }
-   const elVol = document.getElementById("volatilityMode");
-   state.volatilityMode = !!elVol?.checked;
    
    const prices = {};
    for (const s of getActiveStocks()) {
