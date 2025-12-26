@@ -729,3 +729,33 @@ body.modalOpen{ overflow:hidden; }
   border-radius:14px;
 }
 
+/* ===== Player Tabs ===== */
+.playerTabs{
+  display:flex;
+  gap:10px;
+  margin:0 0 12px;
+  overflow:auto;
+  padding-bottom:2px;
+}
+
+.playerTab{
+  width:auto;
+  flex:0 0 auto;
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--text);
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.playerTab:hover{
+  background:rgba(255,255,255,.06);
+  border-color:rgba(255,255,255,.18);
+}
+
+.playerTab.isActive{
+  background:#1e1e24;
+  border-color:#3a3a3a;
+}
