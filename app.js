@@ -152,9 +152,40 @@ function fmtMoney(n) {
   const x = Number(n || 0);
   return x.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
-function addLog(text) {
-  state.log.unshift({ ts: nowTs(), text });
+function stripHtmlToText(html) {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = String(html || "");
+  return (tmp.textContent || tmp.innerText || "").trim();
+}
+function showLogTicker(messageHtml) {
+  if (!elLogTicker || !elLogTickerText) return;
+
+  const txt = stripHtmlToText(messageHtml);
+
+  // ignore empty
+  if (!txt) return;
+
+  // keep it short
+  const shortTxt = txt.length > 120 ? (txt.slice(0, 117) + "…") : txt;
+
+  elLogTickerText.textContent = shortTxt;
+
+  // restart animation/timer
+  elLogTicker.classList.add("show");
+  if (logTickerTimer) clearTimeout(logTickerTimer);
+
+  logTickerTimer = setTimeout(() => {
+    elLogTicker.classList.remove("show");
+  }, 2600);
+}
+function addLog(html) {
+  state.log.push({ ts: nowTs(), html });
   renderLog();
+  saveState();
+  if (live.enabled && live.isHost) pushStateToCloud();
+
+  // ✅ NEW: show top ticker
+  showLogTicker(html);
 }
 function clampPrice(n) {
   return Math.max(0, Math.round(n));
