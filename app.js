@@ -135,6 +135,13 @@ const elPitTableBody = document.querySelector("#pitTable tbody");
 const elPitCards = document.getElementById("pitCards");
 
 const elPlayersArea = document.getElementById("playersArea");
+const elPlayerTabs = document.getElementById("playerTabs");
+
+let activePlayerId = null;
+function setActivePlayer(id) {
+  activePlayerId = id;
+}
+
 const elLog = document.getElementById("log");
 
 const elBtnPayDividends = document.getElementById("btnPayDividends");
