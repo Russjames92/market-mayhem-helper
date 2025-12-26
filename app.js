@@ -486,7 +486,7 @@ function stockCurrentPrice(sym) {
 }
 
 function getVisibleStocks() {
-  let list = STOCKS.slice();
+  let list = STOCKS.filter(s => !isDissolved(s.symbol));
 
   if (pitFilterIndustry !== "ALL") {
     list = list.filter(s => s.industries.includes(pitFilterIndustry));
