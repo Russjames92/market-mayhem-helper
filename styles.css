@@ -497,9 +497,14 @@ input[type="checkbox"]{
 }
 
 /* ===================================================================== */
-/* ========================= SETUP MODALS (LIVE/NEW GAME) =============== */
+/* ============================ MODALS ================================= */
+/*   Fix class-name collisions between setup modals and trade modal       */
 /* ===================================================================== */
+
 body.modalOpen{ overflow:hidden; }
+
+/* ========================= SETUP MODALS ============================== */
+/* (these use: .mmModal + .mmModalOverlay + .mmModalCard + .mmModalHead)  */
 
 .mmModal{
   position:fixed;
@@ -543,8 +548,11 @@ body.modalOpen{ overflow:hidden; }
   align-items:flex-start;
   justify-content:space-between;
   gap:12px;
-  margin-bottom:8px;
+  margin-bottom:10px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,.10);
 }
+
 .mmModalHead h3{
   margin:0;
   font-size:18px;
@@ -563,7 +571,6 @@ body.modalOpen{ overflow:hidden; }
   background:rgba(255,255,255,.06) !important;
   color:var(--text) !important;
   cursor:pointer;
-  line-height:1;
   display:flex !important;
   align-items:center !important;
   justify-content:center !important;
@@ -584,16 +591,15 @@ body.modalOpen{ overflow:hidden; }
   to{ transform:translateY(0) scale(1); opacity:1; }
 }
 
-/* ===================================================================== */
-/* ============================ TRADE MODAL ============================= */
-/*   Fix: header at top, close in top-right, match setup modal styling   */
-/* ===================================================================== */
+/* ============================ TRADE MODAL ============================ */
+/* (trade uses: .mmModalBack + inner .mmModal + .mmModalHeader/.Body)     */
+/* IMPORTANT: we fully scope rules under .mmModalBack to prevent bleed.  */
 
 .mmModalBack{
   position:fixed;
   inset:0;
   z-index:9999;
-  display:none;               /* toggled by .open */
+  display:none;
   align-items:center;
   justify-content:center;
   padding:18px;
@@ -609,9 +615,12 @@ body.modalOpen{ overflow:hidden; }
   -webkit-backdrop-filter:blur(10px);
 }
 
-/* The trade dialog card */
-.mmModalBack .mmModal{
-  position:relative;
+/* Trade card — FORCE block layout so setup modal .mmModal flex rules can’t wreck it */
+.mmModalBack > .mmModal{
+  position:relative !important;
+  inset:auto !important;
+  display:block !important;
+
   width:min(860px, calc(100% - 28px));
   max-height:84vh;
   overflow:auto;
@@ -628,21 +637,21 @@ body.modalOpen{ overflow:hidden; }
   animation:modalPop .16s ease-out;
 }
 
-/* Header row */
-.mmModalBack .mmModalHeader{
+/* Header bar at the very top */
+.mmModalBack > .mmModal > .mmModalHeader{
   position:relative;
   display:flex;
   align-items:center;
   justify-content:flex-start;
   gap:12px;
 
-  padding:0 52px 10px 0; /* right padding reserves space for X */
-  margin:0 0 12px 0;
+  margin:0 0 12px;
+  padding:0 56px 10px 0;  /* space reserved for X */
   border-bottom:1px solid rgba(255,255,255,.10);
 }
 
-/* Title top-left, one line */
-.mmModalBack .mmModalTitle{
+/* Title left */
+.mmModalBack > .mmModal > .mmModalHeader > .mmModalTitle{
   margin:0;
   font-size:18px;
   font-weight:900;
@@ -651,16 +660,10 @@ body.modalOpen{ overflow:hidden; }
   white-space:nowrap;
 }
 
-/* IMPORTANT: prevent nested title spans from becoming block/stacked */
-.mmModalBack .mmModalTitle,
-.mmModalBack .mmModalTitle *{
-  display:inline !important;
-}
-
-/* Close pinned top-right */
-.mmModalBack .mmModalClose{
-  position:absolute;
-  top:0;
+/* X pinned to top-right INSIDE the header */
+.mmModalBack > .mmModal > .mmModalHeader > .mmModalClose{
+  position:absolute !important;
+  top:-2px;
   right:0;
 
   width:42px !important;
@@ -681,52 +684,48 @@ body.modalOpen{ overflow:hidden; }
   cursor:pointer;
   line-height:1;
 }
-.mmModalBack .mmModalClose:hover{
+.mmModalBack > .mmModal > .mmModalHeader > .mmModalClose:hover{
   background:rgba(255,255,255,.10) !important;
 }
 
-.mmModalBack .mmModalBody{ padding:0; }
+.mmModalBack > .mmModal > .mmModalBody{ padding:0; }
 
-/* Trade content layout inside modal */
-.mmTradeRow{
+/* Trade content */
+.mmModalBack .mmTradeRow{
   display:flex;
   gap:12px;
   align-items:center;
   flex-wrap:wrap;
 }
-
-.mmTradeRow .field{
+.mmModalBack .mmTradeRow .field{
   display:flex;
   align-items:center;
   gap:10px;
   flex:1;
   min-width:260px;
 }
-
-.mmTradeShares{
+.mmModalBack .mmTradeShares{
   display:flex;
   align-items:center;
   gap:10px;
   margin-left:auto;
 }
-
-/* Keep share buttons from stretching */
-.mmTradeShares button{
+.mmModalBack .mmTradeShares button{
   width:auto !important;
   padding:10px 12px;
 }
 
-.mmTradePreview{ margin-top:10px; }
+.mmModalBack .mmTradePreview{ margin-top:10px; }
 
-.mmTradeBtns{
+.mmModalBack .mmTradeBtns{
   margin-top:14px;
   display:grid;
   gap:10px;
 }
-
-.mmTradeBtns button{
+.mmModalBack .mmTradeBtns button{
   width:100%;
   padding:16px 14px;
   font-weight:900;
   border-radius:14px;
 }
+
