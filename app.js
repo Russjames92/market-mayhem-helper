@@ -1775,6 +1775,7 @@ function startSession() {
   state.createdAt = nowTs();
   state.players = players;
   state.prices = prices;
+   state.dissolved = {};
   state.log = [];
    state.openingBells = 0;
 
