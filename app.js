@@ -1767,187 +1767,207 @@ function renderPitBoard() {
 
 function renderPlayers() {
   elPlayersArea.innerHTML = "";
+  if (elPlayerTabs) elPlayerTabs.innerHTML = "";
+
   if (!state.started) {
     elPlayersArea.innerHTML = `<div class="muted">Start a session to track players.</div>`;
     return;
   }
 
-  for (const p of state.players) {
-    ensureHoldings(p);
+  // Ensure activePlayerId is valid
+  if (!activePlayerId || !state.players.some(p => p.id === activePlayerId)) {
+    activePlayerId = state.players[0]?.id || null;
+  }
 
-    const wrap = document.createElement("div");
-    wrap.className = "card";
-    wrap.style.marginBottom = "12px";
+  // ----- Tabs -----
+  if (elPlayerTabs) {
+    for (const p of state.players) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "playerTab" + (p.id === activePlayerId ? " isActive" : "");
+      btn.textContent = p.name;
+      btn.addEventListener("click", () => {
+        setActivePlayer(p.id);
+        renderPlayers();
+      });
+      elPlayerTabs.appendChild(btn);
+    }
+  }
 
-    const { total: divTotal } = computePlayerDividendDue(p);
+  // ----- Render only selected player card (same layout as before) -----
+  const p = state.players.find(x => x.id === activePlayerId);
+  if (!p) return;
 
-      const holdingLines = getActiveStocks()
-        .map(s => {
-          const shares = p.holdings[s.symbol] || 0;
-          if (shares === 0) return null;
-      
-          const price = state.prices[s.symbol] ?? s.start;
-          const val = shares * price;
-      
-          const divDue = shares * s.dividend;
-      
-          return `
-            <div class="mini">
-              <strong>${s.symbol}</strong>:
-              ${shares} sh @ $${fmtMoney(price)} = $${fmtMoney(val)}
-              <span class="muted"> • Div Due: $${fmtMoney(divDue)}</span>
-            </div>
-          `;
-        })
-        .filter(Boolean)
-        .join("") || `<div class="mini muted">No holdings yet.</div>`;
-      
-      const dividendSummary = divTotal > 0
-        ? `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$${fmtMoney(divTotal)}</strong></div>`
-        : `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$0</strong></div>`;
+  ensureHoldings(p);
 
-     const investedIndustries = computePlayerIndustries(p);
+  const wrap = document.createElement("div");
+  wrap.className = "card";
+  wrap.style.marginBottom = "12px";
 
-      const industryLine = investedIndustries.length
-        ? `
-          <div class="mini muted" style="margin-top:6px;">
-            Industries:
-            ${investedIndustries.map(ind => `<span class="tag">${ind}</span>`).join("")}
-          </div>
-        `
-        : `
-          <div class="mini muted" style="margin-top:6px;">
-            Industries: <span class="muted">None</span>
-          </div>
-        `;
+  const { total: divTotal } = computePlayerDividendDue(p);
 
-    const totalAssets = computePlayerNetWorth(p);
+  const holdingLines = getActiveStocks()
+    .map(s => {
+      const shares = p.holdings[s.symbol] || 0;
+      if (shares === 0) return null;
 
-    wrap.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-        <div>
-           <div style="font-size:14px; font-weight:800;">${p.name}</div>
-           <div class="mini muted">
-             Cash: <strong>$${fmtMoney(p.cash)}</strong> •
-             Total Assets: <strong>$${fmtMoney(totalAssets)}</strong>
-           </div>
-           ${industryLine}
-         </div>
+      const price = state.prices[s.symbol] ?? s.start;
+      const val = shares * price;
 
-        <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
-          <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
-            Stock
-            <select data-role="tradeSymbol" data-player="${p.id}">
-              ${getActiveStocks().map(s => `<option value="${s.symbol}">${s.symbol} — ${s.name}</option>`).join("")}
-            </select>
-          </label>
+      const divDue = shares * s.dividend;
 
-          <div style="display:flex; align-items:center; gap:6px;">
-            <button type="button" data-role="sharesDown" data-player="${p.id}">-100</button>
-
-            <div class="mini" style="min-width:120px; text-align:center;">
-              Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
-            </div>
-            
-            <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
-            <button type="button" data-role="sharesMax" data-player="${p.id}">MAX</button>
-          </div>
-
-          <button type="button" class="primary" data-role="buy" data-player="${p.id}">Buy</button>
-          <button type="button" data-role="sell" data-player="${p.id}">Sell</button>
-          <button type="button" class="danger" data-role="sellAll" data-player="${p.id}">Sell All</button>
-
-          <button type="button" data-action="adjustCash" data-player="${p.id}">+/- Cash</button>
-
-          <div class="mini muted" style="width:100%; text-align:right;">
-            <span data-role="tradePreview" data-player="${p.id}"></span>
-          </div>
+      return `
+        <div class="mini">
+          <strong>${s.symbol}</strong>:
+          ${shares} sh @ $${fmtMoney(price)} = $${fmtMoney(val)}
+          <span class="muted"> • Div Due: $${fmtMoney(divDue)}</span>
         </div>
-      </div>
+      `;
+    })
+    .filter(Boolean)
+    .join("") || `<div class="mini muted">No holdings yet.</div>`;
 
-      <div class="divider"></div>
-      <div>
-        ${holdingLines}
-        ${dividendSummary}
-      </div>
+  const dividendSummary = divTotal > 0
+    ? `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$${fmtMoney(divTotal)}</strong></div>`
+    : `<div class="mini muted" style="margin-top:8px;">Total Dividends Due: <strong>$0</strong></div>`;
 
+  const investedIndustries = computePlayerIndustries(p);
+
+  const industryLine = investedIndustries.length
+    ? `
+      <div class="mini muted" style="margin-top:6px;">
+        Industries:
+        ${investedIndustries.map(ind => `<span class="tag">${ind}</span>`).join("")}
+      </div>
+    `
+    : `
+      <div class="mini muted" style="margin-top:6px;">
+        Industries: <span class="muted">None</span>
+      </div>
     `;
 
-    // Adjust cash
-    wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
+  const totalAssets = computePlayerNetWorth(p);
 
-    const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
-    const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
-    const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
-     const elSellAll = wrap.querySelector(`[data-role="sellAll"][data-player="${p.id}"]`);
+  wrap.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+      <div>
+         <div style="font-size:14px; font-weight:800;">${p.name}</div>
+         <div class="mini muted">
+           Cash: <strong>$${fmtMoney(p.cash)}</strong> •
+           Total Assets: <strong>$${fmtMoney(totalAssets)}</strong>
+         </div>
+         ${industryLine}
+       </div>
 
-    let tradeShares = 100;
+      <div style="display:flex; gap:10px; min-width:320px; flex:1; justify-content:flex-end; flex-wrap:wrap; align-items:center;">
+        <label class="mini muted" style="display:flex; align-items:center; gap:6px;">
+          Stock
+          <select data-role="tradeSymbol" data-player="${p.id}">
+            ${getActiveStocks().map(s => `<option value="${s.symbol}">${s.symbol} — ${s.name}</option>`).join("")}
+          </select>
+        </label>
 
-    function updatePreview() {
-      const symbol = elSymbol.value;
-      const stock = getStock(symbol);
-      const price = state.prices[symbol] ?? stock.start;
-      const cost = tradeShares * price;
-      const owned = p.holdings[symbol] || 0;
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button type="button" data-role="sharesDown" data-player="${p.id}">-100</button>
 
-       // Enable Sell All only if they own shares of the selected stock
-       elSellAll.disabled = owned <= 0;
+          <div class="mini" style="min-width:120px; text-align:center;">
+            Shares: <strong><span data-role="tradeShares" data-player="${p.id}">100</span></strong>
+          </div>
+          
+          <button type="button" data-role="sharesUp" data-player="${p.id}">+100</button>
+          <button type="button" data-role="sharesMax" data-player="${p.id}">MAX</button>
+        </div>
 
-      elShares.textContent = String(tradeShares);
-      elPreview.textContent =
-        `${symbol} @ $${fmtMoney(price)} • Total: $${fmtMoney(cost)} • You own: ${owned} sh`;
+        <button type="button" class="primary" data-role="buy" data-player="${p.id}">Buy</button>
+        <button type="button" data-role="sell" data-player="${p.id}">Sell</button>
+        <button type="button" class="danger" data-role="sellAll" data-player="${p.id}">Sell All</button>
+
+        <button type="button" data-action="adjustCash" data-player="${p.id}">+/- Cash</button>
+
+        <div class="mini muted" style="width:100%; text-align:right;">
+          <span data-role="tradePreview" data-player="${p.id}"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div>
+      ${holdingLines}
+      ${dividendSummary}
+    </div>
+  `;
+
+  // Adjust cash
+  wrap.querySelector('[data-action="adjustCash"]').addEventListener("click", () => openCashDialog(p.id));
+
+  const elSymbol = wrap.querySelector(`[data-role="tradeSymbol"][data-player="${p.id}"]`);
+  const elShares = wrap.querySelector(`[data-role="tradeShares"][data-player="${p.id}"]`);
+  const elPreview = wrap.querySelector(`[data-role="tradePreview"][data-player="${p.id}"]`);
+  const elSellAll = wrap.querySelector(`[data-role="sellAll"][data-player="${p.id}"]`);
+
+  let tradeShares = 100;
+
+  function updatePreview() {
+    const symbol = elSymbol.value;
+    const stock = getStock(symbol);
+    const price = state.prices[symbol] ?? stock.start;
+    const cost = tradeShares * price;
+    const owned = p.holdings[symbol] || 0;
+
+    // Enable Sell All only if they own shares of the selected stock
+    elSellAll.disabled = owned <= 0;
+
+    elShares.textContent = String(tradeShares);
+    elPreview.textContent =
+      `${symbol} @ $${fmtMoney(price)} • Total: $${fmtMoney(cost)} • You own: ${owned} sh`;
+  }
+
+  wrap.querySelector(`[data-role="sharesDown"][data-player="${p.id}"]`).addEventListener("click", () => {
+    tradeShares = Math.max(100, tradeShares - 100);
+    updatePreview();
+  });
+
+  wrap.querySelector(`[data-role="sharesUp"][data-player="${p.id}"]`).addEventListener("click", () => {
+    tradeShares += 100;
+    updatePreview();
+  });
+
+  elSymbol.addEventListener("change", updatePreview);
+
+  wrap.querySelector(`[data-role="buy"][data-player="${p.id}"]`).addEventListener("click", () => {
+    doTrade(p.id, "BUY", elSymbol.value, tradeShares);
+  });
+
+  wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`).addEventListener("click", () => {
+    doTrade(p.id, "SELL", elSymbol.value, tradeShares);
+  });
+
+  wrap.querySelector(`[data-role="sharesMax"][data-player="${p.id}"]`).addEventListener("click", () => {
+    const symbol = elSymbol.value;
+    const stock = getStock(symbol);
+    const price = state.prices[symbol] ?? stock.start;
+
+    if (!Number.isFinite(price) || price <= 0) {
+      alert("Invalid stock price.");
+      return;
     }
 
-    wrap.querySelector(`[data-role="sharesDown"][data-player="${p.id}"]`).addEventListener("click", () => {
-      tradeShares = Math.max(100, tradeShares - 100);
-      updatePreview();
-    });
-    wrap.querySelector(`[data-role="sharesUp"][data-player="${p.id}"]`).addEventListener("click", () => {
-      tradeShares += 100;
-      updatePreview();
-    });
-
-    elSymbol.addEventListener("change", updatePreview);
-
-    wrap.querySelector(`[data-role="buy"][data-player="${p.id}"]`).addEventListener("click", () => {
-      doTrade(p.id, "BUY", elSymbol.value, tradeShares);
-    });
-    wrap.querySelector(`[data-role="sell"][data-player="${p.id}"]`).addEventListener("click", () => {
-      doTrade(p.id, "SELL", elSymbol.value, tradeShares);
-    });
-
-     wrap.querySelector(`[data-role="sharesMax"][data-player="${p.id}"]`).addEventListener("click", () => {
-        const symbol = elSymbol.value;
-        const stock = getStock(symbol);
-        const price = state.prices[symbol] ?? stock.start;
-      
-        if (!Number.isFinite(price) || price <= 0) {
-          alert("Invalid stock price.");
-          return;
-        }
-      
-        // max shares they can afford, rounded DOWN to nearest 100
-        const maxLots = Math.floor(p.cash / (price * 100));
-        const maxShares = Math.max(100, maxLots * 100);
-      
-        // If they can't afford even 100 shares, set to 100 (and preview will show they can't buy)
-        // If you'd rather clamp to 0 in that case, tell me and I'll adjust.
-        tradeShares = maxShares;
-      
-        updatePreview();
-      });
-
-
-     elSellAll.addEventListener("click", () => {
-        const symbol = elSymbol.value;
-        const owned = p.holdings[symbol] || 0;
-        if (owned <= 0) return;
-        doTrade(p.id, "SELL", symbol, owned);
-      });
+    const maxLots = Math.floor(p.cash / (price * 100));
+    const maxShares = Math.max(100, maxLots * 100);
+    tradeShares = maxShares;
 
     updatePreview();
-    elPlayersArea.appendChild(wrap);
-  }
+  });
+
+  elSellAll.addEventListener("click", () => {
+    const symbol = elSymbol.value;
+    const owned = p.holdings[symbol] || 0;
+    if (owned <= 0) return;
+    doTrade(p.id, "SELL", symbol, owned);
+  });
+
+  updatePreview();
+  elPlayersArea.appendChild(wrap);
 }
 
 function renderLog() {
