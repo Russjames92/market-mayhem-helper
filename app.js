@@ -1936,13 +1936,16 @@ function startSession() {
       holdings: {}
     });
   }
-
+   const elVol = document.getElementById("volatilityMode");
   const prices = {};
-  for (const s of STOCKS) prices[s.symbol] = s.start;
+  for (const s of getActiveStocks()) {
+     prices[s.symbol] = s.start;
+   }
 
   state.started = true;
   state.createdAt = nowTs();
   state.players = players;
+   state.volatilityMode = !!elVol?.checked;
   state.prices = prices;
    state.dissolved = {};
   state.log = [];
