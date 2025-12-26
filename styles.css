@@ -13,6 +13,7 @@
 *{ box-sizing:border-box; }
 body{ margin:0; background:var(--bg); color:var(--text); }
 
+/* ===== Header ===== */
 header{
   padding:14px 16px;
   border-bottom:1px solid #222;
@@ -54,6 +55,7 @@ header button{ width:100%; border-radius:16px; }
   header .header-actions{ width:min(420px, 100%); }
 }
 
+/* ===== Layout ===== */
 main{
   padding:14px;
   display:grid;
@@ -94,6 +96,13 @@ input,select,button,textarea{
   outline:none;
 }
 
+input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
+
+button{ cursor:pointer; font-weight:800; }
+button.primary{ background:#1e1e24; border-color:#3a3a3a; }
+button.danger{ background:#241214; border-color:#5a2a2e; }
+button:disabled{ opacity:.55; cursor:not-allowed; }
+
 /* ✅ Critical: don't make checkboxes full-width */
 input[type="checkbox"]{
   width:auto !important;
@@ -102,32 +111,14 @@ input[type="checkbox"]{
   border-radius:8px;
 }
 
-/* Pit card checkbox: force it to the top-right and keep it there */
-.pitRow1{
-  align-items:flex-start; /* top align */
-}
-
-.pitSelectCard{
-  width:auto !important;
-  margin-left:auto;
-  flex:0 0 auto;
-  align-self:flex-start;
-}
-
-input:focus,select:focus,textarea:focus{ border-color:#4a4a4a; }
-
-button{ cursor:pointer; font-weight:800; }
-button.primary{ background:#1e1e24; border-color:#3a3a3a; }
-button.danger{ background:#241214; border-color:#5a2a2e; }
-button:disabled{ opacity:.55; cursor:not-allowed; }
-
+/* ===== Row/Grid helpers ===== */
 .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 .row > *{ flex:1; min-width:140px; }
 
 .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 @media (max-width:600px){ .grid2{ grid-template-columns:1fr; } }
 
-/* Collapsible section headers */
+/* ===== Collapsible section headers ===== */
 .sectionHead{
   display:flex;
   align-items:center;
@@ -154,7 +145,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
 }
 .btnToggle:active{ transform:translateY(1px); }
 
-/* Log */
+/* ===== Log ===== */
 .log{
   height:220px;
   overflow:auto;
@@ -167,7 +158,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
 .log .item{ padding:6px 2px; border-bottom:1px dashed #222; }
 .log .item:last-child{ border-bottom:none; }
 
-/* Industries */
+/* ===== Industries ===== */
 .industry-list{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 @media (max-width:520px){ .industry-list{ grid-template-columns:1fr; } }
 
@@ -263,7 +254,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   margin:4px 6px 0 0;
 }
 
-/* Pit board */
+/* ===== Pit board ===== */
 .pitHead{
   display:flex;
   justify-content:space-between;
@@ -305,6 +296,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
 }
 
 .pitCard{
+  position: relative;
   background:var(--panel2);
   border:1px solid var(--border2);
   border-radius:12px;
@@ -312,8 +304,15 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   width:100%;
 }
 
-.pitRow1{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
-.pitLeft{ min-width:0; }
+.pitRow1{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding-right: 44px; /* leave space for checkbox */
+}
+
+.pitLeft{ flex:1 1 auto; min-width:0; }
 .pitSymLine{ display:flex; gap:10px; align-items:baseline; min-width:0; }
 .pitSym{ font-weight:900; font-size:15px; letter-spacing:.4px; white-space:nowrap; }
 .pitName{
@@ -345,23 +344,14 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
 }
 .pitRow3 b{ display:block; font-size:11px; opacity:.85; font-weight:700; }
 
-/* Mobile pit cards: put checkbox in top-right */
-.pitRow1{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.pitLeft{
-  flex:1 1 auto;
-  min-width:0;
-}
-
-.pitSelectCard{
-  margin-left:auto;
-  flex:0 0 auto;
-  align-self:flex-start;
+/* checkbox in top-right of mobile stock cards */
+.pitCard input[type="checkbox"].pitSelectCard{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:3;
+  margin:0;
+  transform:scale(1.15);
 }
 
 /* pit price button */
@@ -385,7 +375,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   box-shadow:0 0 0 2px rgba(255,255,255,.08);
 }
 
-/* Pit controls – ONE definition (no duplicates) */
+/* Pit controls – ONE definition */
 .pitControls{
   display:flex;
   flex-direction:column;
@@ -452,26 +442,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   #leaderboard th, #leaderboard td{ padding:10px 10px; font-size:12px; }
 }
 
-/* ===== Pit Card checkbox: force top-right (mobile + desktop safe) ===== */
-.pitCard{
-  position: relative;
-}
-
-/* the checkbox inside each mobile stock card */
-.pitCard input[type="checkbox"].pitSelectCard{
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 3;
-  margin: 0;
-}
-
-/* make sure the symbol line has space so it never sits under the checkbox */
-.pitCard .pitRow1{
-  padding-right: 44px;
-}
-
-/* Print log export */
+/* ===== Print log export ===== */
 @media print{
   body{ background:#fff !important; color:#000 !important; }
   header, main > section:not(.rightCol), .rightCol > section:not(:last-child){ display:none !important; }
@@ -483,7 +454,10 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   .mini{ color:#333 !important; }
 }
 
-/* --- Trade Modal --- */
+/* ===================================================================== */
+/* ============================ TRADE MODAL ============================ */
+/*  IMPORTANT: scope everything so it DOES NOT affect setup modals        */
+/* ===================================================================== */
 .mmModalBack {
   position: fixed;
   inset: 0;
@@ -494,12 +468,10 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   padding: 18px;
   z-index: 9999;
 }
+.mmModalBack.open { display: flex; }
 
-.mmModalBack.open { 
-  display: flex; 
-}
-
-.mmModal {
+/* scoped: ONLY the trade dialog box */
+.mmModalBack .mmModal {
   width: min(980px, 100%);
   border: 1px solid var(--border2);
   border-radius: 18px;
@@ -515,69 +487,58 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   padding: 14px 14px;
   border-bottom: 1px solid var(--border2);
 }
-
 .mmModalTitle {
   font-weight: 900;
   font-size: 14px;
 }
-
 .mmModalClose {
-  width: 40px;
-  height: 40px;
+  width: 40px !important;
+  height: 40px !important;
   border-radius: 12px;
   border: 1px solid var(--border2);
   background: transparent;
   color: var(--text);
+  padding: 0 !important;
 }
+.mmModalBody { padding: 14px; }
 
-.mmModalBody { 
-  padding: 14px; 
-}
-
-.mmTradeRow {
+.mmTradeRow{
   display:flex;
   gap: 12px;
   align-items:center;
   flex-wrap: wrap;
 }
-
-.mmTradeRow .field {
+.mmTradeRow .field{
   display:flex;
   align-items:center;
   gap: 10px;
   flex: 1;
   min-width: 260px;
 }
+.mmTradeRow select{ width:100%; }
 
-.mmTradeRow select {
-  width: 100%;
-}
-
-.mmTradeShares {
+.mmTradeShares{
   display:flex;
   align-items:center;
   gap: 10px;
   margin-left: auto;
 }
 
-.mmTradePreview {
-  margin-top: 10px;
-}
+.mmTradePreview{ margin-top: 10px; }
 
-.mmTradeBtns {
+.mmTradeBtns{
   margin-top: 14px;
   display:grid;
   gap: 10px;
 }
-
-.mmTradeBtns button {
+.mmTradeBtns button{
   width: 100%;
   padding: 16px 14px;
   font-weight: 900;
   border-radius: 14px;
 }
 
-/* ===== Log Ticker (top-of-viewport) ===== */
+/* ===== Log Ticker ===== */
 .logTicker{
   position: fixed;
   top: 10px;
@@ -585,16 +546,14 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   transform: translateX(-50%) translateY(-10px);
   z-index: 9998;
   width: min(980px, calc(100% - 20px));
-  pointer-events: none; /* ✅ never blocks gameplay clicks */
+  pointer-events: none;
   opacity: 0;
   transition: opacity .18s ease, transform .18s ease;
 }
-
 .logTicker.show{
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-
 .logTickerInner{
   display:flex;
   align-items:center;
@@ -607,7 +566,6 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 12px 28px rgba(0,0,0,.38);
 }
-
 .logTickerLabel{
   font-size: 11px;
   font-weight: 900;
@@ -620,37 +578,35 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   color: var(--text);
   flex: 0 0 auto;
 }
-
 #logTickerText{
   font-size: 13px;
   font-weight: 800;
   color: var(--text);
-  text-align: center;        /* ✅ center text */
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1 1 auto;
 }
-
 @media (max-width: 700px){
   #logTickerText{ font-size: 12px; }
 }
-/* ===== Setup Launch Buttons ===== */
+
+/* ===================================================================== */
+/* ========================= SETUP MODALS (NEW) ========================= */
+/* ===================================================================== */
 .setupLaunch{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
-
 @media (max-width: 600px){
-  .setupLaunch{ grid-template-columns: 1fr; }
+  .setupLaunch{ grid-template-columns:1fr; }
 }
 
-/* ===== Floating Centered Modal ===== */
-body.modalOpen{
-  overflow: hidden;
-}
+body.modalOpen{ overflow:hidden; }
 
+/* This is your full-screen overlay container (liveModal/newGameModal) */
 .mmModal{
   position: fixed;
   inset: 0;
@@ -658,49 +614,71 @@ body.modalOpen{
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 18px;
 }
-
-.mmModal[hidden]{
-  display: none !important;
-}
+.mmModal[hidden]{ display:none !important; }
 
 .mmModalOverlay{
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-/* 🔥 This is the key change */
+/* The floating dialog card */
 .mmModalCard{
   position: relative;
-  width: auto;
-  min-width: 320px;
-  max-width: 820px;
-  max-height: 85vh;
+  width: min(860px, calc(100% - 28px));
+  max-height: 84vh;
+  overflow:auto;
 
-  padding: 18px 18px 16px;
+  background: rgba(14,14,18,.96);
+  border: 1px solid rgba(255,255,255,.14);
   border-radius: 18px;
 
-  background: rgba(14,14,18,.95);
-  border: 1px solid rgba(255,255,255,.14);
+  padding: 18px;
   box-shadow:
-    0 20px 60px rgba(0,0,0,.65),
-    0 0 0 1px rgba(255,255,255,.04);
+    0 30px 80px rgba(0,0,0,.72),
+    0 0 0 1px rgba(255,255,255,.05);
 
-  overflow: auto;
+  animation: modalPop .16s ease-out;
+}
 
-  animation: modalPop .18s ease-out;
+/* Header row + top-right close */
+.mmModalHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.mmModalHead h3{
+  margin:0;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+
+/* FORCE the X button to behave like an icon button (not full width) */
+.btnIcon{
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: var(--text) !important;
+  cursor: pointer;
+  line-height: 1;
+}
+.btnIcon:hover{
+  background: rgba(255,255,255,.10) !important;
 }
 
 @keyframes modalPop{
-  from{
-    transform: translateY(8px) scale(.97);
-    opacity: 0;
-  }
-  to{
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
+  from{ transform: translateY(10px) scale(.98); opacity:0; }
+  to{ transform: translateY(0) scale(1); opacity:1; }
 }
