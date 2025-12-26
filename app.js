@@ -2208,8 +2208,8 @@ function executeTradeWithSlippage(symbol, signedShares) {
   if (!stock) return null;
   if (isDissolved(symbol)) return null;
 
-  let price = state.prices[symbol] ?? stock.start;
-  if (!Number.isFinite(price)) price = stock.start;
+  let startPrice = state.prices[symbol] ?? stock.start;
+  if (!Number.isFinite(startPrice)) startPrice = stock.start;
 
   const isBuy = signedShares > 0;
   const totalShares = Math.abs(signedShares);
@@ -2217,11 +2217,16 @@ function executeTradeWithSlippage(symbol, signedShares) {
   // how many $1 ticks should happen over the whole order
   const ticksTotal = Math.floor(totalShares / VOL_SHARES_PER_TICK);
   if (ticksTotal <= 0) {
-    return { execTotal: totalShares * price, avgPrice: price, finalPrice: price, ticksApplied: 0 };
+    return {
+      execTotal: totalShares * startPrice,
+      avgPrice: startPrice,
+      finalPrice: clampPrice(startPrice),
+      ticksApplied: 0
+    };
   }
 
   // cap total move per trade (prevents insane nukes)
-  const capTicks = Math.max(1, Math.round(price * VOL_MAX_PCT_PER_TRADE));
+  const capTicks = Math.max(1, Math.round(startPrice * VOL_MAX_PCT_PER_TRADE));
   const ticksApplied = Math.min(ticksTotal, capTicks);
 
   // distribute ticks across lots evenly
@@ -2230,32 +2235,24 @@ function executeTradeWithSlippage(symbol, signedShares) {
 
   let remaining = totalShares;
   let execTotal = 0;
-  let current = price;
+  let current = startPrice; // keep float during fill
 
-    let remaining = totalShares;
-     let execTotal = 0;
-     let current = price; // float during fill
-   
-     for (let i = 0; i < lots; i++) {
-       const lotShares = Math.min(VOL_LOT_SIZE, remaining);
-       remaining -= lotShares;
-   
-       // execute this lot at current price
-       execTotal += lotShares * current;
-   
-       // move price for next lot (NO rounding here)
-       current = current + (isBuy ? +ticksPerLot : -ticksPerLot);
-       if (current <= 0) {
-         current = 0;
-         break;
-       }
-     }
+  for (let i = 0; i < lots; i++) {
+    const lotShares = Math.min(VOL_LOT_SIZE, remaining);
+    remaining -= lotShares;
+
+    // execute this lot at current price
+    execTotal += lotShares * current;
+
+    // move price for next lot (NO rounding here)
+    current = current + (isBuy ? +ticksPerLot : -ticksPerLot);
+    if (current <= 0) {
+      current = 0;
+      break;
+    }
+  }
 
   // round once at end
-  const finalPrice = clampPrice(current);
-  state.prices[symbol] = finalPrice;
-
-  // end price becomes the new market price
   const finalPrice = clampPrice(current);
   state.prices[symbol] = finalPrice;
 
