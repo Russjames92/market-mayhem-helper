@@ -2119,20 +2119,85 @@ function renderPlayers() {
   });
 
   wrap.querySelector(`[data-role="sharesMax"][data-player="${p.id}"]`).addEventListener("click", () => {
-    const symbol = elSymbol.value;
-    const stock = getStock(symbol);
-    const price = state.prices[symbol] ?? stock.start;
-
-    if (!Number.isFinite(price) || price <= 0) {
-      alert("Invalid stock price.");
-      return;
-    }
-
-    const maxLots = Math.floor(p.cash / (price * 100));
-    const maxShares = Math.max(100, maxLots * 100);
-    tradeShares = maxShares;
-    updatePreview();
-  });
+     const symbol = elSymbol.value;
+     const stock = getStock(symbol);
+     if (!stock) return;
+   
+     // Helper: total cost for buying X shares (handles volatility slippage)
+     const costForShares = (sh) => {
+       const startPrice = state.prices[symbol] ?? stock.start;
+   
+       if (!state.volatilityMode) return sh * startPrice;
+   
+       // simulate slippage WITHOUT mutating market price
+       const isBuy = true;
+       const totalShares = Math.abs(sh);
+   
+       const LOT_SIZE = VOL_LOT_SIZE;
+       const SHARES_PER_TICK = VOL_SHARES_PER_TICK;
+       const MAX_PCT_PER_TRADE = VOL_MAX_PCT_PER_TRADE;
+   
+       let price = startPrice;
+   
+       const ticksTotal = Math.floor(totalShares / SHARES_PER_TICK);
+       if (ticksTotal <= 0) return totalShares * price;
+   
+       const capTicks = Math.max(1, Math.round(price * MAX_PCT_PER_TRADE));
+       const ticksApplied = Math.min(ticksTotal, capTicks);
+   
+       const lots = Math.ceil(totalShares / LOT_SIZE);
+       const ticksPerLot = ticksApplied / lots;
+   
+       let remaining = totalShares;
+       let execTotal = 0;
+       let current = price;
+   
+       for (let i = 0; i < lots; i++) {
+         const lotShares = Math.min(LOT_SIZE, remaining);
+         remaining -= lotShares;
+   
+         execTotal += lotShares * current;
+   
+         current = current + (isBuy ? +ticksPerLot : -ticksPerLot);
+         if (current <= 0) break;
+       }
+   
+       return execTotal;
+     };
+   
+     // Binary search the maximum affordable shares in 100-share increments
+     const CASH = p.cash;
+   
+     // First guess: ignore slippage to establish an upper bound
+     const startPrice = state.prices[symbol] ?? stock.start;
+     if (!Number.isFinite(startPrice) || startPrice <= 0) return;
+   
+     let hiLots = Math.max(1, Math.floor(CASH / (startPrice * 100))); // lots of 100
+     let loLots = 0;
+   
+     // Expand upper bound until it is NOT affordable (slippage-aware)
+     while (hiLots > 0 && costForShares(hiLots * 100) <= CASH) {
+       hiLots *= 2;
+       if (hiLots > 200000) break; // safety cap (20M shares)
+     }
+   
+     // Now binary search between loLots and hiLots
+     let left = loLots;
+     let right = hiLots;
+   
+     while (left + 1 < right) {
+       const mid = Math.floor((left + right) / 2);
+       const midShares = mid * 100;
+       const c = costForShares(midShares);
+   
+       if (c <= CASH) left = mid;
+       else right = mid;
+     }
+   
+     const maxShares = Math.max(100, left * 100);
+     tradeShares = maxShares;
+     updatePreview();
+   });
 
   elSellAll.addEventListener("click", () => {
     const symbol = elSymbol.value;
