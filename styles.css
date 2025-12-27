@@ -1142,3 +1142,46 @@ body.hasLiveAnnouncement {
     font-weight: 900;
   }
 }
+
+/* Mobile: make the shares controls actually stay in the modal */
+@media (max-width: 700px){
+  .mmModalBack .mmTradeShares{
+    width: 100%;
+    margin-left: 0;     /* stops it being pushed off to the right */
+    flex: 0 0 100%;     /* forces it onto its own line */
+    justify-content: space-between;
+  }
+
+  /* let the fields shrink so Stock doesn't cause horizontal overflow */
+  .mmModalBack .mmTradeRow .field{
+    min-width: 0;
+  }
+}
+
+/* Mobile: force "-100  Shares  +100  MAX" to fit on one row */
+@media (max-width: 520px){
+  .mmModalBack .mmTradeShares{
+    display: grid;
+    grid-template-columns: 72px 1fr 72px 64px;
+    gap: 8px;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  /* Shares label has an inline min-width in JS; override so grid can shrink */
+  .mmModalBack .mmTradeShares .mini{
+    min-width: 0 !important;
+  }
+
+  .mmModalBack .mmTradeShares button{
+    width: 100% !important;
+    padding: 10px 8px;
+    font-size: 14px;
+    line-height: 1.1;
+  }
+
+  .mmModalBack .mmTradeShares .maxBtn{
+    padding: 10px 6px;
+    letter-spacing: .2px;
+  }
+}
