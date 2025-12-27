@@ -1997,7 +1997,7 @@ function renderPlayers() {
             ${industryLine}
           </div>
 
-          <button type="button" class="avatarBtn" data-action="toggleAvatar">Avatar</button>
+          <button type="button" class="avatarBtn" data-action="toggleAvatar">Change Persona</button>
         </div>
 
         <div class="avatarPicker" hidden>
