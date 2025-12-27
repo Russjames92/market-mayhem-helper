@@ -2400,6 +2400,7 @@ function startSession() {
   addLog(`Session started with ${n} player(s). Starting cash: $${fmtMoney(startingCash)} each.`);
   renderAll();
   saveState();
+   closeModal("newGameModal");
 }
 
 function applyMarketMover() {
