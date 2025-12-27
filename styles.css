@@ -937,3 +937,20 @@ body.modalOpen{ overflow:hidden; }
   outline: 2px solid rgba(255,255,255,.10);
   outline-offset: 2px;
 }
+/* ============================= */
+/* Mobile checkbox size fix     */
+/* iOS Safari needs transform   */
+/* ============================= */
+@media (max-width:700px){
+
+  input[type="checkbox"]{
+    transform: scale(1.75);
+    transform-origin: center;
+  }
+
+  /* Keep layout from shifting */
+  label input[type="checkbox"]{
+    margin-right: 10px;
+  }
+
+}
