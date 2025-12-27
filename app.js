@@ -2341,7 +2341,6 @@ function executeTradeWithSlippage(symbol, signedShares) {
 function startSession() {
   const n = Number(elPlayerCount.value);
   const elVol = document.getElementById("volatilityMode");
-   state.volatilityMode = !!elVol?.checked;
    
    let startingCash = Number(elStartingCash.value || 0);
    
@@ -2369,6 +2368,7 @@ function startSession() {
    }
    
    state.started = true;
+   state.volatilityMode = !!elVol?.checked;
    state.createdAt = nowTs();
    state.players = players;
    setActivePlayer(players[0]?.id || null);
@@ -2381,6 +2381,7 @@ function startSession() {
    pitSortMode = "off";
    pitSelected.clear();
 
+   updateVolatilityPill();
    buildPitControlsUI();
    
   addLog(`Session started with ${n} player(s). Starting cash: $${fmtMoney(startingCash)} each.`);
