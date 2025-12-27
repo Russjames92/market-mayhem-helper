@@ -1589,6 +1589,7 @@ function createLiveSession() {
     live.enabled = true;
     live.sid = sid;
     live.isHost = true;
+     updateLiveAnnouncement();
 
     // Subscribe (so host UI updates too)
     subscribeToSession(sid);
@@ -1615,6 +1616,8 @@ function joinLiveSession(code) {
   live.enabled = true;
   live.sid = sid;
   live.isHost = false;
+   updateLiveAnnouncement();
+
 
   // Update URL
   const url = new URL(location.href);
@@ -1641,6 +1644,8 @@ function leaveLiveSession() {
     pushTimer: null,
     applyingRemote: false,
   };
+
+   updateLiveAnnouncement();
 
   // Remove sid param from URL
   const url = new URL(location.href);
@@ -3204,7 +3209,7 @@ if (elPitClearSelected) {
 // ---------- Init ----------
 function init() {
   loadState();
-   updateVolatilityPill();
+   updateLiveAnnouncement();
 
   loadLeaderboard();
   renderLeaderboard();
