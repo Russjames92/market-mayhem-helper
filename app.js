@@ -248,6 +248,81 @@ function getTakenAvatarIds(exceptPlayerId = null) {
 }
 
 // ---------- Helpers ----------
+// =========================
+// Delayed hover tooltip system
+// Usage: add data-tooltip="..." to any element
+// =========================
+(function initTooltips() {
+  const DELAY_MS = 1000;
+
+  let timer = null;
+  let tipEl = null;
+  let targetEl = null;
+
+  function removeTip() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (targetEl) targetEl.classList.remove("mmTooltipTarget");
+    targetEl = null;
+
+    if (tipEl) {
+      tipEl.remove();
+      tipEl = null;
+    }
+  }
+
+  function showTip(el) {
+    removeTip();
+
+    const text = el.getAttribute("data-tooltip");
+    if (!text) return;
+
+    targetEl = el;
+    targetEl.classList.add("mmTooltipTarget");
+
+    tipEl = document.createElement("div");
+    tipEl.className = "mmTooltip";
+    tipEl.textContent = text;
+    document.body.appendChild(tipEl);
+
+    const r = el.getBoundingClientRect();
+
+    // anchor above the element, centered
+    let x = r.left + r.width / 2;
+    let y = r.top;
+
+    // position it
+    tipEl.style.left = `${x}px`;
+    tipEl.style.top = `${y}px`;
+
+    // keep inside viewport horizontally
+    const tr = tipEl.getBoundingClientRect();
+    const pad = 8;
+    if (tr.left < pad) tipEl.style.left = `${pad + tr.width / 2}px`;
+    if (tr.right > window.innerWidth - pad) tipEl.style.left = `${window.innerWidth - pad - tr.width / 2}px`;
+
+    requestAnimationFrame(() => tipEl && tipEl.classList.add("isShown"));
+  }
+
+  document.addEventListener("mouseover", (e) => {
+    const el = e.target.closest("[data-tooltip]");
+    if (!el) return;
+
+    // if moving within the same element, ignore
+    if (el === targetEl) return;
+
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => showTip(el), DELAY_MS);
+  });
+
+  document.addEventListener("mouseout", () => {
+    removeTip();
+  });
+
+  // safety: remove on scroll / resize (prevents “floating wrong place”)
+  window.addEventListener("scroll", removeTip, true);
+  window.addEventListener("resize", removeTip);
+})();
+
 function closeModalById(id) {
   const liveModal = document.getElementById("liveModal");
   const newGameModal = document.getElementById("newGameModal");
