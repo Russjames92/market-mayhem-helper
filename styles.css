@@ -1023,3 +1023,25 @@ body.modalOpen{ overflow:hidden; }
     -webkit-text-size-adjust: 100%;
   }
 }
+.live-pill {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  color: #fff;
+  background: linear-gradient(135deg, #b40000, #e60000);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.08),
+    0 6px 18px rgba(230,0,0,0.35);
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .live-pill {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+}
