@@ -2374,6 +2374,7 @@ function renderAll() {
   renderPitBoard();
   renderPlayers();
   renderLog();
+   updateLiveSessionPill();
 
   const started = !!state.started;
   elBtnPayDividends.disabled = !started;
