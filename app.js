@@ -587,6 +587,33 @@ function clearMarketMoverSelections() {
   updateMarketMoverButton();
 }
 
+function computeMaxSharesWithSlippage(playerId, symbol) {
+  const p = state.players.find(x => x.id === playerId);
+  const stock = getStock(symbol);
+  if (!p || !stock) return 100;
+
+  const startPrice = state.prices[symbol] ?? stock.start;
+  const CASH = p.cash;
+
+  const costForShares = (shares) => {
+    if (!state.volatilityMode) return shares * startPrice;
+    return estimateSlippageCost(symbol, shares, startPrice);
+  };
+
+  let lo = 0;
+  let hi = Math.max(1, Math.floor(CASH / (startPrice * 100)));
+
+  while (costForShares(hi * 100) <= CASH) hi *= 2;
+
+  while (lo + 1 < hi) {
+    const mid = (lo + hi) >> 1;
+    if (costForShares(mid * 100) <= CASH) lo = mid;
+    else hi = mid;
+  }
+
+  return Math.max(100, lo * 100);
+}
+
 function openPriceEditor(symbol) {
    if (!assertHostAction()) return;
    if (!state.started) {
@@ -1159,6 +1186,21 @@ function openTradeModalForStock(symbol) {
   sel.onchange = () => {
     tradeModalState.playerId = sel.value;
     renderTradeModalPreview();
+     // ---- Wire MAX button in trade modal (AFTER render) ----
+      const modal = document.getElementById("tradeModal");
+      if (!modal) return;
+      
+      const elMax = modal.querySelector("#modalSharesMax");
+      if (elMax) {
+        elMax.onclick = () => {
+          tradeModalState.shares = computeMaxSharesWithSlippage(
+            tradeModalState.playerId,
+            tradeModalState.symbol
+          );
+          renderTradeModalPreview();
+        };
+      }
+
   };
 
   // set labels
