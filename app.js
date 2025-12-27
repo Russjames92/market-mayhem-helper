@@ -1439,6 +1439,8 @@ function subscribeToSession(sid) {
       live.applyingRemote = true;
       try {
         state = remoteState;
+         
+         updateVolatilityPill();
 
         // keep your defaults safe
         if (state.openingBells == null) state.openingBells = 0;
