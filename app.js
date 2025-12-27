@@ -252,12 +252,13 @@ function updateLiveSessionPill() {
   const pill = document.getElementById("liveSessionPill");
   if (!pill) return;
 
-  const isLive =
-    state?.session?.live === true &&
-    state?.session?.host === true;
+  // ✅ ONLY show when this client is the HOST of a live session
+  const isLive = live.enabled && live.isHost;
 
-  pill.classList.toggle("hidden", !isLive);
+  pill.hidden = !isLive;
+  pill.style.display = isLive ? "inline-flex" : "none";
 }
+
 // =========================
 // Delayed hover tooltip system
 // Usage: add data-tooltip="..." to any element
