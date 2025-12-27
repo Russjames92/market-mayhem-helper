@@ -287,6 +287,14 @@ function enqueueLogTicker(messageHtml) {
   if (!logTickerRunning) runLogTickerQueue();
 }
 
+function updateVolatilityPill() {
+  const pill = document.getElementById("volatilityPill");
+  if (!pill) return;
+
+  const show = state.started && state.volatilityMode;
+  pill.hidden = !show;
+}
+
 function runLogTickerQueue() {
   if (!elLogTicker || !elLogTickerText) return;
 
