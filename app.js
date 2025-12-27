@@ -252,15 +252,11 @@ function updateLiveAnnouncement() {
   const bar = document.getElementById("liveAnnouncement");
   if (!bar) return;
 
-  // Show ONLY when:
-  // - connected to a live room
-  // - this client is the host
-  // - AND a game session is actually started
-  const isLiveHost = !!(live.enabled && live.isHost && state && state.started);
+  // Show when THIS client is hosting an active Firebase live session
+  const show = !!(live.enabled && live.isHost);
 
-  bar.hidden = !isLiveHost;
-
-  document.body.classList.toggle("hasLiveAnnouncement", isLiveHost);
+  bar.hidden = !show;
+  document.body.classList.toggle("hasLiveAnnouncement", show);
 }
 
 // =========================
