@@ -939,8 +939,8 @@ body.modalOpen{ overflow:hidden; }
     appearance: none;
 
     /* force size (must beat earlier width:auto !important rule) */
-    width: 36px !important;
-    height: 36px !important;
+    width: 25px !important;
+    height: 25px !important;
 
     border-radius: 8px;
     border: 2px solid rgba(255,255,255,0.35);
