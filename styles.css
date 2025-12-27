@@ -1088,6 +1088,11 @@ body.modalOpen{ overflow:hidden; }
   pointer-events: none; /* 🔑 THIS FIXES BUTTONS */
 }
 
+/* FORCE hidden attribute to actually hide the live announcement */
+.live-announcement[hidden] {
+  display: none !important;
+}
+
 /* push the app down so content isn't hidden under the bar */
 body.hasLiveAnnouncement {
   padding-top: 32px;
