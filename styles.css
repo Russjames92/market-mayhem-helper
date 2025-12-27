@@ -1070,3 +1070,27 @@ body.modalOpen{ overflow:hidden; }
 @media (prefers-reduced-motion: reduce) {
   .live-pill { animation: none; }
 }
+.live-announcement {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 32px;
+  line-height: 32px;
+
+  background: #b30000;
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  z-index: 9999;
+}
+
+/* push the app down so content isn't hidden under the bar */
+body.hasLiveAnnouncement {
+  padding-top: 32px;
+}
