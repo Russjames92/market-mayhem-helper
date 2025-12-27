@@ -2874,6 +2874,7 @@ function init() {
   }
    
   renderAll();
+     updateVolatilityPill();
 
   // ✅ this now runs, because init() no longer crashes
     initCollapsibleSections();
