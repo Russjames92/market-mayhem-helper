@@ -1251,6 +1251,7 @@ function resetState() {
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
+   updateVolatilityPill();
   renderAll();
 }
 
