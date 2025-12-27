@@ -1722,6 +1722,7 @@ function stopPresence() {
       .catch(() => {});
   }
 
+   updateLiveSessionPill();
   setViewersPill(null);
 }
 
