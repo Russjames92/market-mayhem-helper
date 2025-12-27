@@ -995,3 +995,31 @@ body.modalOpen{ overflow:hidden; }
     line-height: 1.25;
   }
 }
+/* ===== iOS (Safari/Chrome) input zoom prevention ===== */
+@media (max-width: 768px) {
+  /* Force all form controls to 16px+ to stop iOS zoom */
+  input,
+  select,
+  textarea,
+  button,
+  .btn,
+  .pill,
+  .input,
+  .field,
+  .control,
+  .select,
+  .dropdown {
+    font-size: 16px !important;
+  }
+
+  /* Also force common “small text” areas that might cascade onto inputs */
+  .mini,
+  .muted,
+  .sub,
+  .small,
+  .hint,
+  .meta,
+  .subtitle {
+    -webkit-text-size-adjust: 100%;
+  }
+}
