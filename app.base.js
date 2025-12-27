@@ -1163,7 +1163,7 @@ function ensureTradeModal() {
               Shares: <strong id="mmTradeShares">100</strong>
             </div>
             <button type="button" id="mmTradeUp">+100</button>
-            <button type="button" id="modalSharesMax">MAX</button>
+            <button type="button" class="maxBtn" id="modalSharesMax">MAX</button>
           </div>
         </div>
 
