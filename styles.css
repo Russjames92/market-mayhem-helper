@@ -116,14 +116,6 @@ button.primary{ background:#1e1e24; border-color:#3a3a3a; }
 button.danger{ background:#241214; border-color:#5a2a2e; }
 button:disabled{ opacity:.55; cursor:not-allowed; }
 
-/* ✅ Critical: don't make checkboxes full-width */
-input[type="checkbox"]{
-  width:auto !important;
-  padding:0 !important;
-  background:transparent !important;
-  border-radius:8px;
-}
-
 /* ===== Row/Grid helpers ===== */
 .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 .row > *{ flex:1; min-width:140px; }
