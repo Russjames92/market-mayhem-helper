@@ -291,8 +291,11 @@ function updateVolatilityPill() {
   const pill = document.getElementById("volatilityPill");
   if (!pill) return;
 
-  const show = state.started && state.volatilityMode;
+  const show = !!(state && state.started && state.volatilityMode);
+
+  // Use BOTH for maximum browser consistency
   pill.hidden = !show;
+  pill.style.display = show ? "inline-block" : "none";
 }
 
 function runLogTickerQueue() {
