@@ -954,3 +954,46 @@ body.modalOpen{ overflow:hidden; }
   }
 
 }
+
+/* ===================================== */
+/* iOS SAFARI CHECKBOX FIX (MOBILE ONLY) */
+/* ===================================== */
+@media (max-width:700px){
+
+  input[type="checkbox"]{
+    -webkit-appearance: none;
+    appearance: none;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.05);
+
+    display: inline-grid;
+    place-content: center;
+
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+
+  input[type="checkbox"]:checked{
+    background: #ffffff;
+    border-color: #ffffff;
+  }
+
+  input[type="checkbox"]:checked::after{
+    content: "✓";
+    color: #000;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* spacing so labels don't collapse */
+  label input[type="checkbox"]{
+    margin-right: 12px;
+  }
+}
+
