@@ -38,8 +38,7 @@ header .header-actions{
   display:grid;
   grid-template-columns: 1fr 1fr;  /* status left, live pill right */
   grid-template-areas:
-    "  "
-    "reset  reset"
+    "status  reset"
     "end    end";
   align-items:center;
   gap:10px;
