@@ -1045,3 +1045,18 @@ body.modalOpen{ overflow:hidden; }
     padding: 8px 14px;
   }
 }
+@keyframes livePulse {
+  0%   { transform: scale(1);   box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 6px 18px rgba(230,0,0,0.30); }
+  50%  { transform: scale(1.03); box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 10px 26px rgba(230,0,0,0.55); }
+  100% { transform: scale(1);   box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 6px 18px rgba(230,0,0,0.30); }
+}
+
+.live-pill {
+  animation: livePulse 1.35s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+/* Respect users who disable motion */
+@media (prefers-reduced-motion: reduce) {
+  .live-pill { animation: none; }
+}
