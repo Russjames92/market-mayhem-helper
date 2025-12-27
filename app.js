@@ -12,6 +12,11 @@ const CANON_INDUSTRIES = [
   "Healthcare","Manufacturing","Technology","Transportation"
 ];
 
+const live = {
+  enabled: false,
+  isHost: false
+};
+
 const BASE_OPENING_BELLS = 4;
 const VOL_OPENING_BELLS  = 7;
 const VOL_LOT_SIZE = 100;          // match your UI lots
@@ -3208,7 +3213,6 @@ if (elPitClearSelected) {
 // ---------- Init ----------
 function init() {
   loadState();
-   updateLiveAnnouncement();
 
   loadLeaderboard();
   renderLeaderboard();
