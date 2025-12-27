@@ -16,14 +16,32 @@
     <div>
       <h1>Market Mayhem: Exchange</h1>
       <div class="mini muted">Market Mayhem Board Game Enhancer & Asset Tracker + Volatility Expansion Play</div>
-      <div id="volatilityPill" class="volPill" hidden>Volatility Mode</div>
+      <div id="volatilityPill" class="volPill" hidden
+           data-tooltip="Volatility Mode is active: high-risk stocks are added and trades can cause slippage.">
+        Volatility Mode
+      </div>
     </div>
 
     <div class="header-actions">
-      <div class="pill" id="sessionStatus">No session loaded</div>
-      <button class="primary" id="btnSave">Save</button>
-      <button class="danger" id="btnReset">Reset</button>
-      <button class="danger" id="btnEndSession" type="button" disabled>End Game</button>
+      <div class="pill" id="sessionStatus"
+           data-tooltip="Shows whether a game is active and whether you are Host or Viewer.">
+        No session loaded
+      </div>
+      
+      <button class="primary" id="btnSave"
+              data-tooltip="Save the current game state to this device.">
+        Save
+      </button>
+      
+      <button class="danger" id="btnReset"
+              data-tooltip="Reset the current game back to setup. (Does not clear leaderboard.)">
+        Reset
+      </button>
+      
+      <button class="danger" id="btnEndSession" type="button" disabled
+              data-tooltip="End the game and record results to the leaderboard.">
+        End Game
+      </button>
     </div>
   </header>
   
@@ -49,8 +67,15 @@
           <div class="divider"></div>
         
           <div class="setupLaunch">
-            <button class="primary" id="btnOpenLiveModal" type="button">Start/End Live Session</button>
-            <button class="primary" id="btnOpenNewGameModal" type="button">Start New Game</button>
+            <button class="primary" id="btnOpenLiveModal" type="button"
+                    data-tooltip="Host a live session or join as a viewer using a code.">
+              Start/End Live Session
+            </button>
+            
+            <button class="primary" id="btnOpenNewGameModal" type="button"
+                    data-tooltip="Start a local game: set players, cash, and optional Volatility Mode.">
+              Start New Game
+            </button>
           </div>
         
           <div class="mini muted" style="margin-top:10px;">
@@ -77,24 +102,33 @@
               <div class="pill" id="liveViewersPill">Viewers: —</div>
             </div>
         
-            <div class="row">
-              <button class="primary" id="btnLiveCreate" type="button">Create Live Session (Host)</button>
-        
-              <div>
-                <label>Join code</label>
-                <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2" />
-              </div>
-        
-              <button id="btnLiveJoin" type="button">Join Live Session (Viewer)</button>
-            </div>
+            <button class="primary" id="btnLiveCreate" type="button"
+                    data-tooltip="Create a live session as Host. Only the Host can control the game.">
+              Create Live Session (Host)
+            </button>
+            
+            <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2"
+                   data-tooltip="Enter a join code to connect as a Viewer." />
+            
+            <button id="btnLiveJoin" type="button"
+                    data-tooltip="Join a live session as a Viewer (read-only).">
+              Join Live Session (Viewer)
+            </button>
         
             <div class="row">
               <div style="flex:1; min-width:260px;">
                 <label>Share link</label>
                 <input id="liveShareLink" type="text" readonly value="" />
               </div>
-              <button id="btnCopyLiveLink" type="button">Copy Link</button>
-              <button class="danger" id="btnLiveLeave" type="button" disabled>Leave Live</button>
+              <button id="btnCopyLiveLink" type="button"
+                      data-tooltip="Copy the live session share link to send to viewers.">
+                Copy Link
+              </button>
+              
+              <button class="danger" id="btnLiveLeave" type="button" disabled
+                      data-tooltip="Leave the live session. (Host ends it; viewers disconnect.)">
+                Leave Live
+              </button>
             </div>
         
             <div class="mini muted" id="liveHint">
