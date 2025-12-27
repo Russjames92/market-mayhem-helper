@@ -252,15 +252,15 @@ function updateLiveAnnouncement() {
   const bar = document.getElementById("liveAnnouncement");
   if (!bar) return;
 
-  // ONLY visible when this client is the HOST of a live session
-  const isLiveHost = live.enabled && live.isHost;
+  // Show ONLY when:
+  // - connected to a live room
+  // - this client is the host
+  // - AND a game session is actually started
+  const isLiveHost = !!(live.enabled && live.isHost && state && state.started);
 
   bar.hidden = !isLiveHost;
 
-  document.body.classList.toggle(
-    "hasLiveAnnouncement",
-    isLiveHost
-  );
+  document.body.classList.toggle("hasLiveAnnouncement", isLiveHost);
 }
 
 // =========================
@@ -1541,6 +1541,7 @@ function subscribeToSession(sid) {
 
     // Determine role
     live.isHost = (data.hostUid && fb.uid && data.hostUid === fb.uid);
+     updateLiveAnnouncement();
 
     // Apply remote state
     if (remoteState) {
