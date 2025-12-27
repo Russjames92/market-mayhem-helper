@@ -937,26 +937,8 @@ body.modalOpen{ overflow:hidden; }
   outline: 2px solid rgba(255,255,255,.10);
   outline-offset: 2px;
 }
-/* ============================= */
-/* Mobile checkbox size fix     */
-/* iOS Safari needs transform   */
-/* ============================= */
-@media (max-width:700px){
-
-  input[type="checkbox"]{
-    transform: scale(1.75);
-    transform-origin: center;
-  }
-
-  /* Keep layout from shifting */
-  label input[type="checkbox"]{
-    margin-right: 10px;
-  }
-
-}
-
 /* ===================================== */
-/* iOS SAFARI CHECKBOX FIX (MOBILE ONLY) */
+/* MOBILE CHECKBOXES (BIGGER + RELIABLE) */
 /* ===================================== */
 @media (max-width:700px){
 
@@ -964,18 +946,23 @@ body.modalOpen{ overflow:hidden; }
     -webkit-appearance: none;
     appearance: none;
 
-    width: 28px;
-    height: 28px;
+    /* force size (must beat earlier width:auto !important rule) */
+    width: 36px !important;
+    height: 36px !important;
 
-    border-radius: 6px;
+    border-radius: 8px;
     border: 2px solid rgba(255,255,255,0.35);
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.06);
 
     display: inline-grid;
     place-content: center;
 
     cursor: pointer;
-    transition: background .15s ease, border-color .15s ease;
+    transition: background .15s ease, border-color .15s ease, transform .12s ease;
+  }
+
+  input[type="checkbox"]:active{
+    transform: scale(0.98);
   }
 
   input[type="checkbox"]:checked{
@@ -986,14 +973,13 @@ body.modalOpen{ overflow:hidden; }
   input[type="checkbox"]:checked::after{
     content: "✓";
     color: #000;
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 900;
     line-height: 1;
   }
 
-  /* spacing so labels don't collapse */
+  /* keep label spacing clean */
   label input[type="checkbox"]{
     margin-right: 12px;
   }
 }
-
