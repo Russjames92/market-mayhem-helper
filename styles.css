@@ -38,14 +38,13 @@ header .header-actions{
   display:grid;
   grid-template-columns: 1fr auto;  /* status left, live pill right */
   grid-template-areas:
-    "status live"
-    "save   reset"
+    "status status"
+    "live   reset"
     "end    end";
   align-items:center;
   gap:10px;
   width:min(560px, 100%);
 }
-#liveSessionPill{ grid-area:live; justify-self:end; }
 
 #sessionStatus{ grid-area:status; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 #btnSave{ grid-area:save; }
