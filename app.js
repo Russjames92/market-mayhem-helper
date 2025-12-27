@@ -1629,11 +1629,23 @@ function joinLiveSession(code) {
 }
 
 function leaveLiveSession() {
+  // capture current values BEFORE we wipe live
+  const wasHost = !!live.isHost;
+  const sid = live.sid;
+
   if (live.unsub) {
     try { live.unsub(); } catch {}
+    live.unsub = null;
   }
 
-   stopPresence();
+  stopPresence();
+
+  // If HOST is leaving, end the session in Firestore so it isn't "live" forever
+  if (fb.ready && wasHost && sid) {
+    fb.db.collection("sessions").doc(sid).delete().catch(err => {
+      console.warn("Failed to delete session doc:", err);
+    });
+  }
 
   live = {
     enabled: false,
@@ -1645,7 +1657,7 @@ function leaveLiveSession() {
     applyingRemote: false,
   };
 
-   updateLiveAnnouncement();
+  updateLiveAnnouncement();
 
   // Remove sid param from URL
   const url = new URL(location.href);
@@ -1653,14 +1665,6 @@ function leaveLiveSession() {
   history.replaceState({}, "", url.toString());
 
   setLiveUI();
-}
-
-function schedulePushToCloud() {
-  if (!live.enabled || !live.isHost || !fb.ready) return;
-  if (live.applyingRemote) return;
-
-  clearTimeout(live.pushTimer);
-  live.pushTimer = setTimeout(pushStateToCloud, 180);
 }
 
 function pushStateToCloud() {
@@ -3232,3 +3236,4 @@ function init() {
 init();
 initFirebase();
 setLiveUI();
+updateLiveAnnouncement();
