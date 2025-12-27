@@ -2796,6 +2796,7 @@ function endGame(force = false) {
 
   // end THIS GAME, but keep the live room
   state.started = false;
+   updateVolatilityPill();
   renderAll();
   saveState();
 
