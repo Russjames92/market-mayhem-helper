@@ -55,16 +55,16 @@ const BASE_STOCKS = [
 ];
 
 const VOLATILITY_STOCKS = [
-  { symbol:"NOVA",  name:"NovaDyne Systems",        industries:["Technology", "Defense"], start:18, dividend:0.5, moves:{low:10, mid:8, high:6} },
-  { symbol:"VOLT",  name:"VoltEdge Energy",        industries:["Energy"], start:22, dividend:1, moves:{low:10, mid:8, high:6} },
-  { symbol:"CRSH",  name:"CrashLoop Logistics",    industries:["Transportation"], start:16, dividend:0.25, moves:{low:10, mid:8, high:6} },
-  { symbol:"PULSE", name:"PulseWave Biotech",      industries:["Healthcare", "Defense", "Technology", "Manufacturing", "Energy"], start:6, dividend:0, moves:{low:10, mid:8, high:6} },
-  { symbol:"STACK", name:"StackHammer Construction",industries:["Manufacturing"], start:20, dividend:1, moves:{low:10, mid:8, high:6} },
-  { symbol:"FLUX",  name:"Flux Materials",         industries:["Manufacturing"], start:19, dividend:0.75, moves:{low:10, mid:8, high:6} },
-  { symbol:"SPRK",  name:"SparkRoute Media",       industries:["Technology"], start:17, dividend:0.5, moves:{low:10, mid:8, high:6} },
-  { symbol:"DRIFT", name:"DriftNet Retail",        industries:["Consumer"], start:21, dividend:1, moves:{low:10, mid:8, high:6} },
-  { symbol:"FORGE", name:"IronForge Industrial",   industries:["Manufacturing"], start:26, dividend:2, moves:{low:10, mid:8, high:6} },
-  { symbol:"SKY",   name:"SkyPierce Aerospace",    industries:["Transportation","Technology"], start:28, dividend:0.25, moves:{low:10, mid:8, high:6} }
+  { symbol:"NOVA",  name:"NovaDyne Systems",        industries:["Technology", "Defense"], start:18, dividend:0.05, moves:{low:10, mid:8, high:6} },
+  { symbol:"VOLT",  name:"VoltEdge Energy",        industries:["Energy"], start:22, dividend:0.10, moves:{low:10, mid:8, high:6} },
+  { symbol:"CRSH",  name:"CrashLoop Logistics",    industries:["Transportation"], start:16, dividend:0.02, moves:{low:10, mid:8, high:6} },
+  { symbol:"PULSE", name:"PulseWave Biotech",      industries:["Healthcare", "Defense", "Technology", "Manufacturing", "Energy"], start:6, dividend:0.01, moves:{low:10, mid:8, high:6} },
+  { symbol:"STACK", name:"StackHammer Construction",industries:["Manufacturing"], start:20, dividend:0.10, moves:{low:10, mid:8, high:6} },
+  { symbol:"FLUX",  name:"Flux Materials",         industries:["Manufacturing"], start:19, dividend:0.07, moves:{low:10, mid:8, high:6} },
+  { symbol:"SPRK",  name:"SparkRoute Media",       industries:["Technology"], start:17, dividend:0.05, moves:{low:10, mid:8, high:6} },
+  { symbol:"DRIFT", name:"DriftNet Retail",        industries:["Consumer"], start:21, dividend:0.10, moves:{low:10, mid:8, high:6} },
+  { symbol:"FORGE", name:"IronForge Industrial",   industries:["Manufacturing"], start:26, dividend:0.20, moves:{low:10, mid:8, high:6} },
+  { symbol:"SKY",   name:"SkyPierce Aerospace",    industries:["Transportation","Technology"], start:28, dividend:0.02, moves:{low:10, mid:8, high:6} }
 ];
 
 
