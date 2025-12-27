@@ -90,7 +90,7 @@ let pitSelected = new Set();   // selected symbols for bulk ops
 
 // ---------- DOM ----------
 const elSessionStatus = document.getElementById("sessionStatus");
-const elBtnSave = document.getElementById("btnSave");
+
 const elBtnReset = document.getElementById("btnReset");
 const elLogTicker = document.getElementById("logTicker");
 const elLogTickerText = document.getElementById("logTickerText");
@@ -1440,7 +1440,7 @@ function applyViewerLocks() {
   if (elPitClearSelected) elPitClearSelected.disabled = ro;
 
   // Header controls (Save/Reset)
-  if (elBtnSave) elBtnSave.disabled = ro;   // viewers shouldn’t “save” host state
+
   if (elBtnReset) elBtnReset.disabled = ro; // viewers shouldn’t reset the session
 }
 
@@ -2972,7 +2972,7 @@ document.addEventListener("click", (e) => {
   openPriceEditor(btn.dataset.symbol);
 });
 
-elBtnSave.addEventListener("click", () => saveState({ silent:false }));
+
 elBtnReset.addEventListener("click", resetState);
 
 elBtnPrintLog.addEventListener("click", printGameLog);
