@@ -1184,24 +1184,10 @@ function openTradeModalForStock(symbol) {
   sel.value = tradeModalState.playerId;
 
   sel.onchange = () => {
-    tradeModalState.playerId = sel.value;
-    renderTradeModalPreview();
-     // ---- Wire MAX button in trade modal (AFTER render) ----
-      const modal = document.getElementById("tradeModal");
-      if (!modal) return;
-      
-      const elMax = modal.querySelector("#modalSharesMax");
-      if (elMax) {
-        elMax.onclick = () => {
-          tradeModalState.shares = computeMaxSharesWithSlippage(
-            tradeModalState.playerId,
-            tradeModalState.symbol
-          );
-          renderTradeModalPreview();
-        };
-      }
+     tradeModalState.playerId = sel.value;
+     renderTradeModalPreview();
+   };
 
-  };
 
   // set labels
   document.getElementById("mmTradeModalTitle").textContent = `Trade — ${symbol}`;
@@ -1216,15 +1202,16 @@ function openTradeModalForStock(symbol) {
     tradeModalState.shares += 100;
     renderTradeModalPreview();
   };
-   // modal MAX button (use modal state, not player-card vars)
+   // modal MAX button — slippage-aware
    const elMax = document.getElementById("modalSharesMax");
    elMax.onclick = () => {
-  const price = state.prices[symbol] ?? stock.start;
-  const maxLots = Math.floor(player.cash / (price * 100));
-  const maxShares = maxLots * 100;
-  tradeModalState.shares = Math.max(100, maxShares);
-  renderTradeModalPreview();
-};
+     const pid = tradeModalState.playerId;
+     if (!pid) return;
+   
+     tradeModalState.shares = computeMaxSharesWithSlippage(pid, symbol);
+     renderTradeModalPreview();
+   };
+
 
   // actions
   document.getElementById("mmTradeBuy").onclick = () => {
