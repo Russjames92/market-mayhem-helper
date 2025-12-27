@@ -586,6 +586,51 @@ function clearMarketMoverSelections() {
 
   updateMarketMoverButton();
 }
+// ---- Slippage cost estimator (NO state mutation) ----
+// Returns the total execution cost to BUY `shares` at `startPrice` under volatility slippage rules.
+function estimateSlippageCost(symbol, shares, startPrice) {
+  const stock = getStock(symbol);
+  if (!stock) return shares * startPrice;
+
+  let price = Number.isFinite(startPrice) ? startPrice : (state.prices[symbol] ?? stock.start);
+  if (!Number.isFinite(price)) price = Number(stock.start) || 0;
+
+  // If not in volatility mode, it's just flat cost
+  if (!state.volatilityMode) return shares * price;
+
+  const totalShares = Math.abs(shares);
+  if (totalShares <= 0) return 0;
+
+  // How many $1 ticks the order would cause
+  const ticksTotal = Math.floor(totalShares / VOL_SHARES_PER_TICK);
+  if (ticksTotal <= 0) return totalShares * price;
+
+  // Cap total move per trade
+  const capTicks = Math.max(1, Math.round(price * VOL_MAX_PCT_PER_TRADE));
+  const ticksApplied = Math.min(ticksTotal, capTicks);
+
+  // Distribute ticks evenly across lots
+  const lots = Math.ceil(totalShares / VOL_LOT_SIZE);
+  const ticksPerLot = ticksApplied / lots;
+
+  let remaining = totalShares;
+  let execTotal = 0;
+  let current = price;
+
+  for (let i = 0; i < lots; i++) {
+    const lotShares = Math.min(VOL_LOT_SIZE, remaining);
+    remaining -= lotShares;
+
+    execTotal += lotShares * current;
+
+    // BUY cost estimator assumes buy-side slippage (price rises through the fill)
+    current = current + ticksPerLot;
+    if (current <= 0) break;
+  }
+
+  return execTotal;
+}
+
 
 function computeMaxSharesWithSlippage(playerId, symbol) {
   const p = state.players.find(x => x.id === playerId);
