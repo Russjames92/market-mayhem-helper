@@ -248,15 +248,19 @@ function getTakenAvatarIds(exceptPlayerId = null) {
 }
 
 // ---------- Helpers ----------
-function updateLiveSessionPill() {
-  const pill = document.getElementById("liveSessionPill");
-  if (!pill) return;
+function updateLiveAnnouncement() {
+  const bar = document.getElementById("liveAnnouncement");
+  if (!bar) return;
 
-  // ✅ ONLY show when this client is the HOST of a live session
-  const isLive = live.enabled && live.isHost;
+  // ONLY visible when this client is the HOST of a live session
+  const isLiveHost = live.enabled && live.isHost;
 
-  pill.hidden = !isLive;
-  pill.style.display = isLive ? "inline-flex" : "none";
+  bar.hidden = !isLiveHost;
+
+  document.body.classList.toggle(
+    "hasLiveAnnouncement",
+    isLiveHost
+  );
 }
 
 // =========================
