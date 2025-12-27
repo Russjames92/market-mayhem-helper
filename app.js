@@ -1727,7 +1727,6 @@ function stopPresence() {
       .catch(() => {});
   }
 
-   updateLiveSessionPill();
   setViewersPill(null);
 }
 
@@ -1772,7 +1771,6 @@ function startPresence() {
     setViewersPill(1);
   }
 
-   updateLiveSessionPill();
   // cleanup on tab close/refresh
   window.addEventListener("beforeunload", stopPresence, { once: true });
 }
