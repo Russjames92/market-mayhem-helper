@@ -907,3 +907,33 @@ body.modalOpen{ overflow:hidden; }
     width:100%;
   }
 }
+
+/* =========================
+   Delayed hover tooltips
+   ========================= */
+.mmTooltip {
+  position: fixed;
+  z-index: 99999;
+  max-width: 320px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(17, 17, 17, 0.96);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  font-size: 12px;
+  line-height: 1.25;
+  opacity: 0;
+  transform: translate(-50%, -110%);
+  transition: opacity .12s ease, transform .12s ease;
+  pointer-events: none;
+}
+
+.mmTooltip.isShown {
+  opacity: 1;
+  transform: translate(-50%, -120%);
+}
+
+.mmTooltipTarget {
+  outline: 2px solid rgba(255,255,255,.10);
+  outline-offset: 2px;
+}
