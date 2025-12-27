@@ -736,6 +736,36 @@ body.modalOpen{ overflow:hidden; }
   width:auto !important;
   padding:10px 12px;
 }
+/* Mobile: force "-100  Shares  +100  MAX" to fit on one row */
+@media (max-width: 520px){
+  .mmModalBack .mmTradeShares{
+    /* override the desktop flex row */
+    display: grid;
+    grid-template-columns: 72px 1fr 72px 64px;
+    gap: 8px;
+    width: 100%;
+    margin-left: 0;         /* stop trying to push it to the far right */
+  }
+
+  /* The Shares label has an inline min-width:140px in app.base.js;
+     this overrides it so the grid can shrink properly. */
+  .mmModalBack .mmTradeShares .mini{
+    min-width: 0 !important;
+  }
+
+  .mmModalBack .mmTradeShares button{
+    width: 100% !important;
+    padding: 10px 8px;
+    font-size: 14px;
+    line-height: 1.1;
+  }
+
+  .mmModalBack .mmTradeShares .maxBtn{
+    padding: 10px 6px;
+    letter-spacing: .2px;
+  }
+}
+
 
 .mmModalBack .mmTradePreview{ margin-top:10px; }
 
