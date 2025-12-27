@@ -1192,6 +1192,25 @@ function initSetupModals() {
     }
   }
 
+   function closeModalById(id) {
+     const liveModal = document.getElementById("liveModal");
+     const newGameModal = document.getElementById("newGameModal");
+   
+     const el = document.getElementById(id);
+     if (!el) return;
+   
+     el.hidden = true;
+     el.setAttribute("aria-hidden", "true");
+   
+     // unlock body scrolling only if BOTH modals are closed
+     const liveClosed = !liveModal || liveModal.hidden;
+     const newClosed  = !newGameModal || newGameModal.hidden;
+   
+     if (liveClosed && newClosed) {
+       document.body.classList.remove("modalOpen");
+     }
+   }
+
   btnOpenLive?.addEventListener("click", () => openModal(liveModal));
   btnOpenNewGame?.addEventListener("click", () => openModal(newGameModal));
 
