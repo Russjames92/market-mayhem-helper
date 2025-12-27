@@ -634,6 +634,7 @@ body.modalOpen{ overflow:hidden; }
   background:rgba(0,0,0,.62);
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
+  pointer-events: none;
 }
 
 /* Trade card */
