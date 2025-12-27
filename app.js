@@ -1240,13 +1240,20 @@ function saveState(opts = {}) {
 
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
-   if (state.volatilityMode == null) state.volatilityMode = false;
   if (!raw) return;
-  try { state = JSON.parse(raw); } catch { /* ignore */ }
 
-   if (state.openingBells == null) state.openingBells = 0;
-   if (!state.dissolved) state.dissolved = {};
+  try { state = JSON.parse(raw); } catch { return; }
+
+  // defaults / migrations (AFTER parse)
+  if (state.started == null) state.started = false;
+  if (state.volatilityMode == null) state.volatilityMode = false;
+  if (state.openingBells == null) state.openingBells = 0;
+  if (!state.prices) state.prices = {};
+  if (!state.players) state.players = [];
+  if (!state.dissolved) state.dissolved = {};
+  if (!state.log) state.log = [];
 }
+
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
   localStorage.removeItem(STORAGE_KEY);
@@ -3085,6 +3092,7 @@ if (elPitClearSelected) {
 // ---------- Init ----------
 function init() {
   loadState();
+   updateVolatilityPill();
 
   loadLeaderboard();
   renderLeaderboard();
