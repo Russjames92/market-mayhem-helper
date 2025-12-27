@@ -34,12 +34,6 @@
              data-tooltip="Shows whether a game is active and whether you are Host or Viewer.">
           No session loaded
         </div>
-        <div
-          id="liveSessionPill"
-          class="pill live-pill hidden"
-          title="A live session is active. Viewers can join.">
-          SESSION IS LIVE
-        </div>
       </div>
       
       <button class="danger" id="btnReset"
@@ -62,6 +56,9 @@
   </div>
   
   <main>
+    <div id="liveAnnouncement" class="live-announcement" hidden>
+      💻 SESSION IS LIVE 💻
+    </div>
     <!-- LEFT COLUMN -->
     <section>
       <!-- 1) Session Setup -->
