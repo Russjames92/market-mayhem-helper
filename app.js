@@ -248,6 +248,16 @@ function getTakenAvatarIds(exceptPlayerId = null) {
 }
 
 // ---------- Helpers ----------
+function updateLiveSessionPill() {
+  const pill = document.getElementById("liveSessionPill");
+  if (!pill) return;
+
+  const isLive =
+    state?.session?.live === true &&
+    state?.session?.host === true;
+
+  pill.classList.toggle("hidden", !isLive);
+}
 // =========================
 // Delayed hover tooltip system
 // Usage: add data-tooltip="..." to any element
