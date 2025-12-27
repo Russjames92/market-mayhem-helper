@@ -1099,89 +1099,68 @@ body.hasLiveAnnouncement {
   padding-top: 32px;
 }
 /* ===================================================== */
-/* TRADE MODAL – MOBILE SHARE CONTROLS FIX               */
-/* Forces:  -100 | Shares | +100 | MAX  in one row       */
+/* TRADE MODAL — MOBILE LAYOUT (single source of truth)  */
+/* Fixes overflow + keeps -100 Shares +100 MAX visible   */
 /* ===================================================== */
-@media (max-width: 700px) {
-
-  /* Lock the row into a single line */
-  .mmModalBack .mmTradeRow {
-    flex-wrap: nowrap !important;
-    align-items: center;
-  }
-
-  /* Shares control container becomes a fixed grid */
-  .mmModalBack .mmTradeShares {
-    display: grid !important;
-    grid-template-columns: auto 1fr auto auto;
-    gap: 6px;
-    width: 100%;
-    margin-left: 0;
-  }
-
-  /* -100 and +100 buttons */
-  .mmModalBack .mmTradeShares button:not(.maxBtn) {
-    min-width: 56px;
-    padding: 8px 6px;
-    font-size: 14px;
-  }
-
-  /* Shares label */
-  .mmModalBack .mmTradeShares .sharesLabel,
-  .mmModalBack .mmTradeShares span {
-    text-align: center;
-    font-size: 14px;
-    white-space: nowrap;
-  }
-
-  /* MAX button — always visible */
-  .mmModalBack .mmTradeShares .maxBtn {
-    min-width: 60px;
-    padding: 8px 10px;
-    font-size: 14px;
-    font-weight: 900;
-  }
-}
-
-/* Mobile: make the shares controls actually stay in the modal */
 @media (max-width: 700px){
-  .mmModalBack .mmTradeShares{
-    width: 100%;
-    margin-left: 0;     /* stops it being pushed off to the right */
-    flex: 0 0 100%;     /* forces it onto its own line */
-    justify-content: space-between;
+
+  /* kill sideways scroll in the trade modal */
+  .mmModalBack,
+  .mmModalBack > .mmModal,
+  .mmModalBack > .mmModal *{
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .mmModalBack > .mmModal{
+    overflow-x: hidden !important;
   }
 
-  /* let the fields shrink so Stock doesn't cause horizontal overflow */
+  /* Trade header content becomes a vertical stack */
+  .mmModalBack .mmTradeRow{
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Each field becomes a 2-row stack: label then control/text */
   .mmModalBack .mmTradeRow .field{
-    min-width: 0;
-  }
-}
-
-/* Mobile: force "-100  Shares  +100  MAX" to fit on one row */
-@media (max-width: 520px){
-  .mmModalBack .mmTradeShares{
-    display: grid;
-    grid-template-columns: 72px 1fr 72px 64px;
-    gap: 8px;
-    width: 100%;
-    margin-left: 0;
-  }
-
-  /* Shares label has an inline min-width in JS; override so grid can shrink */
-  .mmModalBack .mmTradeShares .mini{
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
     min-width: 0 !important;
   }
 
-  .mmModalBack .mmTradeShares button{
-    width: 100% !important;
-    padding: 10px 8px;
-    font-size: 14px;
-    line-height: 1.1;
+  .mmModalBack .mmTradeRow .field label{
+    margin: 0 !important;
   }
 
-  .mmModalBack .mmTradeShares .maxBtn{
-    padding: 10px 6px;
-    letter-spacing: .2px;
+  /* Shares controls: force 4 columns that always fit */
+  .mmModalBack .mmTradeShares{
+    display: grid !important;
+    grid-template-columns: 68px minmax(0,1fr) 68px 68px !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    justify-content: stretch !important;
+  }
+
+  /* Make buttons behave inside grid */
+  .mmModalBack .mmTradeShares button{
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 10px 8px !important;
+    font-size: 14px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap;
+  }
+
+  /* Shares label: allow shrink + centered */
+  .mmModalBack .mmTradeShares .mini,
+  .mmModalBack .mmTradeShares span{
+    min-width: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
