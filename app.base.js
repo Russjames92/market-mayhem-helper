@@ -249,7 +249,31 @@ function getTakenAvatarIds(exceptPlayerId = null) {
   return taken;
 }
 
+// -----------------------------
+// Sound effects
+// -----------------------------
+const sounds = {
+  openingBell: new Audio("opening-bell.mp3")
+};
+
+// Ensure it can replay immediately
+sounds.openingBell.preload = "auto";
+
+function playSound(name) {
+  const snd = sounds[name];
+  if (!snd) return;
+
+  // Reset so it plays even if triggered twice quickly
+  snd.currentTime = 0;
+
+  snd.play().catch(err => {
+    // Autoplay restrictions shouldn't apply since this is user-initiated
+    console.warn("Sound play failed:", err);
+  });
+}
+
 // ---------- Helpers ----------
+
 function updateLiveAnnouncement() {
   const bar = document.getElementById("liveAnnouncement");
   if (!bar) return;
