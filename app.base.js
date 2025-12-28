@@ -2446,6 +2446,10 @@ function shortMove() {
    if (after === 0) dissolveCompany(sym, `Short move (${signed >= 0 ? "+" : ""}${signed}) moved it to $0`);
 
   addLog(`Short Move: ${sym} ${signed >= 0 ? "+" : ""}${signed} → $${fmtMoney(after)}`);
+
+   // ✅ CASH SOUND on market move
+  playCashSfx();
+
   renderAll();
   saveState();
 }
