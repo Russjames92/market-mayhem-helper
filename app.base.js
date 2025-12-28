@@ -2140,6 +2140,7 @@ function startSession() {
       holdings: {}
     });
   }
+   state.volatilityMode = !!elVol?.checked;
    
    const prices = {};
    for (const s of getActiveStocks()) {
@@ -2147,7 +2148,6 @@ function startSession() {
    }
    
    state.started = true;
-   state.volatilityMode = !!elVol?.checked;
    state.createdAt = nowTs();
    state.players = players;
    setActivePlayer(players[0]?.id || null);
@@ -2162,6 +2162,9 @@ function startSession() {
 
    updateVolatilityPill();
    buildPitControlsUI();
+
+   buildIndustryUI();
+   buildShortMoveUI();
    
   addLog(`Session started with ${n} player(s). Starting cash: $${fmtMoney(startingCash)} each.`);
   renderAll();
