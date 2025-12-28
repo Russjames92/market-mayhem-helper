@@ -287,6 +287,60 @@ document.addEventListener("click", () => {
   } catch {}
 }, { once: true });
 
+// -----------------------------
+// Fast UI click sound via WebAudio (mobile-friendly)
+// -----------------------------
+let uiAudioCtx = null;
+let uiClickBuffer = null;
+let uiAudioUnlocked = false;
+
+async function initUIClickAudio() {
+  if (uiClickBuffer) return true;
+
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return false;
+
+  if (!uiAudioCtx) uiAudioCtx = new AC();
+
+  // Fetch + decode once
+  const resp = await fetch("./ui-click.mp3", { cache: "force-cache" });
+  const arr = await resp.arrayBuffer();
+  uiClickBuffer = await uiAudioCtx.decodeAudioData(arr);
+
+  return true;
+}
+
+function unlockUIClickAudioOnce() {
+  if (uiAudioUnlocked) return;
+  uiAudioUnlocked = true;
+
+  // Create/resume context and pre-decode the buffer
+  initUIClickAudio().then(() => {
+    if (!uiAudioCtx) return;
+    if (uiAudioCtx.state === "suspended") uiAudioCtx.resume().catch(() => {});
+  });
+}
+
+// Plays instantly and reliably even when spammed
+function playUIClickFast() {
+  if (!uiClickBuffer || !uiAudioCtx) return;
+
+  // On some mobiles the context can suspend; resume if needed
+  if (uiAudioCtx.state === "suspended") {
+    uiAudioCtx.resume().catch(() => {});
+  }
+
+  const src = uiAudioCtx.createBufferSource();
+  src.buffer = uiClickBuffer;
+
+  const gain = uiAudioCtx.createGain();
+  gain.gain.value = 0.35; // match your desktop volume
+
+  src.connect(gain);
+  gain.connect(uiAudioCtx.destination);
+  src.start(0);
+}
+
 // ---------- Helpers ----------
 
 function updateLiveAnnouncement() {
@@ -2732,46 +2786,39 @@ document.addEventListener("click", (e) => {
   openTradeModalForStock(trg.dataset.symbol);
 });
 
-// -----------------------------
-// Global UI click sound ("chkah")
-// -----------------------------
 (function initGlobalClickSound() {
-  let lastClickTs = 0;
-  const MIN_INTERVAL = 40; // ms — prevents double-fires
+  let lastTs = 0;
+  const MIN_INTERVAL = 18; // lower for fast mobile tapping
 
-  document.addEventListener("click", (e) => {
+  // Unlock audio on first user gesture (required for iOS)
+  document.addEventListener("pointerdown", unlockUIClickAudioOnce, { once: true });
+
+  document.addEventListener("pointerdown", (e) => {
     const now = Date.now();
-    if (now - lastClickTs < MIN_INTERVAL) return;
-    lastClickTs = now;
+    if (now - lastTs < MIN_INTERVAL) return;
+    lastTs = now;
 
     const el = e.target.closest(
-      `
-      button,
-      a,
-      [role="button"],
-      [data-action],
-      .pitLink,
-      .pitPriceBtn,
-      .avatarBtn,
-      .avatarOption,
-      .maxBtn
-      `
+      `button,a,[role="button"],[data-action],
+       .pitLink,.pitPriceBtn,.avatarBtn,.avatarOption,.maxBtn`
     );
-
     if (!el) return;
 
-    // Do NOT click-sound disabled or inert elements
     if (el.disabled || el.getAttribute("aria-disabled") === "true") return;
-
-    // Avoid clicks inside inputs / selects / textareas
     if (e.target.closest("input, textarea, select")) return;
 
-    // Optional: host-only sound during live sessions
+    // Host-only during live sessions (keep if you want)
     if (live?.enabled && !live?.isHost) return;
 
-    playSound("uiClick");
-  });
+    // Prefer WebAudio click (mobile reliable); fallback to HTMLAudio if not ready
+    if (uiClickBuffer && uiAudioCtx) {
+      playUIClickFast();
+    } else {
+      playSound("uiClick");
+    }
+  }, { passive: true });
 })();
+
 
 // Live Session buttons
 if (elBtnLiveCreate) {
