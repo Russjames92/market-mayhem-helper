@@ -254,14 +254,18 @@ function getTakenAvatarIds(exceptPlayerId = null) {
 // -----------------------------
 const sounds = {
   openingBell: new Audio("./opening-bell.mp3"),
-  uiClick: new Audio("./ui-click.mp3") // 👈 your "chkah" sound
+  uiClick: new Audio("./ui-click.mp3"), // 👈 your "chkah" sound
+  cash: new Audio("./cash.mp3")         // 👈 ADD THIS (use your real filename)
 };
 
 
 // Ensure it can replay immediately
 sounds.openingBell.preload = "auto";
 sounds.uiClick.preload = "auto";
+sounds.cash.preload = "auto";
+
 sounds.uiClick.volume = 0.35; // subtle, satisfying, not annoying
+sounds.cash.volume = 0.45;    // tweak to taste
 
 function playSound(name) {
   const snd = sounds[name];
@@ -274,6 +278,12 @@ function playSound(name) {
     // Autoplay restrictions shouldn't apply since this is user-initiated
     console.warn("Sound play failed:", err);
   });
+}
+
+function playCashSfx() {
+  // Host-only during live sessions (so 10 viewers don't play it on their phones)
+  if (live?.enabled && !live?.isHost) return;
+  playSound("cash");
 }
 
 let audioUnlocked = false;
