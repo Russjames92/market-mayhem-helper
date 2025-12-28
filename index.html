@@ -29,22 +29,22 @@
     </div>
 
     <div class="header-actions">
-      <button id="btnSettings" class="iconBtn" type="button" title="Settings" aria-label="Open settings">
-        Settings
-      </button>
-
-      <div>
+      <div class="headerTopRow">
         <div class="pill" id="sessionStatus"
              data-tooltip="Shows whether a game is active and whether you are Host or Viewer.">
           No session loaded
         </div>
+    
+        <button id="btnSettings" class="iconBtn" type="button" title="Settings" aria-label="Open settings">
+          ⚙️
+        </button>
       </div>
-      
+    
       <button class="danger" id="btnReset"
               data-tooltip="Reset the current game back to setup. (Does not clear leaderboard.)">
         Reset
       </button>
-      
+    
       <button class="danger" id="btnEndSession" type="button" disabled
               data-tooltip="End the game and record results to the leaderboard.">
         End Game
