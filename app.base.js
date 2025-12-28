@@ -121,6 +121,8 @@ let live = {
   enabled: false,
   sid: null,
   isHost: false,
+   pendingHost: false,
+  expectedHostUid: null,
   unsub: null,
   pushing: false,
   pushTimer: null,
