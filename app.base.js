@@ -268,14 +268,21 @@ sounds.uiClick.volume = 0.35; // subtle, satisfying, not annoying
 sounds.cash.volume = 0.45;    // tweak to taste
 
 function playSound(name) {
+  if (audioSettings.sfxMuted) return;
+
   const snd = sounds[name];
   if (!snd) return;
 
   // Reset so it plays even if triggered twice quickly
   snd.currentTime = 0;
 
+  // Apply global SFX volume (keep per-sound volumes too)
+  // If you already set snd.volume elsewhere, this scales it.
+  const base = snd._baseVol ?? snd.volume ?? 1;
+  snd._baseVol = base; // cache once
+  snd.volume = Math.max(0, Math.min(1, base * (audioSettings.sfxVolume / 100)));
+
   snd.play().catch(err => {
-    // Autoplay restrictions shouldn't apply since this is user-initiated
     console.warn("Sound play failed:", err);
   });
 }
@@ -344,7 +351,7 @@ function playUIClickFast() {
   src.buffer = uiClickBuffer;
 
   const gain = uiAudioCtx.createGain();
-  gain.gain.value = 0.35; // match your desktop volume
+  gain.gain.value = 0.35 * (audioSettings.sfxMuted ? 0 : (audioSettings.sfxVolume / 100));
 
   src.connect(gain);
   gain.connect(uiAudioCtx.destination);
@@ -399,6 +406,15 @@ function setBGMVolume(v) {
   initBGM();
   bgm.volume = Math.max(0, Math.min(1, v));
 }
+
+function applyMusicSettings() {
+  bgmWanted = !audioSettings.musicMuted;
+  initBGM();
+  setBGMVolume((audioSettings.musicVolume / 100) * 1.0); // 0..1
+  if (bgmWanted) startBGM();
+  else stopBGM();
+}
+
 
 // -----------------------------
 // Audio settings (persisted)
@@ -3103,6 +3119,100 @@ if (elPitClearSelected) {
     updatePitSelectedUI();
     renderPitBoard();
   });
+}
+
+// -----------------------------
+// Settings modal wiring
+// -----------------------------
+function openSettingsModal() {
+  const m = document.getElementById("settingsModal");
+  if (!m) return;
+  m.hidden = false;
+  syncSettingsUI();
+}
+
+function closeSettingsModal() {
+  const m = document.getElementById("settingsModal");
+  if (!m) return;
+  m.hidden = true;
+}
+
+function syncSettingsUI() {
+  const musicMuteBtn = document.getElementById("musicMuteBtn");
+  const sfxMuteBtn = document.getElementById("sfxMuteBtn");
+  const musicVol = document.getElementById("musicVolume");
+  const sfxVol = document.getElementById("sfxVolume");
+  const musicVal = document.getElementById("musicVolumeVal");
+  const sfxVal = document.getElementById("sfxVolumeVal");
+
+  if (musicVol) musicVol.value = String(audioSettings.musicVolume);
+  if (sfxVol) sfxVol.value = String(audioSettings.sfxVolume);
+
+  if (musicVal) musicVal.textContent = `${audioSettings.musicVolume}%`;
+  if (sfxVal) sfxVal.textContent = `${audioSettings.sfxVolume}%`;
+
+  if (musicMuteBtn) musicMuteBtn.textContent = audioSettings.musicMuted ? "Unmute" : "Mute";
+  if (sfxMuteBtn) sfxMuteBtn.textContent = audioSettings.sfxMuted ? "Unmute" : "Mute";
+}
+
+function initSettingsModal() {
+  const btn = document.getElementById("btnSettings");
+  const modal = document.getElementById("settingsModal");
+  const closeBtn = document.getElementById("settingsClose");
+
+  const musicMuteBtn = document.getElementById("musicMuteBtn");
+  const sfxMuteBtn = document.getElementById("sfxMuteBtn");
+  const musicVol = document.getElementById("musicVolume");
+  const sfxVol = document.getElementById("sfxVolume");
+
+  if (btn) btn.addEventListener("click", openSettingsModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeSettingsModal);
+
+  // click outside closes
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closeSettingsModal();
+    });
+  }
+
+  // ESC closes
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSettingsModal();
+  });
+
+  if (musicMuteBtn) {
+    musicMuteBtn.addEventListener("click", () => {
+      audioSettings.musicMuted = !audioSettings.musicMuted;
+      saveAudioSettings();
+      applyMusicSettings();
+      syncSettingsUI();
+    });
+  }
+
+  if (sfxMuteBtn) {
+    sfxMuteBtn.addEventListener("click", () => {
+      audioSettings.sfxMuted = !audioSettings.sfxMuted;
+      saveAudioSettings();
+      syncSettingsUI();
+    });
+  }
+
+  if (musicVol) {
+    musicVol.addEventListener("input", () => {
+      audioSettings.musicVolume = Number(musicVol.value) || 0;
+      saveAudioSettings();
+      applyMusicSettings();
+      syncSettingsUI();
+    });
+  }
+
+  if (sfxVol) {
+    sfxVol.addEventListener("input", () => {
+      audioSettings.sfxVolume = Number(sfxVol.value) || 0;
+      saveAudioSettings();
+      syncSettingsUI();
+    });
+  }
 }
 
 // ---------- Init ----------
