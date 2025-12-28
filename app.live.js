@@ -83,35 +83,57 @@ function initFirebase() {
     appId: "1:1089674731126:web:9a2825dac7f28c5be5c957"
   };
 
-  // If user hasn't configured it yet, don't crash the whole app
   if (firebaseConfig.apiKey === "PASTE_ME") {
     if (elLiveHint) elLiveHint.textContent =
       "Firebase not configured yet. Paste firebaseConfig into app.js to enable Live Sessions.";
     return;
   }
 
-  fb.app = firebase.initializeApp(firebaseConfig);
-  fb.auth = firebase.auth();
-  fb.db = firebase.firestore();
+  // IMPORTANT: prevent double-initialize if boot code calls initFirebase twice
+  if (!fb.app) {
+    fb.app = firebase.initializeApp(firebaseConfig);
+    fb.auth = firebase.auth();
+    fb.db = firebase.firestore();
+  }
 
-  return fb.auth.signInAnonymously()
-    .then(cred => {
-      fb.uid = cred.user.uid;
-      fb.ready = true;
-      if (elLiveHint) elLiveHint.textContent =
-        "Firebase ready. Host can create a live session, or viewers can join by code/link.";
-
-      // Auto-join if URL has ?sid=
-      const sid = new URLSearchParams(location.search).get("sid");
-      if (sid) {
-        joinLiveSession(String(sid).trim());
-      }
-    })
+  // Make auth persist across refresh
+  return fb.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .catch(err => {
-      console.error(err);
-      if (elLiveHint) elLiveHint.textContent = "Firebase auth failed. Check console.";
+      console.warn("Auth persistence failed (continuing anyway):", err);
+    })
+    .then(() => {
+      return new Promise((resolve, reject) => {
+        const unsub = fb.auth.onAuthStateChanged(async (user) => {
+          try {
+            if (!user) {
+              const cred = await fb.auth.signInAnonymously();
+              user = cred.user;
+            }
+
+            fb.uid = user.uid;
+            fb.ready = true;
+
+            if (elLiveHint) elLiveHint.textContent =
+              "Firebase ready. Host can create a live session, or viewers can join by code/link.";
+
+            // Auto-join if URL has ?sid=
+            const sid = new URLSearchParams(location.search).get("sid");
+            if (sid) {
+              joinLiveSession(String(sid).trim());
+            }
+
+            unsub(); // stop listening once we’re ready
+            resolve(true);
+          } catch (err) {
+            console.error(err);
+            if (elLiveHint) elLiveHint.textContent = "Firebase auth failed. Check console.";
+            reject(err);
+          }
+        });
+      });
     });
 }
+
 
 function normalizeSid(s) {
   return String(s || "")
@@ -193,6 +215,18 @@ function subscribeToSession(sid) {
   setLiveUI();
 }
 
+function makeLiveStateSnapshot() {
+  // Deep clone so Firestore never gets UI refs / accidental mutations
+  const snap = JSON.parse(JSON.stringify(state));
+
+  // Keep only the most recent log entries for live sync (prevents doc bloat)
+  if (Array.isArray(snap.log)) {
+    snap.log = snap.log.slice(0, 150); // keep latest 150
+  }
+
+  return snap;
+}
+
 function createLiveSession() {
   if (!fb.ready) {
     alert("Firebase not ready yet. Paste config + refresh.");
@@ -206,7 +240,7 @@ function createLiveSession() {
   return ref.set({
     hostUid: fb.uid,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    state: state
+    state: makeLiveStateSnapshot()
   }).then(() => {
     live.enabled = true;
     live.sid = sid;
@@ -299,10 +333,16 @@ function pushStateToCloud() {
 
   return ref.update({
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    state: state
+    state: makeLiveStateSnapshot()
   }).catch(err => {
     console.error(err);
-    // don’t annoy user with constant alerts; one console error is enough
+  
+    // Show ONE alert per minute max so the host knows live is broken
+    const now = Date.now();
+    if (!live.lastPushAlertAt || (now - live.lastPushAlertAt) > 60000) {
+      live.lastPushAlertAt = now;
+      alert("Live session failed to sync to Firebase. Open console for details (permissions or doc-size).");
+    }
   }).finally(() => {
     live.pushing = false;
   });
