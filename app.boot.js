@@ -7,4 +7,10 @@
   if (typeof initFirebase === "function") initFirebase();
   if (typeof setLiveUI === "function") setLiveUI();
   if (typeof updateLiveAnnouncement === "function") updateLiveAnnouncement();
+  // Attempt to start background music on load
+  startBGM();
+  
+  // If autoplay is blocked (mobile), start on the first user gesture
+  document.addEventListener("pointerdown", () => startBGM(), { once: true });
+  document.addEventListener("keydown", () => startBGM(), { once: true });
 })();
