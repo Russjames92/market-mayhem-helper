@@ -29,6 +29,10 @@
     </div>
 
     <div class="header-actions">
+      <button id="btnSettings" class="iconBtn" type="button" title="Settings" aria-label="Open settings">
+        ⚙️
+      </button>
+
       <div>
         <div class="pill" id="sessionStatus"
              data-tooltip="Shows whether a game is active and whether you are Host or Viewer.">
@@ -376,6 +380,35 @@
       </section>
     </section>
   </main>
+
+  <div id="settingsModal" class="modalOverlay" hidden>
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <button id="settingsClose" class="modalClose" type="button" aria-label="Close settings">✕</button>
+
+    <h2 id="settingsTitle" class="modalTitle">Settings</h2>
+
+    <div class="settingsRow">
+      <div class="settingsLabel">
+        <div class="settingsName">Music</div>
+        <div class="settingsHint">Background loop</div>
+      </div>
+      <button id="musicMuteBtn" class="pillBtn" type="button">Mute</button>
+      <input id="musicVolume" class="slider" type="range" min="0" max="100" step="1" />
+      <div id="musicVolumeVal" class="settingsVal">—</div>
+    </div>
+
+    <div class="settingsRow">
+      <div class="settingsLabel">
+        <div class="settingsName">Sound Effects</div>
+        <div class="settingsHint">Clicks, trades, bell</div>
+      </div>
+      <button id="sfxMuteBtn" class="pillBtn" type="button">Mute</button>
+      <input id="sfxVolume" class="slider" type="range" min="0" max="100" step="1" />
+      <div id="sfxVolumeVal" class="settingsVal">—</div>
+    </div>
+  </div>
+</div>
+
 
   <!-- Firebase (Realtime sessions) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
