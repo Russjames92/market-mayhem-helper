@@ -254,8 +254,8 @@ function updateLiveAnnouncement() {
   const bar = document.getElementById("liveAnnouncement");
   if (!bar) return;
 
-  // Show when THIS client is hosting an active Firebase live session
-  const show = !!(live.enabled && live.isHost);
+  // Show for BOTH host + viewers when connected to a live session
+  const show = !!(live.enabled && live.sid);
 
   bar.hidden = !show;
   document.body.classList.toggle("hasLiveAnnouncement", show);
