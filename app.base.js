@@ -2623,6 +2623,19 @@ function doTrade(playerId, act, symbol, shares) {
     addLog(`${p.name} ${verb} ${shares} ${symbol} @ $${fmtMoney(startPrice)} = $${fmtMoney(total)}.`);
   }
 
+     // ---- Log ----
+  if (state.volatilityMode && exec) {
+    addLog(
+      `${p.name} ${verb} ${shares} ${symbol} avg $${fmtMoney(avgPrice)} = $${fmtMoney(total)} ` +
+      `(start $${fmtMoney(startPrice)} → end $${fmtMoney(endPrice)}).`
+    );
+  } else {
+    addLog(`${p.name} ${verb} ${shares} ${symbol} @ $${fmtMoney(startPrice)} = $${fmtMoney(total)}.`);
+  }
+
+  // ✅ CASH SOUND on successful trade
+  playCashSfx();
+
   renderAll();
   saveState();
   return true;
