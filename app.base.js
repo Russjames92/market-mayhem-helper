@@ -253,11 +253,15 @@ function getTakenAvatarIds(exceptPlayerId = null) {
 // Sound effects
 // -----------------------------
 const sounds = {
-  openingBell: new Audio("./opening-bell.mp3")
+  openingBell: new Audio("./opening-bell.mp3"),
+  uiClick: new Audio("./ui-click.mp3") // 👈 your "chkah" sound
 };
+
 
 // Ensure it can replay immediately
 sounds.openingBell.preload = "auto";
+sounds.uiClick.preload = "auto";
+sounds.uiClick.volume = 0.35; // subtle, satisfying, not annoying
 
 function playSound(name) {
   const snd = sounds[name];
@@ -2727,6 +2731,47 @@ document.addEventListener("click", (e) => {
 
   openTradeModalForStock(trg.dataset.symbol);
 });
+
+// -----------------------------
+// Global UI click sound ("chkah")
+// -----------------------------
+(function initGlobalClickSound() {
+  let lastClickTs = 0;
+  const MIN_INTERVAL = 40; // ms — prevents double-fires
+
+  document.addEventListener("click", (e) => {
+    const now = Date.now();
+    if (now - lastClickTs < MIN_INTERVAL) return;
+    lastClickTs = now;
+
+    const el = e.target.closest(
+      `
+      button,
+      a,
+      [role="button"],
+      [data-action],
+      .pitLink,
+      .pitPriceBtn,
+      .avatarBtn,
+      .avatarOption,
+      .maxBtn
+      `
+    );
+
+    if (!el) return;
+
+    // Do NOT click-sound disabled or inert elements
+    if (el.disabled || el.getAttribute("aria-disabled") === "true") return;
+
+    // Avoid clicks inside inputs / selects / textareas
+    if (e.target.closest("input, textarea, select")) return;
+
+    // Optional: host-only sound during live sessions
+    if (live?.enabled && !live?.isHost) return;
+
+    playSound("uiClick");
+  });
+})();
 
 // Live Session buttons
 if (elBtnLiveCreate) {
