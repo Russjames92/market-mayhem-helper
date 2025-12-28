@@ -253,7 +253,7 @@ function getTakenAvatarIds(exceptPlayerId = null) {
 // Sound effects
 // -----------------------------
 const sounds = {
-  openingBell: new Audio("opening-bell.mp3")
+  openingBell: new Audio("./opening-bell.mp3")
 };
 
 // Ensure it can replay immediately
@@ -271,6 +271,17 @@ function playSound(name) {
     console.warn("Sound play failed:", err);
   });
 }
+
+let audioUnlocked = false;
+document.addEventListener("click", () => {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+
+  // iOS Safari sometimes needs a first user gesture to allow sound
+  try {
+    sounds.openingBell.volume = sounds.openingBell.volume; // touch it
+  } catch {}
+}, { once: true });
 
 // ---------- Helpers ----------
 
@@ -2257,6 +2268,11 @@ function payDividends() {
    if (!confirm(`Confirm Opening Bell #${nextBell} of ${maxBells}?\n\nThis will pay dividends to all players.`)) {
     return;
   }
+   
+   // 🔔 Bell sound (host only when live)
+   if (!live.enabled || live.isHost) {
+     playSound("openingBell");
+   }
 
   let totalPaid = 0;
 
