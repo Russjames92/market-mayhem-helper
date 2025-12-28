@@ -8,6 +8,9 @@
   if (typeof setLiveUI === "function") setLiveUI();
   if (typeof updateLiveAnnouncement === "function") updateLiveAnnouncement();
   // Attempt to start background music on load
+  loadAudioSettings();
+  applyMusicSettings();
+  initSettingsModal();
   startBGM();
   
   // If autoplay is blocked (mobile), start on the first user gesture
