@@ -1137,6 +1137,9 @@ function applyBulkToSelected(delta) {
     `<span class="mini muted">${touched.join(" • ")}</span>`
   );
 
+   // ✅ CASH SOUND on market move
+  playCashSfx();
+
   renderAll();
   saveState();
 }
