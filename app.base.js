@@ -400,6 +400,36 @@ function setBGMVolume(v) {
   bgm.volume = Math.max(0, Math.min(1, v));
 }
 
+// -----------------------------
+// Audio settings (persisted)
+// -----------------------------
+const AUDIO_SETTINGS_KEY = "mm_audio_settings_v1";
+
+const audioSettings = {
+  musicMuted: false,
+  musicVolume: 12, // 0-100
+  sfxMuted: false,
+  sfxVolume: 45    // 0-100
+};
+
+function loadAudioSettings() {
+  try {
+    const raw = localStorage.getItem(AUDIO_SETTINGS_KEY);
+    if (!raw) return;
+    const obj = JSON.parse(raw);
+    if (typeof obj.musicMuted === "boolean") audioSettings.musicMuted = obj.musicMuted;
+    if (typeof obj.musicVolume === "number") audioSettings.musicVolume = obj.musicVolume;
+    if (typeof obj.sfxMuted === "boolean") audioSettings.sfxMuted = obj.sfxMuted;
+    if (typeof obj.sfxVolume === "number") audioSettings.sfxVolume = obj.sfxVolume;
+  } catch {}
+}
+
+function saveAudioSettings() {
+  try {
+    localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(audioSettings));
+  } catch {}
+}
+
 // ---------- Helpers ----------
 
 function updateLiveAnnouncement() {
