@@ -2369,6 +2369,9 @@ function applyMarketMover() {
     selections.map(s => `${s.industry} ${s.dir === "up" ? "↑" : "↓"}`).join(", ") +
     `<br><span class="mini muted">${deltas.join(" • ")}</span>`
   );
+   
+   // ✅ CASH SOUND on market move
+  playCashSfx();
 
    clearMarketMoverSelections();
 
