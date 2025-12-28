@@ -12,8 +12,9 @@ function setLiveUI() {
   if (elBtnLiveCreate) elBtnLiveCreate.disabled = live.enabled;
   if (elBtnLiveJoin) elBtnLiveJoin.disabled = live.enabled;
 
-  // Viewer locks
-  applyViewerLocks();
+    // Viewer locks + viewer layout
+    applyViewerLocks();
+    applyViewerLayout();
 }
 
 function isReadOnlyViewer() {
@@ -63,6 +64,25 @@ function applyViewerLocks() {
   // Header controls (Save/Reset)
 
   if (elBtnReset) elBtnReset.disabled = ro; // viewers shouldn’t reset the session
+}
+
+function applyViewerLayout() {
+  const ro = isReadOnlyViewer();
+
+  // Toggle a CSS hook for viewer-specific hiding
+  document.body.classList.toggle("isViewer", ro);
+
+  // Only force layout when viewer is in a live session
+  if (!ro) return;
+
+  // Auto-collapse the clutter sections for viewers
+  applySectionCollapsed("setup", true);
+  applySectionCollapsed("log", true);
+  applySectionCollapsed("leaderboard", true);
+
+  // Ensure the two main sections are OPEN for viewers
+  applySectionCollapsed("players", false);
+  applySectionCollapsed("pit", false);
 }
 
 function assertHostAction() {
