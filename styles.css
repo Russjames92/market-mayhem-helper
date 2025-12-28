@@ -1169,3 +1169,8 @@ body.hasLiveAnnouncement {
     text-overflow: ellipsis;
   }
 }
+/* Viewer-only cleanup: hide sections viewers can't use */
+body.isViewer #marketMoverCard,
+body.isViewer #toolsCard {
+  display: none !important;
+}
