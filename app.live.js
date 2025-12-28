@@ -181,9 +181,17 @@ function subscribeToSession(sid) {
      live.leaderboard = Array.isArray(data.leaderboard) ? data.leaderboard : [];
       renderLeaderboard();
 
+        // Determine role (avoid incorrectly flipping host -> viewer before UID is ready)
+      if (data.hostUid && fb.uid) {
+        live.isHost = (data.hostUid === fb.uid);
+        live.pendingHost = false;
+      } else {
+        // If we're the creator and haven't resolved role yet, keep host controls enabled
+        if (live.pendingHost && live.expectedHostUid) {
+          live.isHost = true;
+        }
+      }
 
-    // Determine role
-    live.isHost = (data.hostUid && fb.uid && data.hostUid === fb.uid);
      updateLiveAnnouncement();
 
     // Apply remote state
@@ -235,6 +243,9 @@ function createLiveSession() {
 
   const sid = genSid(6);
   const ref = fb.db.collection("sessions").doc(sid);
+
+  live.pendingHost = true;
+  live.expectedHostUid = fb.uid;
 
   // Host becomes authoritative
   return ref.set({
@@ -307,6 +318,8 @@ function leaveLiveSession() {
     enabled: false,
     sid: null,
     isHost: false,
+    pendingHost: false,
+    expectedHostUid: null,
     unsub: null,
     pushing: false,
     pushTimer: null,
