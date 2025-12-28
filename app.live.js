@@ -336,9 +336,25 @@ function leaveLiveSession() {
   setLiveUI();
 }
 
+// Debounced push so we don't spam Firestore on every little UI update
+function schedulePushToCloud() {
+  if (!live.enabled || !live.isHost || !fb.ready) return;
+
+  // If we're currently applying remote state, never push back (prevents loops)
+  if (live.applyingRemote) return;
+
+  // Debounce
+  if (live.pushTimer) clearTimeout(live.pushTimer);
+
+  live.pushTimer = setTimeout(() => {
+    pushStateToCloud();
+  }, 250);
+}
+
 function pushStateToCloud() {
   if (!live.enabled || !live.isHost || !fb.ready) return;
   if (!live.sid) return;
+  if (live.applyingRemote) return;
 
   const ref = fb.db.collection("sessions").doc(live.sid);
 
