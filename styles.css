@@ -40,22 +40,50 @@ header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
 
 header .header-actions{
   display:grid;
-  grid-template-columns: 1fr 1fr;  /* status left, live pill right */
+  grid-template-columns: 1fr 1fr;
   grid-template-areas:
-    "status  reset"
-    "end    end";
+    "top   top"
+    "reset end";
   align-items:center;
   gap:10px;
   width:min(560px, 100%);
 }
 
-header .header-actions > div{ display: contents; }
+/* Top row: status pill full width, gear sits at the end */
+header .headerTopRow{
+  grid-area: top;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
 
-#sessionStatus{ grid-area:status; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-#btnSave{ grid-area:save; }
+#sessionStatus{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
 #btnReset{ grid-area:reset; }
 #btnEndSession{ grid-area:end; }
+
+/* keep your existing button look */
 header button{ width:100%; border-radius:16px; }
+
+/* BUT the gear should NOT be full width */
+#btnSettings{
+  width:42px !important;
+  height:42px !important;
+  min-width:42px !important;
+  max-width:42px !important;
+  padding:0 !important;
+  border-radius:12px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
 
 @media (max-width:700px){
   header{ align-items:flex-start; }
