@@ -341,6 +341,55 @@ function playUIClickFast() {
   src.start(0);
 }
 
+// -----------------------------
+// Background music (loop)
+// -----------------------------
+let bgm = null;
+let bgmWanted = true; // later you can wire this to a toggle/localStorage
+let bgmStarted = false;
+
+function initBGM() {
+  if (bgm) return;
+
+  bgm = new Audio("./lobby-music.mp3");
+  bgm.loop = true;
+  bgm.preload = "auto";
+  bgm.volume = 0.12; // keep it subtle
+}
+
+function startBGM() {
+  if (!bgmWanted) return;
+  initBGM();
+
+  // If already started, just ensure it's playing
+  if (bgmStarted && !bgm.paused) return;
+
+  // Try to play (will fail on iOS until user gesture)
+  const p = bgm.play();
+  if (p && typeof p.then === "function") {
+    p.then(() => {
+      bgmStarted = true;
+    }).catch((err) => {
+      // Autoplay blocked — we'll start on first user interaction
+      // Keep this quiet to avoid annoying logs
+      // console.warn("BGM autoplay blocked:", err);
+    });
+  } else {
+    // Older browsers
+    bgmStarted = true;
+  }
+}
+
+function stopBGM() {
+  if (!bgm) return;
+  bgm.pause();
+}
+
+function setBGMVolume(v) {
+  initBGM();
+  bgm.volume = Math.max(0, Math.min(1, v));
+}
+
 // ---------- Helpers ----------
 
 function updateLiveAnnouncement() {
