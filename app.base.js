@@ -2729,6 +2729,8 @@ function doTrade(playerId, act, symbol, shares) {
     }
   }
 
+   pushUndo(`${act} ${shares} ${symbol} (${p.name})`);
+
   // ---- Apply trade ----
   if (isBuy) {
     p.cash -= total;
