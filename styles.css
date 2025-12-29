@@ -40,10 +40,10 @@ header h1{ margin:0; font-size:16px; font-weight:800; letter-spacing:.3px; }
 
 header .header-actions{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   grid-template-areas:
-    "top   top"
-    "reset end";
+    "top   top   top"
+    "reset end   undo";
   align-items:center;
   gap:10px;
   width:min(560px, 100%);
@@ -68,6 +68,7 @@ header .headerTopRow{
 
 #btnReset{ grid-area:reset; }
 #btnEndSession{ grid-area:end; }
+#btnUndo{ grid-area: undo; }
 
 /* keep your existing button look */
 header button{ width:100%; border-radius:16px; }
@@ -88,6 +89,14 @@ header button{ width:100%; border-radius:16px; }
 @media (max-width:700px){
   header{ align-items:flex-start; }
   header .header-actions{ width:min(420px, 100%); }
+}
+
+@media (max-width:700px){
+  header .header-actions button{
+    font-size: 13px !important;
+    padding: 12px 10px !important;
+    letter-spacing: .2px;
+  }
 }
 
 /* Always honor the HTML 'hidden' attribute */
