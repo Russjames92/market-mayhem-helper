@@ -446,6 +446,84 @@ function saveAudioSettings() {
   } catch {}
 }
 
+// =====================
+// UNDO (host-only)
+// =====================
+const UNDO_STACK_KEY = "mm_undo_stack_v1";
+const UNDO_LIMIT = 30;
+let undoStack = [];
+
+function loadUndoStack() {
+  try {
+    const raw = localStorage.getItem(UNDO_STACK_KEY);
+    undoStack = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(undoStack)) undoStack = [];
+  } catch {
+    undoStack = [];
+  }
+}
+
+function saveUndoStack() {
+  try {
+    localStorage.setItem(UNDO_STACK_KEY, JSON.stringify(undoStack.slice(-UNDO_LIMIT)));
+  } catch {}
+}
+
+function snapshotStateForUndo() {
+  // deep clone (state contains plain objects)
+  return JSON.parse(JSON.stringify(state));
+}
+
+function pushUndo(label) {
+  // viewers can never undo
+  if (!assertHostAction()) return;
+
+  undoStack.push({
+    t: Date.now(),
+    label: label || "Action",
+    snap: snapshotStateForUndo()
+  });
+
+  // cap
+  if (undoStack.length > UNDO_LIMIT) undoStack = undoStack.slice(-UNDO_LIMIT);
+
+  saveUndoStack();
+  updateUndoButton();
+}
+
+function clearUndoStack() {
+  undoStack = [];
+  saveUndoStack();
+  updateUndoButton();
+}
+
+function updateUndoButton() {
+  const btn = document.getElementById("btnUndo");
+  if (!btn) return;
+
+  // only host can use undo
+  const canUndo = !!(live?.enabled ? live.isHost : true) && undoStack.length > 0;
+  btn.disabled = !canUndo;
+}
+
+function undoLastAction() {
+  if (!assertHostAction()) return;
+  if (!undoStack.length) return;
+
+  const last = undoStack.pop();
+  saveUndoStack();
+
+  // restore
+  state = last.snap;
+
+  addLog(`↩️ Undo: ${last.label || "Last action"}`);
+
+  renderAll();
+  saveState(); // IMPORTANT: pushes to cloud in live mode
+
+  updateUndoButton();
+}
+
 // ---------- Helpers ----------
 
 function updateLiveAnnouncement() {
@@ -3231,7 +3309,12 @@ function init() {
   if (state.started) {
     for (const p of state.players) ensureHoldings(p);
   }
+
+   loadUndoStack();
+   updateUndoButton();
    
+   document.getElementById("btnUndo")?.addEventListener("click", undoLastAction);
+
   renderAll();
      updateVolatilityPill();
 
