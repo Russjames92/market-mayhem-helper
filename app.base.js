@@ -2476,6 +2476,8 @@ function applyMarketMover() {
 
   const deltas = [];
 
+     pushUndo(`Market Mover (${selections.map(s => s.industry).join(", ")})`);
+
   for (const sel of selections) {
     const affected = getActiveStocks().filter(s => s.industries.includes(sel.industry));
     for (const stock of affected) {
@@ -2515,6 +2517,8 @@ function payDividends() {
    if (!confirm(`Confirm Opening Bell #${nextBell} of ${maxBells}?\n\nThis will pay dividends to all players.`)) {
     return;
   }
+
+     pushUndo(`Opening Bell #${nextBell}`);
    
    // 🔔 Bell sound (host only when live)
    if (!live.enabled || live.isHost) {
@@ -2568,6 +2572,8 @@ function shortMove() {
   );
   if (!ok) return;
 
+     pushUndo(`${label}: ${sym} ${signed >= 0 ? "+" : ""}${signed}`);
+
   // ✅ THIS was missing:
   state.prices[sym] = after;
    if (after === 0) dissolveCompany(sym, `Short move (${signed >= 0 ? "+" : ""}${signed}) moved it to $0`);
@@ -2598,6 +2604,8 @@ function openCashDialog(playerId) {
     alert("That wasn’t a number.");
     return;
   }
+
+     pushUndo(`Cash Adjust (${p.name}) ${delta >= 0 ? "+" : ""}${fmtMoney(delta)}`);
 
   p.cash += delta;
   addLog(`${p.name} cash adjusted: ${delta >= 0 ? "+" : ""}${fmtMoney(delta)} → $${fmtMoney(p.cash)}.`);
