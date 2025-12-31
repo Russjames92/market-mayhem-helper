@@ -4,7 +4,7 @@
   if (typeof init === "function") init();
 
   // Live session boot (firebase + pills)
-  if (typeof initFirebase === "function") initFirebase();
+  if (typeof firebase !== "undefined" && typeof initFirebase === "function") initFirebase();
   if (typeof setLiveUI === "function") setLiveUI();
   if (typeof updateLiveAnnouncement === "function") updateLiveAnnouncement();
 
