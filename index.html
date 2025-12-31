@@ -172,7 +172,7 @@
 
       <div class="tabsBody">
         <!-- Players -->
-        <div class="tabPanel isActive" data-tab="players" role="tabpanel">
+        <div class="tabPanel isActive" data-tabpanel="players" role="tabpanel">
           <section class="card" id="playersCard">
             <div class="sectionHead">
               <h2>Players</h2>
@@ -187,7 +187,7 @@
         </div>
 
         <!-- Pit Board -->
-        <div class="tabPanel" data-tab="pit" role="tabpanel">
+        <div class="tabPanel" data-tabpanel="pit" role="tabpanel">
           <section class="card" id="pitBoardSection">
             <div class="sectionHead">
               <h2>Pit Board</h2>
@@ -212,27 +212,13 @@
               <button id="pitClearSelected" type="button" data-tooltip="Clear selected stocks.">Clear</button>
             </div>
 
-            <div class="mini muted pitSelectedRow">
-              <label class="pitSelectAll">
-                <input type="checkbox" id="pitSelectAll" />
-                Select all
-              </label>
-              <span>Selected: <span id="pitSelectedCount">0</span></span>
+            <div class="mini muted">
+              Selected: <span id="pitSelectedCount">0</span>
+              <button id="pitSelectAll" type="button" class="miniBtn">Select All</button>
             </div>
 
             <div id="pitTableWrap" class="pitTableWrap">
-              <table id="pitTable">
-                <thead>
-                  <tr>
-                    <th style="width:44px;">Sel</th>
-                    <th>Stock</th>
-                    <th style="width:120px;">Current</th>
-                    <th style="width:140px;">Dividend</th>
-                    <th>Industries</th>
-                  </tr>
-                </thead>
-                <tbody id="pitTableBody"></tbody>
-              </table>
+              <table id="pitTable"></table>
             </div>
 
             <div id="pitCards" class="pitCards"></div>
@@ -240,7 +226,7 @@
         </div>
 
         <!-- Game Log -->
-        <div class="tabPanel" data-tab="log" role="tabpanel">
+        <div class="tabPanel" data-tabpanel="log" role="tabpanel">
           <section class="card" id="logCard">
             <div class="sectionHead">
               <h2>Game Log</h2>
@@ -256,7 +242,7 @@
         </div>
 
         <!-- Leaderboard -->
-        <div class="tabPanel" data-tab="leaderboard" role="tabpanel">
+        <div class="tabPanel" data-tabpanel="leaderboard" role="tabpanel">
           <section class="card" id="leaderboardCard">
             <div class="sectionHead">
               <h2>Leaderboard</h2>
@@ -439,7 +425,12 @@
   </div>
 
   <!-- Scripts -->
-  <script src="app.base.js"></script>
+    <!-- Firebase (Realtime sessions) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+<script src="app.base.js"></script>
   <script src="app.live.js"></script>
   <script src="app.boot.js"></script>
 </body>
