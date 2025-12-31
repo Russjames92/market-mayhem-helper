@@ -1,133 +1,63 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#0b0b0c" />
-  <title>Market Mayhem Helper</title>
-
-  <link rel="icon" href="my-favicon/favicon.ico">
-  <link rel="icon" type="image/png" sizes="96x96" href="my-favicon/favicon-96x96.png">
-  <link rel="icon" type="image/svg+xml" href="my-favicon/favicon.svg">
-  <link rel="apple-touch-icon" sizes="180x180" href="my-favicon/apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-title" content="MM Helper">
-  <link rel="manifest" href="my-favicon/site.webmanifest">
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Market Mayhem: Exchange</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body class="noPageScroll">
+  <!-- ===================== HEADER ===================== -->
   <header class="appHeader">
     <div class="headerLeft">
-      <div id="volatilityPill" class="headerPill volPill" hidden
-           data-tooltip="Volatility Mode is active: high-risk stocks are added and trades can cause slippage.">
-        Volatility Mode
-      </div>
-
-      <div id="liveAnnouncement" class="headerPill livePill" hidden>
-        💻 SESSION IS LIVE 💻
-      </div>
+      <div class="pill isRed" id="volatilityPill" hidden>Volatility Mode</div><div id="volatilityMode" hidden></div>
+      <div class="pill isRed" id="sessionStatus" hidden>Session is Live</div>
     </div>
 
     <div class="headerCenter">
       <div class="brandTitle">
-        <div class="brandKicker">MARKET MAYHEM</div>
-        <div class="brandMain">EXCHANGE</div>
+        <div class="brandTop">MARKET MAYHEM</div>
+        <div class="brandBottom">EXCHANGE</div>
       </div>
-
-      <div class="headerMeta">
-        <div class="pill" id="sessionStatus"
-             data-tooltip="Shows whether a game is active and whether you are Host or Viewer.">
-          No session loaded
-        </div>
-      </div>
+      <div class="mini muted" id="sessionMeta">No session loaded</div><div id="liveAnnouncement" hidden></div>
     </div>
 
     <div class="headerRight">
-      <button id="btnSettings" class="iconCircle" type="button" title="Settings" aria-label="Open settings">⚙️</button>
-      <button id="btnUndo" class="iconCircle" type="button" title="Undo" aria-label="Undo last action">↩</button>
-      <button id="btnEndSession" class="iconCircle dangerCircle" type="button" title="End game" aria-label="End game" disabled>✕</button>
+      <button class="btnIcon" id="btnSettings" type="button" aria-label="Settings" data-tooltip="Settings">⚙</button>
+      <button class="btnIcon" id="btnUndo" type="button" aria-label="Undo" data-tooltip="Undo last action">↶</button>
+      <button class="btnIcon danger" id="btnEndSession" type="button" aria-label="End game" data-tooltip="End game">✕</button>
     </div>
   </header>
 
-  <div id="logTicker" class="logTicker" aria-live="polite" aria-atomic="true">
-    <div class="logTickerInner">
-      <span class="logTickerLabel">🔴 News</span>
-      <span id="logTickerText">—</span>
-    </div>
-  </div>
-
+  <!-- ===================== MAIN ===================== -->
   <main class="appMain">
-    <!-- LEFT COLUMN (Gallery) -->
-    <aside class="leftRail">
-      <div class="leftGallery" id="leftGallery" aria-label="Left panels">
+    <!-- ===== LEFT GALLERY RAIL ===== -->
+    <aside class="leftRail" aria-label="Left tools">
+      <div class="gallery" id="leftGallery">
         <!-- Slide 1: Setup -->
-        <div class="gallerySlide" data-panel="setup">
+        <div class="gallerySlide isActive" data-panel="setup">
           <section class="card" id="setupCard">
             <div class="sectionHead">
-              <h2>Session Setup</h2>
+              <h2>Setup</h2>
               <button type="button" class="btnToggle" id="btnToggleSetup">Collapse</button>
             </div>
 
-            <div class="sub">
-              Choose number of players (2–4), names, and starting cash. Then start session.
-            </div>
+            <div class="sub">Start or join live. Or start a local game.</div>
 
-            <div id="setupBody">
-              <div class="row">
-                <button id="btnStartLive" class="btn"
-                        data-tooltip="Start/End Live Session: host + viewers on Firebase.">
-                  Start/End Live Session
-                </button>
-                <button id="btnNewGame" class="btn"
-                        data-tooltip="Start New Game: local play setup.">
-                  Start New Game
-                </button>
-              </div>
+            <div id="sessionSetupBody">
+              <button class="primary" id="btnOpenLiveModal" type="button"
+                      data-tooltip="Live session is for Host + Viewers. Host controls all actions.">
+                Start/End Live Session
+              </button>
 
-              <div class="mini muted">
+              <button class="primary" id="btnOpenNewGameModal" type="button"
+                      data-tooltip="Start a local game: set players, cash, and optional Volatility Mode.">
+                Start New Game
+              </button>
+
+              <div class="mini muted" style="margin-top:10px;">
                 Live session is for Host + Viewers. Start new game is for local play setup.
-              </div>
-
-              <div class="divider"></div>
-
-              <div class="row">
-                <label class="field">
-                  <span class="label">Players</span>
-                  <select id="playerCount">
-                    <option value="2" selected>2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                  </select>
-                </label>
-
-                <label class="field">
-                  <span class="label">Starting Cash</span>
-                  <input id="startingCash" type="number" value="1000000" step="1000" />
-                </label>
-              </div>
-
-              <div id="playerInputs" class="grid2"></div>
-
-              <div class="row">
-                <label class="check">
-                  <input id="volatilityMode" type="checkbox" />
-                  <span>Enable Volatility Mode</span>
-                </label>
-              </div>
-
-              <div class="divider"></div>
-
-              <div class="row">
-                <button id="btnStartGame" class="btn primary"
-                        data-tooltip="Create players + initialize stock prices and start the game.">
-                  Start Game
-                </button>
-              </div>
-
-              <div class="mini muted">
-                Tip: Use the tabs on the right to switch between Players, Pit Board, Game Log, and Leaderboard.
               </div>
             </div>
           </section>
@@ -135,39 +65,30 @@
 
         <!-- Slide 2: Market Mover -->
         <div class="gallerySlide" data-panel="mover">
-          <section class="card" id="marketMoverCard">
+          <section class="card" id="moverCard">
             <div class="sectionHead">
               <h2>Market Mover</h2>
               <button type="button" class="btnToggle" id="btnToggleMover">Collapse</button>
             </div>
 
-            <div class="sub">
-              Select industries, choose up/down, then enter the 2d6 total.
-            </div>
+            <div class="sub">Select industries, choose up/down, then enter the 2d6 total.</div>
 
             <div id="moverBody">
               <label class="field">
                 <span class="label">Dice total (2–12)</span>
-                <select id="diceTotalSelect">
-                  <option value="" selected>🎲 Dice Total</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
-                  <option value="10">10</option>
-                  <option value="11">11</option>
-                  <option value="12">12</option>
+                <select id="diceTotal">
+                  <option value="" selected>Dice Total</option>
+                  <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                  <option value="5">5</option><option value="6">6</option><option value="7">7</option>
+                  <option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                  <option value="11">11</option><option value="12">12</option>
                 </select>
               </label>
 
-              <div class="industryGrid" id="industryGrid"></div>
+              <div id="industryList" class="industryGrid"></div>
 
               <div class="row">
-                <button id="btnApplyMoverDown" class="btn"
+                <button id="btnApplyMarketMover" class="btn"
                         data-tooltip="Apply selected industries DOWN using the chosen dice total.">
                   − Apply
                 </button>
@@ -175,11 +96,9 @@
                         data-tooltip="Clear selected industries.">
                   Clear
                 </button>
-                <button id="btnApplyMoverUp" class="btn"
-                        data-tooltip="Apply selected industries UP using the chosen dice total.">
-                  + Apply
-                </button>
               </div>
+
+              <div class="mini muted" id="marketMoverHint"></div>
             </div>
           </section>
         </div>
@@ -208,224 +127,304 @@
 
               <div class="row">
                 <label class="field">
+                  <span class="label">Stock</span>
+                  <select id="shortMoveSymbol"></select>
+                </label>
+
+                <label class="field">
                   <span class="label">Short Move (±)</span>
-                  <select id="shortMoveSelect">
+                  <select id="shortMoveDir">
                     <option value="" selected>Pick</option>
-                    <option value="-1">−1</option>
-                    <option value="-2">−2</option>
                     <option value="-3">−3</option>
+                    <option value="-2">−2</option>
+                    <option value="-1">−1</option>
                     <option value="1">+1</option>
                     <option value="2">+2</option>
                     <option value="3">+3</option>
                   </select>
                 </label>
 
-                <button id="btnApplyShortMove" disabled
+                <button id="btnShortMove" disabled
                         data-tooltip="Apply short move to the selected stock(s).">
                   Apply Short Move
                 </button>
               </div>
-
-              <div class="mini muted">
-                Reset moved here to match the new header flow (Settings / Undo / End Game up top).
-              </div>
             </div>
           </section>
         </div>
-      </div>
 
-      <div class="galleryDots" id="leftDots" aria-label="Left panel navigation">
-        <button class="dot isActive" type="button" data-goto="setup" aria-label="Setup panel"></button>
-        <button class="dot" type="button" data-goto="mover" aria-label="Market mover panel"></button>
-        <button class="dot" type="button" data-goto="tools" aria-label="Quick tools panel"></button>
+        <div class="galleryDots" id="leftDots" aria-label="Left panel navigation">
+          <button class="dot isActive" type="button" data-goto="setup" aria-label="Setup panel"></button>
+          <button class="dot" type="button" data-goto="mover" aria-label="Market mover panel"></button>
+          <button class="dot" type="button" data-goto="tools" aria-label="Quick tools panel"></button>
+        </div>
       </div>
     </aside>
 
-    <!-- RIGHT COLUMN (Tabs + Scroll-in-panel content) -->
-    <section class="mainRail">
-      <div class="tabBar" role="tablist" aria-label="Main sections">
-        <button class="tabBtn isActive" type="button" role="tab" data-tab="players" aria-selected="true">Players</button>
-        <button class="tabBtn" type="button" role="tab" data-tab="pit" aria-selected="false">Pit Board</button>
-        <button class="tabBtn" type="button" role="tab" data-tab="log" aria-selected="false">Game Log</button>
-        <button class="tabBtn" type="button" role="tab" data-tab="leaderboard" aria-selected="false">Leaderboard</button>
+    <!-- ===== RIGHT PANEL ===== -->
+    <section class="rightPanel" aria-label="Main panel">
+      <div class="tabsBar" role="tablist" aria-label="Sections">
+        <button class="tabBtn isActive" type="button" data-tab="players" role="tab" aria-selected="true">Players</button>
+        <button class="tabBtn" type="button" data-tab="pit" role="tab" aria-selected="false">Pit Board</button>
+        <button class="tabBtn" type="button" data-tab="log" role="tab" aria-selected="false">Game Log</button>
+        <button class="tabBtn" type="button" data-tab="leaderboard" role="tab" aria-selected="false">Leaderboard</button>
       </div>
 
-      <div class="tabViewport">
-        <!-- Players Tab -->
-        <section class="tabPanel isActive" data-tab="players" role="tabpanel">
+      <div class="tabsBody">
+        <!-- Players -->
+        <div class="tabPanel isActive" data-tabpanel="players" role="tabpanel">
           <section class="card" id="playersCard">
             <div class="sectionHead">
               <h2>Players</h2>
               <button type="button" class="btnToggle" id="btnTogglePlayers">Collapse</button>
             </div>
+
             <div class="sub">Buy/Sell in 100-share increments</div>
 
-            <div id="playersBody">
-              <div id="playerPills" class="pills"></div>
-              <div id="playerCards"></div>
-            </div>
+            <div class="row" id="playerTabs"></div>
+            <div id="playersArea"></div>
           </section>
-        </section>
+        </div>
 
-        <!-- Pit Board Tab -->
-        <section class="tabPanel" data-tab="pit" role="tabpanel">
+        <!-- Pit Board -->
+        <div class="tabPanel" data-tabpanel="pit" role="tabpanel">
           <section class="card" id="pitBoardSection">
             <div class="sectionHead">
               <h2>Pit Board</h2>
-              <button type="button" class="btnToggle" id="btnTogglePit">Collapse</button>
+              <button type="button" class="btnToggle" id="btnTogglePitBoard">Collapse</button>
             </div>
+
             <div class="sub">Desktop shows table. Mobile uses expandable card view.</div>
 
-            <div id="pitBody">
-              <div class="pitControls">
-                <label class="field">
-                  <span class="label">Filter</span>
-                  <select id="pitFilterIndustry"></select>
-                </label>
+            <div class="row">
+              <select id="pitIndustryFilter" data-tooltip="Filter stocks by industry.">
+                <option value="ALL">All Industries</option>
+              </select>
 
-                <label class="field">
-                  <span class="label">Sort</span>
-                  <select id="pitSort"></select>
-                </label>
+              <button id="pitSortCur" type="button" data-tooltip="Sort by current price.">Sort: Price</button><span id="pitCurHeader" hidden></span>
 
-                <div class="selectedInfo">
-                  <div class="mini muted">Selected</div>
-                  <div id="pitSelectedCount" class="mono">0</div>
-                </div>
-
-                <div class="applyRow">
-                  <button id="btnBulkDown" class="btn">− Apply</button>
-                  <input id="bulkAmount" type="number" value="1" min="1" max="12" />
-                  <button id="btnBulkUp" class="btn">+ Apply</button>
-                </div>
-
-                <button id="btnClearSelected" class="btn">Clear</button>
+              <div class="row" style="gap:8px;">
+                <button id="pitBulkMinus" type="button" data-tooltip="Apply - amount to selected stocks.">− Apply</button>
+                <input id="pitBulkAmt" type="number" value="1" min="1" step="1" style="width:84px;" />
+                <button id="pitBulkPlus" type="button" data-tooltip="Apply + amount to selected stocks.">+ Apply</button>
               </div>
 
-              <div id="pitBoard"></div>
+              <button id="pitClearSelected" type="button" data-tooltip="Clear selected stocks.">Clear</button>
             </div>
-          </section>
-        </section>
 
-        <!-- Game Log Tab -->
-        <section class="tabPanel" data-tab="log" role="tabpanel">
+            <div class="mini muted">
+              Selected: <span id="pitSelectedCount">0</span>
+              <button id="pitSelectAll" type="button" class="miniBtn">Select All</button>
+            </div>
+
+            <div id="pitTableWrap" class="pitTableWrap">
+              <table id="pitTable"></table>
+            </div>
+
+            <div id="pitCards" class="pitCards"></div>
+          </section>
+        </div>
+
+        <!-- Game Log -->
+        <div class="tabPanel" data-tabpanel="log" role="tabpanel">
           <section class="card" id="logCard">
             <div class="sectionHead">
               <h2>Game Log</h2>
               <button type="button" class="btnToggle" id="btnToggleLog">Collapse</button>
             </div>
-            <div id="logBody">
-              <div id="gameLog" class="log"></div>
-            </div>
-          </section>
-        </section>
 
-        <!-- Leaderboard Tab -->
-        <section class="tabPanel" data-tab="leaderboard" role="tabpanel">
+            <div class="row" style="justify-content:flex-end;">
+              <button id="btnPrintLog" type="button" data-tooltip="Print the game log.">Print</button>
+            </div>
+
+            <div id="log" class="log"></div>
+          </section>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="tabPanel" data-tabpanel="leaderboard" role="tabpanel">
           <section class="card" id="leaderboardCard">
             <div class="sectionHead">
               <h2>Leaderboard</h2>
               <button type="button" class="btnToggle" id="btnToggleLeaderboard">Collapse</button>
             </div>
 
-            <div id="leaderboardBody">
-              <div class="row">
-                <button id="btnShowRecent" class="btn">Recent Games</button>
-                <button id="btnShowAllTime" class="btn">All-Time</button>
-              </div>
-
-              <div id="leaderboardView"></div>
+            <div class="row">
+              <button id="btnLeaderboardViewGames" type="button">Recent Games</button>
+              <button id="btnLeaderboardViewSummary" type="button">All Time</button>
+              <button id="btnClearLeaderboard" type="button" class="danger" data-tooltip="Clear leaderboard (local).">Clear</button>
             </div>
+
+            <div id="leaderboard"></div>
           </section>
-        </section>
+        </div>
       </div>
     </section>
   </main>
 
+  <!-- ===================== LOG TICKER ===================== -->
+  <div class="logTicker" id="logTicker" aria-label="Game ticker">
+    <div class="logTickerText" id="logTickerText"></div>
+  </div>
+
+  <!-- ===================== MODALS (unchanged IDs) ===================== -->
+  <!-- Live Session Modal -->
+  <div class="mmModal" id="liveModal" hidden aria-hidden="true">
+    <div class="mmModalOverlay" data-close-modal="liveModal"></div>
+
+    <div class="mmModalCard" role="dialog" aria-modal="true" aria-labelledby="liveModalTitle">
+      <div class="mmModalHead">
+        <h3 id="liveModalTitle">Live Session (Host + Viewers)</h3>
+        <button class="btnIcon" type="button" data-close-modal="liveModal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="sub">
+        Host creates a live session and shares the link/code so everyone can view the same game state in real time.
+      </div>
+
+      <div class="row">
+        <div class="pill" id="liveRolePill">Live: OFF</div>
+        <div class="pill" id="liveViewersPill">Viewers: —</div>
+      </div>
+
+      <button class="primary" id="btnLiveCreate" type="button"
+              data-tooltip="Create a live session as Host. Only the Host can control the game.">
+        Create Live Session (Host)
+      </button>
+
+      <input id="liveJoinCode" type="text" placeholder="ex: K7P4D2"
+             data-tooltip="Enter a join code to connect as a Viewer." />
+
+      <button id="btnLiveJoin" type="button"
+              data-tooltip="Join a live session as a Viewer (read-only).">
+        Join Live Session (Viewer)
+      </button>
+
+      <div class="row">
+        <div style="flex:1; min-width:260px;">
+          <label>Share link</label>
+          <input id="liveShareLink" type="text" readonly value="" />
+        </div>
+        <button id="btnCopyLiveLink" type="button"
+                data-tooltip="Copy the live session share link to send to viewers.">
+          Copy Link
+        </button>
+
+        <button class="danger" id="btnLiveLeave" type="button" disabled
+                data-tooltip="Leave the live session. (Host ends it; viewers disconnect.)">
+          Leave Live
+        </button>
+      </div>
+
+      <div class="mini muted" id="liveHint">
+        Tip: Viewers should open the share link on their phone. Host controls all actions.
+      </div>
+    </div>
+  </div>
+
+  <!-- New Game Modal -->
+  <div class="mmModal" id="newGameModal" hidden aria-hidden="true">
+    <div class="mmModalOverlay" data-close-modal="newGameModal"></div>
+
+    <div class="mmModalCard" role="dialog" aria-modal="true" aria-labelledby="newGameModalTitle">
+      <div class="mmModalHead">
+        <h3 id="newGameModalTitle">Start New Game</h3>
+        <button class="btnIcon" type="button" data-close-modal="newGameModal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="sub">Choose number of players (2–6), names, and starting cash. Then start session.</div>
+
+      <div class="row">
+        <div>
+          <label>Number of players</label>
+          <select id="playerCount">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Starting cash per player</label>
+          <input id="startingCash" type="number" min="0" step="1000" value="50000" />
+        </div>
+
+        <div class="row" style="align-items:center;">
+          <label style="display:flex; align-items:center; gap:10px; margin:0; width:auto;">
+            <input type="checkbox" id="volatilityModeToggle" />
+            Volatility Mode
+          </label>
+        </div>
+      </div>
+
+      <div id="playerInputs" class="playerInputs"></div>
+
+      <div class="row">
+        <button class="primary" id="btnStart" type="button">Start New Game</button>
+      </div>
+
+      <div class="mini muted" id="newGameHint"></div>
+    </div>
+  </div>
+
   <!-- Settings Modal -->
-  <div id="settingsModal" class="modalOverlay" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-      <button id="settingsClose" class="modalClose" type="button" aria-label="Close settings">×</button>
-      <h2 id="settingsTitle">Settings</h2>
+  <div id="settingsModal" class="modalOverlay" hidden aria-hidden="true">
+    <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <button class="modalClose" id="settingsClose" type="button" aria-label="Close">✕</button>
+      <h2 class="modalTitle" id="settingsTitle">Settings</h2>
 
-      <div class="modalGrid">
-        <div class="modalSection">
-          <div class="sectionLabel">Audio</div>
-          <label class="check">
-            <input id="musicEnabled" type="checkbox" />
-            <span>Enable background music</span>
-          </label>
-          <label class="field">
-            <span class="label">Volume</span>
-            <input id="musicVolume" type="range" min="0" max="1" step="0.01" />
-          </label>
+      <div class="settingsRow">
+        <div class="settingsLabel">
+          <div class="settingsName">Audio</div>
+          <div class="settingsHint">Enable/disable SFX</div>
         </div>
-
-        <div class="modalSection">
-          <div class="sectionLabel">Display</div>
-          <label class="check">
-            <input id="tooltipsEnabled" type="checkbox" />
-            <span>Enable tooltips</span>
-          </label>
+        <button class="pillBtn" id="btnAudioToggle" type="button">Toggle</button>
+        <div class="settingsLabel">
+          <div class="settingsName">Animation</div>
+          <div class="settingsHint">UI motion</div>
         </div>
+        <button class="pillBtn" id="btnAnimToggle" type="button">Toggle</button>
       </div>
 
-      <div class="modalActions">
-        <button id="settingsSave" class="btn primary" type="button">Save</button>
+      <div class="settingsRow">
+        <div class="settingsLabel">
+          <div class="settingsName">Ticker</div>
+          <div class="settingsHint">Show/hide game ticker</div>
+        </div>
+        <button class="pillBtn" id="btnTickerToggle" type="button">Toggle</button>
+        <div class="settingsLabel">
+          <div class="settingsName">Font</div>
+          <div class="settingsHint">Adjust UI scale</div>
+        </div>
+        <input class="slider" id="fontScale" type="range" min="90" max="115" value="100" />
+        <div class="settingsVal" id="fontScaleVal">100%</div>
+      
+      <div class="settingsRow">
+        <div class="settingsLabel">
+          <div class="settingsName">SFX</div>
+          <div class="settingsHint">Sound effects volume</div>
+        </div>
+        <button class="pillBtn" id="sfxMuteBtn" type="button">Mute</button>
+        <input class="slider" id="sfxVolume" type="range" min="0" max="100" value="70" />
+        <div class="settingsVal" id="sfxVolumeVal">70%</div>
       </div>
+
+      <div class="settingsRow">
+        <div class="settingsLabel">
+          <div class="settingsName">Music</div>
+          <div class="settingsHint">Background music volume</div>
+        </div>
+        <button class="pillBtn" id="musicMuteBtn" type="button">Mute</button>
+        <input class="slider" id="musicVolume" type="range" min="0" max="100" value="40" />
+        <div class="settingsVal" id="musicVolumeVal">40%</div>
+      </div>
+</div>
     </div>
   </div>
 
-  <!-- Trade Modal -->
-  <div id="tradeModal" class="modalOverlay" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tradeTitle">
-      <button id="tradeClose" class="modalClose" type="button" aria-label="Close trade">×</button>
-      <h2 id="tradeTitle">Trade</h2>
-
-      <div class="modalGrid">
-        <div class="modalSection">
-          <div class="sectionLabel">Player</div>
-          <div id="tradePlayerName" class="big">—</div>
-          <div id="tradePlayerCash" class="mini muted">—</div>
-        </div>
-
-        <div class="modalSection">
-          <div class="sectionLabel">Stock</div>
-          <div id="tradeStockName" class="big">—</div>
-          <div id="tradeStockPrice" class="mini muted">—</div>
-        </div>
-
-        <div class="modalSection">
-          <div class="sectionLabel">Shares</div>
-          <div class="tradeRow">
-            <button id="tradeMinus100" class="btn">-100</button>
-            <div id="tradeSharesVal" class="big mono">100</div>
-            <button id="tradePlus100" class="btn">+100</button>
-            <button id="tradeMax" class="btn">MAX</button>
-          </div>
-        </div>
-
-        <div class="modalSection">
-          <div class="sectionLabel">Actions</div>
-          <div class="row">
-            <button id="tradeBuy" class="btn primary">Buy</button>
-            <button id="tradeSell" class="btn">Sell</button>
-            <button id="tradeSellAll" class="btn danger">Sell All</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="modalActions">
-        <div class="mini muted" id="tradeFooter">—</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Firebase (Realtime sessions) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
-
+  <!-- Scripts -->
   <script src="app.base.js"></script>
   <script src="app.live.js"></script>
   <script src="app.boot.js"></script>
