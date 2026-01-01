@@ -302,7 +302,13 @@
       <section class="card" id="pitBoardSection">
         <div class="sectionHead">
           <h2>Pit Board</h2>
-          <button type="button" class="btnToggle" id="btnTogglePitBoard">Collapse</button>
+          <div class="sectionHeadBtns">
+            <button type="button" class="btn" id="btnCryptoMarket" hidden
+                    data-tooltip="Open the separate Crypto Market board (Volatility Mode only).">
+              Crypto Market
+            </button>
+            <button type="button" class="btnToggle" id="btnTogglePitBoard">Collapse</button>
+          </div>
         </div>
         <div class="sub">Desktop shows table. Mobile uses expandable card view.</div>
 
@@ -425,7 +431,42 @@
 
 
   <!-- Firebase (Realtime sessions) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  
+  <!-- ✅ Crypto Market Modal (Volatility Mode) -->
+  <div class="mmModal" id="cryptoModal" hidden aria-hidden="true">
+    <div class="mmModalOverlay" data-close-modal="cryptoModal"></div>
+
+    <div class="mmModalCard" role="dialog" aria-modal="true" aria-labelledby="cryptoModalTitle">
+      <div class="mmModalHead">
+        <h3 id="cryptoModalTitle">Crypto Market</h3>
+        <button class="btnIcon" type="button" data-close-modal="cryptoModal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="sub">
+        Volatility Mode only. Crypto prices swing wildly at every Opening Bell. No dividends on crypto.
+      </div>
+
+      <div class="divider"></div>
+
+      <div id="cryptoTableWrap">
+        <table id="cryptoTable">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Asset</th>
+              <th>Current</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div id="cryptoCards"></div>
+    </div>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 
