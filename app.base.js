@@ -3174,7 +3174,25 @@ function openCashDialog(playerId) {
   if (!p) return;
 
   const raw = prompt(
-    `${p.name} cash is $${fmtMoney(p.casfunction doCryptoTrade(playerId, act, symbol, units) {
+    `${p.name} cash is $${fmtMoney(p.cash)}.\nEnter a new cash amount:`,
+    String(p.cash)
+  );
+  if (raw === null) return;
+
+  const val = Number(String(raw).replace(/[^0-9.\-]/g, ""));
+  if (!Number.isFinite(val) || val < 0) {
+    alert("Please enter a valid non-negative number.");
+    return;
+  }
+
+  const old = p.cash;
+  p.cash = Math.round(val);
+  pushLog(`${p.name} cash adjusted: $${fmtMoney(old)} → $${fmtMoney(p.cash)}`);
+  renderAll();
+  saveState();
+}
+
+function doCryptoTrade(playerId, act, symbol, units) {
   if (!assertHostAction()) return false;
 
   if (!state.volatilityMode) {
@@ -3261,24 +3279,6 @@ function openCashDialog(playerId) {
     `(start $${fmtMoney(startPrice)} → end $${fmtMoney(endPrice)}) (crypto).`
   );
 
-  playCashSfx();
-
-  renderAll();
-  saveState();
-  return true;
-}ymbol} (CRYPTO) (${p.name})`);
-
-  if (isBuy) {
-    p.cash -= total;
-    p.cryptoHoldings[symbol] = (p.cryptoHoldings[symbol] || 0) + units;
-  } else {
-    p.cryptoHoldings[symbol] = (p.cryptoHoldings[symbol] || 0) - units;
-    p.cash += total;
-  }
-
-  addLog(`${p.name} ${verb} ${units} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(total)} (crypto).`);
-
-  // ✅ CASH SOUND on successful trade
   playCashSfx();
 
   renderAll();
