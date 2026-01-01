@@ -437,7 +437,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   box-shadow:0 0 0 2px rgba(255,255,255,.08);
 }
 
-/* Pit controls – ONE definition */
+/* Pit controls â€“ ONE definition */
 .pitControls{
   display:flex;
   flex-direction:column;
@@ -938,12 +938,12 @@ body.modalOpen{ overflow:hidden; }
     -webkit-appearance:none;
     -moz-appearance:none;
 
-    /* slightly stronger background so iOS doesn’t “flatten” it */
+    /* slightly stronger background so iOS doesnâ€™t â€œflattenâ€ it */
     background-color:var(--panel2);
     background-image:none;
   }
 
-  /* Ensure the wrapper doesn’t clip the control on iOS */
+  /* Ensure the wrapper doesnâ€™t clip the control on iOS */
   .row select:not(.indDir),
   .grid2 select:not(.indDir){
     width:100%;
@@ -1013,7 +1013,7 @@ body.modalOpen{ overflow:hidden; }
   }
 
   input[type="checkbox"]:checked::after{
-    content: "✓";
+    content: "âœ“";
     color: #000;
     font-size: 22px;
     font-weight: 900;
@@ -1062,7 +1062,7 @@ body.modalOpen{ overflow:hidden; }
     font-size: 16px !important;
   }
 
-  /* Also force common “small text” areas that might cascade onto inputs */
+  /* Also force common â€œsmall textâ€ areas that might cascade onto inputs */
   .mini,
   .muted,
   .sub,
@@ -1128,7 +1128,7 @@ body.modalOpen{ overflow:hidden; }
   font-weight: 600;
   letter-spacing: 0.04em;
 
-  pointer-events: none; /* 🔑 THIS FIXES BUTTONS */
+  pointer-events: none; /* ðŸ”‘ THIS FIXES BUTTONS */
 }
 
 /* FORCE hidden attribute to actually hide the live announcement */
@@ -1141,7 +1141,7 @@ body.hasLiveAnnouncement {
   padding-top: 32px;
 }
 /* ===================================================== */
-/* TRADE MODAL — MOBILE LAYOUT (single source of truth)  */
+/* TRADE MODAL â€” MOBILE LAYOUT (single source of truth)  */
 /* Fixes overflow + keeps -100 Shares +100 MAX visible   */
 /* ===================================================== */
 @media (max-width: 700px){
@@ -1357,4 +1357,16 @@ body.isViewer #toolsCard {
   opacity:.45;
   cursor:not-allowed;
   filter:saturate(.6);
+}
+
+
+/* --- Game Modes (Volatility / Monopoly) --- */
+.modeToggles{
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+}
+@media (max-width: 720px){
+  .modeToggles{ gap:12px; }
+  .modeToggles label{ font-size: 13px; }
 }
