@@ -1790,7 +1790,20 @@ function openTradeModalForCrypto(symbol) {
     renderTradeModalPreview();
   };
 
-  // MAX handler is market-aware (set in openTradeModalForStock)
+  // ✅ MAX button for crypto
+   const elMax = document.getElementById("modalSharesMax");
+   elMax.onclick = () => {
+     const pid = tradeModalState.playerId;
+     if (!pid) return;
+   
+     tradeModalState.shares = computeMaxCryptoUnits(
+       pid,
+       tradeModalState.symbol
+     );
+   
+     renderTradeModalPreview();
+   };
+
 
   document.getElementById("mmTradeBuy").onclick = () => {
     const pid = tradeModalState.playerId;
