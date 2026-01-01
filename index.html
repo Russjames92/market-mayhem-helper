@@ -173,14 +173,19 @@
               </div>
         
               <div>
-                <label>Starting cash per player</label>
+                <label>Starting cash per player (default)</label>
                 <input id="startingCash" type="number" min="0" step="1000" value="50000" />
               </div>
         
-              <div class="row" style="align-items:center;">
+              <div class="row modeToggles" style="align-items:center;">
                 <label style="display:flex; align-items:center; gap:10px; margin:0; width:auto;">
                   <input type="checkbox" id="volatilityMode" />
-                  Enable Volatility Mode (adds 10 high-risk stocks)
+                  Volatility Mode (adds 10 high-risk stocks)
+                </label>
+
+                <label style="display:flex; align-items:center; gap:10px; margin:0; width:auto;">
+                  <input type="checkbox" id="monopolyMode" />
+                  Monopoly Mode (custom starting cash per player)
                 </label>
               </div>
             </div>
