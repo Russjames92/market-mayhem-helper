@@ -1944,7 +1944,25 @@ function openTradeModalForCrypto(symbol) {
     renderTradeModalPreview();
   };
 
-  // MAX handler is market-aware (set in openTradeModalForStock)
+  // +1000 button (same control as stocks)
+  const elUpBig = document.getElementById("mmTradeUpBig");
+  if (elUpBig) {
+    elUpBig.onclick = () => {
+      tradeModalState.shares += 1000;
+      renderTradeModalPreview();
+    };
+  }
+
+  // MAX button — market-aware (stocks: slippage-aware shares, crypto: slippage-aware units)
+  const elMax = document.getElementById("modalSharesMax");
+  if (elMax) {
+    elMax.onclick = () => {
+      const pid = tradeModalState.playerId;
+      if (!pid) return;
+      tradeModalState.shares = computeMaxCryptoUnits(pid, tradeModalState.symbol);
+      renderTradeModalPreview();
+    };
+  }
 
   document.getElementById("mmTradeBuy").onclick = () => {
     const pid = tradeModalState.playerId;
