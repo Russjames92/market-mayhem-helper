@@ -77,6 +77,7 @@ let state = {
   players: [],
   prices: {},
   dissolved: {},
+  monopolyMode: false,
   volatilityMode: false, // ✅ NEW
   log: [],
   openingBells: 0,
@@ -978,19 +979,38 @@ function renderOpeningBellCounter() {
 }
 
 function wireVolatilityModeEnhancers() {
-  const elVol = document.getElementById("volatilityMode");
+  const elVol  = document.getElementById("volatilityMode");
+  const elMono = document.getElementById("monopolyMode");
   const elCash = document.getElementById("startingCash");
   if (!elVol || !elCash) return;
 
-  const applyDefaults = () => {
+  const enforceExclusive = (changed) => {
     if (state.started) return;
-    elCash.value = elVol.checked ? "1000000" : "50000";
-    renderOpeningBellCounter();
+
+    // Volatility and Monopoly modes cannot both be enabled.
+    if (changed === "vol" && elVol.checked && elMono) elMono.checked = false;
+    if (changed === "mono" && elMono?.checked) elVol.checked = false;
+
+    // Apply quick defaults for volatility mode
+    if (elVol.checked) {
+      elCash.value = "1000000";
+    } else if (!elMono?.checked) {
+      // Only revert to base default when neither special mode is on
+      if (!elCash.value || Number(elCash.value) === 1000000) elCash.value = "50000";
+    }
+
+    // Monopoly mode changes the player input layout (adds cash boxes)
+    buildSetupInputs();
+    renderOpeningBellCounter?.();
   };
 
-  elVol.addEventListener("change", applyDefaults);
-  applyDefaults();
+  elVol.addEventListener("change", () => enforceExclusive("vol"));
+  elMono?.addEventListener("change", () => enforceExclusive("mono"));
+
+  // init once
+  enforceExclusive(elVol.checked ? "vol" : (elMono?.checked ? "mono" : "vol"));
 }
+
 
 
 let leaderboard = []; // [{ ts, placements:[{place,name,assets}], winner }]
@@ -1690,6 +1710,7 @@ function loadState() {
   // defaults / migrations (AFTER parse)
   if (state.started == null) state.started = false;
   if (state.volatilityMode == null) state.volatilityMode = false;
+  if (state.monopolyMode == null) state.monopolyMode = false;
   if (state.openingBells == null) state.openingBells = 0;
   if (!state.prices) state.prices = {};
   if (!state.players) state.players = [];
@@ -1700,7 +1721,7 @@ function loadState() {
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { started:false, createdAt:null, players:[], prices:{}, dissolved:{}, volatilityMode: false, log:[], openingBells:0 };
+  state = { started:false, createdAt:null, players:[], prices:{}, dissolved:{}, monopolyMode:false, volatilityMode:false, log:[], openingBells:0 };
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
@@ -1711,17 +1732,41 @@ function resetState() {
 function syncVolatilityUIFromState() {
   const elVol = document.getElementById("volatilityMode");
   if (elVol) elVol.checked = !!state.volatilityMode;
+  const elMono = document.getElementById("monopolyMode");
+  if (elMono) elMono.checked = !!state.monopolyMode;
 }
+
+function syncMonopolyUIFromState() {
+  const elMono = document.getElementById("monopolyMode");
+  if (elMono) elMono.checked = !!state.monopolyMode;
+}
+
 // ---------- UI Builders ----------
 function buildSetupInputs() {
   const n = Number(elPlayerCount.value);
+  const elMono = document.getElementById("monopolyMode");
+  const monopolyOn = !!elMono?.checked;
+
   elPlayerInputs.innerHTML = "";
   for (let i = 0; i < n; i++) {
     const wrap = document.createElement("div");
-    wrap.innerHTML = `
-      <label>Player ${i+1} name</label>
-      <input type="text" id="pname_${i}" value="Player ${i+1}" />
-    `;
+
+    // In Monopoly Mode, allow per-player starting cash (carryover from Monopoly).
+    // Otherwise, keep setup compact: names only.
+    wrap.innerHTML = monopolyOn
+      ? `
+        <label>Player ${i+1}</label>
+        <div class="row" style="gap:10px;">
+          <input type="text" id="pname_${i}" value="Player ${i+1}" />
+          <input type="number" id="pcash_${i}" min="0" step="1000" value="${Number(elStartingCash?.value || 0) || 0}" title="Starting cash for Player ${i+1}" />
+        </div>
+        <div class="mini muted">Name • Starting cash</div>
+      `
+      : `
+        <label>Player ${i+1} name</label>
+        <input type="text" id="pname_${i}" value="Player ${i+1}" />
+      `;
+
     elPlayerInputs.appendChild(wrap);
   }
 }
@@ -2398,54 +2443,77 @@ function executeTradeWithSlippage(symbol, signedShares) {
 // ---------- Actions ----------
 function startSession() {
   const n = Number(elPlayerCount.value);
-  const elVol = document.getElementById("volatilityMode");
-   
-   let startingCash = Number(elStartingCash.value || 0);
-   
-   // if volatility mode is enabled and starting cash is blank or still the base default,
-   // force the enhanced default
-   if (state.volatilityMode && (!elStartingCash.value || startingCash === 50000)) {
-     startingCash = 1000000;
-     elStartingCash.value = "1000000";
-   }
+
+  const elVol  = document.getElementById("volatilityMode");
+  const elMono = document.getElementById("monopolyMode");
+
+  // ✅ set mode flags FIRST (so downstream logic can rely on them)
+  state.volatilityMode = !!elVol?.checked;
+  state.monopolyMode   = !!elMono?.checked;
+
+  // Modes are mutually exclusive; in case something weird slipped through:
+  if (state.volatilityMode && state.monopolyMode) state.monopolyMode = false;
+
+  let defaultStartingCash = Number(elStartingCash.value || 0);
+
+  // If volatility mode is enabled and starting cash is blank or still the base default,
+  // force the enhanced default.
+  if (state.volatilityMode && (!elStartingCash.value || defaultStartingCash === 50000)) {
+    defaultStartingCash = 1000000;
+    elStartingCash.value = "1000000";
+  }
 
   const players = [];
   for (let i = 0; i < n; i++) {
     const name = (document.getElementById(`pname_${i}`)?.value || `Player ${i+1}`).trim();
+
+    // Monopoly Mode: each player can start with a different cash amount (carryover)
+    const perCashRaw = state.monopolyMode
+      ? document.getElementById(`pcash_${i}`)?.value
+      : null;
+
+    const cash = state.monopolyMode
+      ? Number(perCashRaw || defaultStartingCash || 0)
+      : Number(defaultStartingCash || 0);
+
     players.push({
       id: `p${i+1}`,
       name,
-      cash: startingCash,
+      cash,
       holdings: {}
     });
   }
-   state.volatilityMode = !!elVol?.checked;
-   
-   const prices = {};
-   for (const s of getActiveStocks()) {
-     prices[s.symbol] = s.start;
-   }
-   
-   state.started = true;
-   state.createdAt = nowTs();
-   state.players = players;
-   setActivePlayer(players[0]?.id || null);
-   state.prices = prices;
-   state.dissolved = {};
-   state.log = [];
-   state.openingBells = 0;
 
-   pitFilterIndustry = "ALL";
-   pitSortMode = "off";
-   pitSelected.clear();
+  const prices = {};
+  for (const s of getActiveStocks()) {
+    prices[s.symbol] = s.start;
+  }
 
-   updateVolatilityPill();
-   buildPitControlsUI();
+  state.started = true;
+  state.createdAt = nowTs();
+  state.players = players;
+  setActivePlayer(players[0]?.id || null);
+  state.prices = prices;
+  state.dissolved = {};
+  state.log = [];
+  state.openingBells = 0;
 
-   buildIndustryUI();
-   buildShortMoveUI();
-   
-  addLog(`Session started with ${n} player(s). Starting cash: $${fmtMoney(startingCash)} each.`);
+  pitFilterIndustry = "ALL";
+  pitSortMode = "off";
+  pitSelected.clear();
+
+  updateVolatilityPill();
+  buildPitControlsUI();
+
+  buildIndustryUI();
+  buildShortMoveUI();
+
+  const modeTxt = state.volatilityMode ? "Volatility Mode" : (state.monopolyMode ? "Monopoly Mode" : "Standard Mode");
+  const cashTxt = state.monopolyMode
+    ? players.map(p => `${p.name}: $${fmtMoney(p.cash)}`).join(" • ")
+    : `$${fmtMoney(defaultStartingCash)} each`;
+
+  addLog(`Session started (${modeTxt}) with ${n} player(s). Starting cash: ${cashTxt}.`);
   renderAll();
   saveState();
   closeModalById("newGameModal");
@@ -3306,6 +3374,7 @@ function initSettingsModal() {
 // ---------- Init ----------
 function init() {
   loadState();
+  syncVolatilityUIFromState();
 
   loadLeaderboard();
   renderLeaderboard();
