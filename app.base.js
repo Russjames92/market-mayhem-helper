@@ -3204,28 +3204,40 @@ function shortMove() {
 
 
 function openCashDialog(playerId) {
-   if (!assertHostAction()) return;
+  if (!assertHostAction()) return;
+
   const p = state.players.find(x => x.id === playerId);
   if (!p) return;
 
   const raw = prompt(
-    `${p.name} cash is $${fmtMoney(p.cash)}.\nEnter a new cash amount:`,
-    String(p.cash)
+    `${p.name}\n\nCurrent cash: $${fmtMoney(p.cash)}\n\nEnter amount to ADD/SUBTRACT (ex: 5000 or -5000):`,
+    "0"
   );
   if (raw === null) return;
 
-  const val = Number(String(raw).replace(/[^0-9.\-]/g, ""));
-  if (!Number.isFinite(val) || val < 0) {
-    alert("Please enter a valid non-negative number.");
+  const delta = Number(String(raw).replace(/[^0-9.\-]/g, ""));
+  if (!Number.isFinite(delta)) {
+    alert("Please enter a valid number (ex: 5000 or -5000).");
     return;
   }
 
-  const old = p.cash;
-  p.cash = Math.round(val);
-  pushLog(`${p.name} cash adjusted: $${fmtMoney(old)} → $${fmtMoney(p.cash)}`);
+  const old = Number(p.cash || 0);
+  const next = Math.max(0, Math.round(old + delta));
+
+  pushUndo(`Cash adjust ${delta >= 0 ? "+" : ""}${fmtMoney(delta)} (${p.name})`);
+
+  p.cash = next;
+
+  addLog(
+    `${p.name} cash adjusted: $${fmtMoney(old)} → $${fmtMoney(p.cash)} ` +
+    `(${delta >= 0 ? "+" : ""}$${fmtMoney(delta)}).`
+  );
+
+  playCashSfx();
   renderAll();
   saveState();
 }
+
 
 function doCryptoTrade(playerId, act, symbol, units) {
   if (!assertHostAction()) return false;
