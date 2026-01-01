@@ -18,6 +18,12 @@ const VOL_LOT_SIZE = 100;          // match your UI lots
 const VOL_SHARES_PER_TICK = 2000;  // every 2,000 shares moves $1 (tune this)
 const VOL_MAX_PCT_PER_TRADE = 0.25; // cap impact per trade at 25%
 
+// Crypto slippage (Volatility Mode only) — smaller impact than stock slippage
+const CRYPTO_LOT_SIZE = 1000;           // units per lot for execution simulation
+const CRYPTO_UNITS_PER_TICK = 20000;    // every N units contributes one "tick" of impact
+const CRYPTO_TICK_PCT = 0.002;          // each tick moves price by 0.2%
+const CRYPTO_MAX_PCT_PER_TRADE = 0.08;  // cap impact per trade at 8%
+
 function getMaxOpeningBells() {
   return state?.volatilityMode ? VOL_OPENING_BELLS : BASE_OPENING_BELLS;
 }
@@ -808,46 +814,17 @@ function applyCryptoOpeningBellMove() {
   state.cryptoSeed = (Number(state.cryptoSeed) || 1) + 1;
   const rand = mulberry32(state.cryptoSeed);
 
-  const assets = getActiveCryptos();
-  if (!assets.length) return;
-
-  // Each Opening Bell: guarantee ONE "rocket" (+800% to +1000%)
-  const rocket = assets[Math.floor(rand() * assets.length)]?.symbol;
-
-  // Optional: pick a separate "crash" candidate that can take a huge hit (down to -96%)
-  let crash = assets[Math.floor(rand() * assets.length)]?.symbol;
-  if (crash === rocket && assets.length > 1) {
-    const i = (assets.findIndex(a => a.symbol === crash) + 1) % assets.length;
-    crash = assets[i].symbol;
-  }
-
   const movers = [];
 
-  for (const c of assets) {
+  for (const c of getActiveCryptos()) {
     const before = Number(state.cryptoPrices[c.symbol] ?? c.start);
 
-    let pct;
+    // base wild swing: -35% to +45%
+    let pct = (rand() * 0.80) - 0.35;
 
-    if (c.symbol === rocket) {
-      // +800% to +1000% (multiplier 9x to 11x)
-      pct = 8 + (rand() * 2);
-    } else {
-      // base wild swing: -50% to +70%
-      pct = (rand() * 1.20) - 0.50;
-
-      // decent chance of extreme move: -96% to +250%
-      if (rand() < 0.18) {
-        pct = (rand() * 3.46) - 0.96;
-      }
-
-      // make sure at most one "max crash" candidate tends toward big red candles
-      // (not guaranteed every bell, but allows deep drawdowns up to -96%)
-      if (c.symbol === crash && rand() < 0.45) {
-        pct = -0.60 - (rand() * 0.36); // -60% to -96%
-      }
-
-      // hard clamp to your requested maximum drawdown
-      if (pct < -0.96) pct = -0.96;
+    // small chance of extreme move: -80% to +160%
+    if (rand() < 0.12) {
+      pct = (rand() * 2.40) - 0.80;
     }
 
     const after = clampCryptoPrice(before * (1 + pct));
@@ -862,9 +839,8 @@ function applyCryptoOpeningBellMove() {
     `${m.sym} ${m.pct >= 0 ? "+" : ""}${Math.round(m.pct*100)}% → $${fmtMoney2(m.after)}`
   );
 
-  addLog(`Crypto Opening Bell: market goes berserk.<br><span class="mini muted">${top.join(" • ")}</span>`);
+  addLog(`Crypto Opening Bell: market swings hit the board.<br><span class="mini muted">${top.join(" • ")}</span>`);
 }
-
 function isDissolved(sym) {
   return !!state.dissolved?.[sym];
 }
@@ -1055,23 +1031,131 @@ function estimateSlippageCost(symbol, shares, startPrice) {
     if (current <= 0) break;
   }
 
+  
+// ---- Crypto slippage estimators (NO state mutation) ----
+function estimateCryptoSlippageCost(symbol, units, startPrice) {
+  const c = getCrypto(symbol);
+  if (!c) return units * startPrice;
+
+  let price = Number.isFinite(startPrice) ? startPrice : (state.cryptoPrices?.[symbol] ?? c.start);
+  if (!Number.isFinite(price)) price = Number(c.start) || 0;
+
+  // Crypto market exists only in Volatility Mode, but keep this safe:
+  if (!state.volatilityMode) return units * price;
+
+  const totalUnits = Math.abs(units);
+  if (totalUnits <= 0) return 0;
+
+  const ticksTotal = Math.floor(totalUnits / CRYPTO_UNITS_PER_TICK);
+  if (ticksTotal <= 0) return totalUnits * price;
+
+  const capTicks = Math.max(1, Math.round(CRYPTO_MAX_PCT_PER_TRADE / CRYPTO_TICK_PCT));
+  const ticksApplied = Math.min(ticksTotal, capTicks);
+
+  const lots = Math.ceil(totalUnits / CRYPTO_LOT_SIZE);
+  const ticksPerLot = ticksApplied / lots;
+
+  let remaining = totalUnits;
+  let execTotal = 0;
+  let current = price;
+
+  for (let i = 0; i < lots; i++) {
+    const lotUnits = Math.min(CRYPTO_LOT_SIZE, remaining);
+    remaining -= lotUnits;
+
+    execTotal += lotUnits * current;
+
+    // buy-side estimator: price rises through the fill
+    current = current * (1 + (ticksPerLot * CRYPTO_TICK_PCT));
+    current = clampCryptoPrice(current);
+    if (current <= 0) break;
+  }
+
   return execTotal;
+}
+
+function simulateCryptoSlippage(symbol, signedUnits) {
+  const c = getCrypto(symbol);
+  if (!c) return null;
+
+  let price = state.cryptoPrices?.[symbol] ?? c.start;
+  price = Number.isFinite(price) ? price : (Number(c.start) || 0);
+  if (price <= 0) price = Number(c.start) || 0;
+
+  const totalUnits = Math.abs(signedUnits);
+  if (totalUnits <= 0) {
+    return { execTotal: 0, avgPrice: price, finalPrice: price, ticksApplied: 0 };
+  }
+
+  const dir = signedUnits >= 0 ? +1 : -1;
+
+  const ticksTotal = Math.floor(totalUnits / CRYPTO_UNITS_PER_TICK);
+  if (ticksTotal <= 0) {
+    const finalPrice = clampCryptoPrice(price);
+    return { execTotal: totalUnits * price, avgPrice: price, finalPrice, ticksApplied: 0 };
+  }
+
+  const capTicks = Math.max(1, Math.round(CRYPTO_MAX_PCT_PER_TRADE / CRYPTO_TICK_PCT));
+  const ticksApplied = Math.min(ticksTotal, capTicks);
+
+  const lots = Math.ceil(totalUnits / CRYPTO_LOT_SIZE);
+  const ticksPerLot = ticksApplied / lots;
+
+  let remaining = totalUnits;
+  let execTotal = 0;
+  let current = price;
+
+  for (let i = 0; i < lots; i++) {
+    const lotUnits = Math.min(CRYPTO_LOT_SIZE, remaining);
+    remaining -= lotUnits;
+
+    execTotal += lotUnits * current;
+
+    // Apply impact through fill (smaller than stocks): multiplicative percent ticks
+    const pct = dir * (ticksPerLot * CRYPTO_TICK_PCT);
+    current = current * (1 + pct);
+    current = clampCryptoPrice(current);
+    if (current <= 0) break;
+  }
+
+  const finalPrice = clampCryptoPrice(current);
+  const avgPrice = execTotal / totalUnits;
+  return { execTotal, avgPrice, finalPrice, ticksApplied };
+}
+
+
+return execTotal;
 }
 
 
 
-function computeMaxCryptoUnits(playerId, symbol){
+function computeMaxCryptoUnits(playerId, symbol) {
   const p = state.players.find(x => x.id === playerId);
   const c = getCrypto(symbol);
   if (!p || !c) return 100;
 
-  const price = state.cryptoPrices?.[symbol] ?? c.start;
-  if (!Number.isFinite(price) || price <= 0) return 100;
+  const startPrice = state.cryptoPrices?.[symbol] ?? c.start;
+  const CASH = p.cash || 0;
 
-  // keep 100-unit increments to match UI
-  const maxUnits = Math.floor((p.cash || 0) / price);
-  return Math.max(100, Math.floor(maxUnits / 100) * 100);
+  const costForUnits = (units) => {
+    if (!state.volatilityMode) return units * startPrice;
+    return estimateCryptoSlippageCost(symbol, units, startPrice);
+  };
+
+  let lo = 0;
+  let hi = Math.max(1, Math.floor(CASH / (startPrice * 100))); // in 100-unit blocks
+
+  while (costForUnits(hi * 100) <= CASH) hi *= 2;
+
+  while (lo + 1 < hi) {
+    const mid = (lo + hi) >> 1;
+    if (costForUnits(mid * 100) <= CASH) lo = mid;
+    else hi = mid;
+  }
+
+  return Math.max(100, lo * 100);
 }
+
 
 function computeMaxSharesWithSlippage(playerId, symbol) {
   const p = state.players.find(x => x.id === playerId);
@@ -1630,6 +1714,7 @@ function ensureTradeModal() {
               <strong id="mmTradeShares">100</strong>
             </div>
             <button type="button" id="mmTradeUp">+100</button>
+            <button type="button" id="mmTradeUpBig">+1000</button>
             <button type="button" class="maxBtn" id="modalSharesMax">MAX</button>
           </div>
         </div>
@@ -1715,6 +1800,14 @@ function openTradeModalForStock(symbol) {
   };
   document.getElementById("mmTradeUp").onclick = () => {
     tradeModalState.shares += 100;
+    renderTradeModalPreview();
+  };
+  document.getElementById("mmTradeUpBig").onclick = () => {
+    tradeModalState.shares += 1000;
+    renderTradeModalPreview();
+  };
+  document.getElementById("mmTradeUpBig").onclick = () => {
+    tradeModalState.shares += 1000;
     renderTradeModalPreview();
   };
    // modal MAX button — market-aware
@@ -1820,20 +1913,7 @@ function openTradeModalForCrypto(symbol) {
     renderTradeModalPreview();
   };
 
-  // ✅ MAX button for crypto
-   const elMax = document.getElementById("modalSharesMax");
-   elMax.onclick = () => {
-     const pid = tradeModalState.playerId;
-     if (!pid) return;
-   
-     tradeModalState.shares = computeMaxCryptoUnits(
-       pid,
-       tradeModalState.symbol
-     );
-   
-     renderTradeModalPreview();
-   };
-
+  // MAX handler is market-aware (set in openTradeModalForStock)
 
   document.getElementById("mmTradeBuy").onclick = () => {
     const pid = tradeModalState.playerId;
@@ -1896,14 +1976,15 @@ function renderTradeModalPreview() {
     if (!c) return;
 
     const price = state.cryptoPrices?.[sym] ?? c.start;
-    const total = tradeModalState.shares * price;
+    const flatTotal = tradeModalState.shares * price;
+    const total = state.volatilityMode ? estimateCryptoSlippageCost(sym, tradeModalState.shares, price) : flatTotal;
     const owned = p.cryptoHoldings?.[sym] || 0;
 
     if (sellAllBtn) sellAllBtn.disabled = owned <= 0;
 
     document.getElementById("mmTradePreview").innerHTML =
       `Price: <strong>$${fmtMoney(price)}</strong> • ` +
-      `Total: <strong>$${fmtMoney(total)}</strong> • ` +
+      `Est Total: <strong>$${fmtMoney(total)}</strong> • ` +
       `Owned: <strong>${owned} units</strong> • ` +
       `Cash: <strong>$${fmtMoney(p.cash)}</strong>`;
     return;
@@ -3063,27 +3144,7 @@ function openCashDialog(playerId) {
   if (!p) return;
 
   const raw = prompt(
-    `${p.name} cash is $${fmtMoney(p.cash)}.\nEnter cash adjustment (example: -3000 or 5000):`,
-    "0"
-  );
-  if (raw == null) return;
-
-  const delta = Number(raw);
-  if (!Number.isFinite(delta)) {
-    alert("That wasn’t a number.");
-    return;
-  }
-
-     pushUndo(`Cash Adjust (${p.name}) ${delta >= 0 ? "+" : ""}${fmtMoney(delta)}`);
-
-  p.cash += delta;
-  addLog(`${p.name} cash adjusted: ${delta >= 0 ? "+" : ""}${fmtMoney(delta)} → $${fmtMoney(p.cash)}.`);
-  renderAll();
-  saveState();
-}
-
-
-function doCryptoTrade(playerId, act, symbol, units) {
+    `${p.name} cash is $${fmtMoney(p.casfunction doCryptoTrade(playerId, act, symbol, units) {
   if (!assertHostAction()) return false;
 
   if (!state.volatilityMode) {
@@ -3113,19 +3174,31 @@ function doCryptoTrade(playerId, act, symbol, units) {
     return false;
   }
 
-  const price = state.cryptoPrices?.[symbol] ?? c.start;
-  const total = units * price;
+  const startPrice = state.cryptoPrices?.[symbol] ?? c.start;
+
+  // ---- Crypto slippage pricing (smaller than stock slippage) ----
+  const exec = simulateCryptoSlippage(symbol, isBuy ? +units : -units);
+  if (!exec) {
+    alert("Unable to price this crypto trade.");
+    return false;
+  }
+
+  const total = exec.execTotal;   // BUY = cost, SELL = proceeds
+  const avgPrice = exec.avgPrice;
+  const endPrice = exec.finalPrice;
 
   const verb = isBuy ? "BUY" : "SELL";
   const confirmMsg =
     `${p.name}\n\n` +
     `${verb} ${units} units of ${symbol}\n` +
-    `Price: $${fmtMoney(price)} per unit\n\n` +
-    `Total: $${fmtMoney(total)}\n\n` +
+    `Avg Price: $${fmtMoney(avgPrice)} per unit\n` +
+    `Start: $${fmtMoney(startPrice)}  →  End: $${fmtMoney(endPrice)}\n\n` +
+    `${isBuy ? "Total Cost" : "Total Proceeds"}: $${fmtMoney(total)}\n\n` +
     `Confirm this trade?`;
 
   if (!confirm(confirmMsg)) return false;
 
+  // ---- Validation based on FINAL slippage total ----
   if (isBuy) {
     if ((p.cash || 0) < total) {
       alert(`${p.name} doesn’t have enough cash. Needs $${fmtMoney(total)}, has $${fmtMoney(p.cash)}.`);
@@ -3140,6 +3213,30 @@ function doCryptoTrade(playerId, act, symbol, units) {
   }
 
   pushUndo(`${act} ${units} ${symbol} (CRYPTO) (${p.name})`);
+
+  // ---- Apply trade ----
+  if (isBuy) {
+    p.cash -= total;
+    p.cryptoHoldings[symbol] = (p.cryptoHoldings[symbol] || 0) + units;
+  } else {
+    p.cryptoHoldings[symbol] = (p.cryptoHoldings[symbol] || 0) - units;
+    p.cash += total;
+  }
+
+  // ---- Apply crypto price impact AFTER fill ----
+  state.cryptoPrices[symbol] = endPrice;
+
+  addLog(
+    `${p.name} ${verb} ${units} ${symbol} avg $${fmtMoney(avgPrice)} = $${fmtMoney(total)} ` +
+    `(start $${fmtMoney(startPrice)} → end $${fmtMoney(endPrice)}) (crypto).`
+  );
+
+  playCashSfx();
+
+  renderAll();
+  saveState();
+  return true;
+}ymbol} (CRYPTO) (${p.name})`);
 
   if (isBuy) {
     p.cash -= total;
