@@ -1034,13 +1034,12 @@ function estimateSlippageCost(symbol, shares, startPrice) {
   const totalShares = Math.abs(shares);
   if (totalShares <= 0) return 0;
 
-  // How many $1 ticks the order would cause
+  // How many $1 ticks the order would cause (based on 100-share increments)
   const ticksTotal = Math.floor(totalShares / VOL_SHARES_PER_TICK);
   if (ticksTotal <= 0) return totalShares * price;
 
-  // Cap total move per trade
-  const capTicks = Math.max(1, Math.round(price * VOL_MAX_PCT_PER_TRADE));
-  const ticksApplied = Math.min(ticksTotal, capTicks);
+  // Cap how much a single order can move the price (keeps things playable)
+  const ticksApplied = Math.min(ticksTotal, VOL_MAX_TICKS_PER_TRADE);
 
   // Distribute ticks evenly across lots
   const lots = Math.ceil(totalShares / VOL_LOT_SIZE);
@@ -1056,12 +1055,14 @@ function estimateSlippageCost(symbol, shares, startPrice) {
 
     execTotal += lotShares * current;
 
-    // BUY cost estimator assumes buy-side slippage (price rises through the fill)
+    // BUY-side estimator: price rises through the fill
     current = current + ticksPerLot;
     if (current <= 0) break;
   }
 
-  
+  return execTotal;
+}
+
 // ---- Crypto slippage estimators (NO state mutation) ----
 function estimateCryptoSlippageCost(symbol, units, startPrice) {
   const c = getCrypto(symbol);
@@ -1106,11 +1107,17 @@ function estimateCryptoSlippageCost(symbol, units, startPrice) {
 
 function simulateCryptoSlippage(symbol, signedUnits) {
   const c = getCrypto(symbol);
-  if (!c) return null;
+  if (!c) {
+    return { execTotal: 0, avgPrice: 0, finalPrice: 0, ticksApplied: 0 };
+  }
 
-  let price = state.cryptoPrices?.[symbol] ?? c.start;
-  price = Number.isFinite(price) ? price : (Number(c.start) || 0);
-  if (price <= 0) price = Number(c.start) || 0;
+  let price = state.cryptoPrices?.[symbol];
+  if (!Number.isFinite(price)) price = Number(c.start) || 0;
+
+  // Only apply in Volatility Mode
+  if (!state.volatilityMode) {
+    return { execTotal: Math.abs(signedUnits) * price, avgPrice: price, finalPrice: price, ticksApplied: 0 };
+  }
 
   const totalUnits = Math.abs(signedUnits);
   if (totalUnits <= 0) {
@@ -1152,12 +1159,6 @@ function simulateCryptoSlippage(symbol, signedUnits) {
   const avgPrice = execTotal / totalUnits;
   return { execTotal, avgPrice, finalPrice, ticksApplied };
 }
-
-
-return execTotal;
-}
-
-
 
 function computeMaxCryptoUnits(playerId, symbol) {
   const p = state.players.find(x => x.id === playerId);
