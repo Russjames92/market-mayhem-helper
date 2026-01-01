@@ -437,7 +437,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   box-shadow:0 0 0 2px rgba(255,255,255,.08);
 }
 
-/* Pit controls Ã¢â‚¬â€œ ONE definition */
+/* Pit controls ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“ ONE definition */
 .pitControls{
   display:flex;
   flex-direction:column;
@@ -773,6 +773,7 @@ body.modalOpen{ overflow:hidden; }
   align-items:center;
   gap:10px;
   margin-left:auto;
+  flex-wrap:wrap;
 }
 .mmModalBack .mmTradeShares button{
   width:auto !important;
@@ -938,12 +939,12 @@ body.modalOpen{ overflow:hidden; }
     -webkit-appearance:none;
     -moz-appearance:none;
 
-    /* slightly stronger background so iOS doesnÃ¢â‚¬â„¢t Ã¢â‚¬Å“flattenÃ¢â‚¬Â it */
+    /* slightly stronger background so iOS doesnÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œflattenÃƒÂ¢Ã¢â€šÂ¬Ã‚Â it */
     background-color:var(--panel2);
     background-image:none;
   }
 
-  /* Ensure the wrapper doesnÃ¢â‚¬â„¢t clip the control on iOS */
+  /* Ensure the wrapper doesnÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t clip the control on iOS */
   .row select:not(.indDir),
   .grid2 select:not(.indDir){
     width:100%;
@@ -1013,7 +1014,7 @@ body.modalOpen{ overflow:hidden; }
   }
 
   input[type="checkbox"]:checked::after{
-    content: "Ã¢Å“â€œ";
+    content: "ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“";
     color: #000;
     font-size: 22px;
     font-weight: 900;
@@ -1062,7 +1063,7 @@ body.modalOpen{ overflow:hidden; }
     font-size: 16px !important;
   }
 
-  /* Also force common Ã¢â‚¬Å“small textÃ¢â‚¬Â areas that might cascade onto inputs */
+  /* Also force common ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œsmall textÃƒÂ¢Ã¢â€šÂ¬Ã‚Â areas that might cascade onto inputs */
   .mini,
   .muted,
   .sub,
@@ -1128,7 +1129,7 @@ body.modalOpen{ overflow:hidden; }
   font-weight: 600;
   letter-spacing: 0.04em;
 
-  pointer-events: none; /* Ã°Å¸â€â€˜ THIS FIXES BUTTONS */
+  pointer-events: none; /* ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ¢â‚¬Ëœ THIS FIXES BUTTONS */
 }
 
 /* FORCE hidden attribute to actually hide the live announcement */
@@ -1141,7 +1142,7 @@ body.hasLiveAnnouncement {
   padding-top: 32px;
 }
 /* ===================================================== */
-/* TRADE MODAL Ã¢â‚¬â€ MOBILE LAYOUT (single source of truth)  */
+/* TRADE MODAL ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â MOBILE LAYOUT (single source of truth)  */
 /* Fixes overflow + keeps -100 Shares +100 MAX visible   */
 /* ===================================================== */
 @media (max-width: 700px){
@@ -1176,10 +1177,10 @@ body.hasLiveAnnouncement {
     margin: 0 !important;
   }
 
-  /* Shares controls: force 4 columns that always fit */
+  /* Shares controls: compact grid that always fits (supports +1000) */
   .mmModalBack .mmTradeShares{
     display: grid !important;
-    grid-template-columns: 68px minmax(0,1fr) 68px 68px !important;
+    grid-template-columns: 56px minmax(0,1fr) 56px 56px 56px !important;
     gap: 8px !important;
     width: 100% !important;
     margin-left: 0 !important;
@@ -1191,7 +1192,7 @@ body.hasLiveAnnouncement {
     width: 100% !important;
     min-width: 0 !important;
     padding: 10px 8px !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
     line-height: 1.1 !important;
     white-space: nowrap;
   }
