@@ -810,6 +810,8 @@ function applyCryptoOpeningBellMove() {
   if (!state.volatilityMode) return;
   ensureCryptoPrices();
 
+  if (!state.cryptoLastMove) state.cryptoLastMove = {}; // {SYM: pct}
+
   // advance seed each bell so the move changes every time
   state.cryptoSeed = (Number(state.cryptoSeed) || 1) + 1;
   const rand = mulberry32(state.cryptoSeed);
@@ -858,6 +860,7 @@ function applyCryptoOpeningBellMove() {
 
     const after = clampCryptoPrice(before * (1 + pct));
     state.cryptoPrices[c.symbol] = after;
+    state.cryptoLastMove[c.symbol] = pct;
 
     movers.push({ sym: c.symbol, before, after, pct });
   }
@@ -2398,6 +2401,19 @@ function renderPitBoard() {
 }
 
 
+
+function cryptoMoveMarkup(sym, cur){
+  const pct = Number(state.cryptoLastMove?.[sym]);
+  if (!Number.isFinite(pct) || pct === 0) {
+    return `<div class="cryptoPriceWrap flat"><div class="cryptoPrice">$${fmtMoney2(cur)}</div><div class="cryptoMove">—</div></div>`;
+  }
+  const up = pct > 0;
+  const cls = up ? "up" : "down";
+  const arrow = up ? "▲" : "▼";
+  const pctTxt = `${up ? "+" : ""}${(pct*100).toFixed(1)}%`;
+  return `<div class="cryptoPriceWrap ${cls}"><div class="cryptoPrice">$${fmtMoney2(cur)}</div><div class="cryptoMove">${arrow} ${pctTxt}</div></div>`;
+}
+
 function renderCryptoMarket() {
   if (!elCryptoTableBody || !elCryptoCards) return;
 
@@ -2418,7 +2434,7 @@ function renderCryptoMarket() {
       <tr>
         <td><strong>${c.symbol}</strong></td>
         <td>${c.name}</td>
-        <td>$${fmtMoney2(cur)}</td>
+        <td class="cryptoPriceCell">${cryptoMoveMarkup(c.symbol, cur)}</td>
         <td><button type="button" class="primary" data-action="tradeCrypto" data-symbol="${c.symbol}">Trade</button></td>
       </tr>
     `;
@@ -2436,7 +2452,7 @@ function renderCryptoMarket() {
             <div class="pitSym">${c.symbol}</div>
             <div class="mini muted">${c.name}</div>
           </div>
-          <div class="pitPrice">$${fmtMoney2(cur)}</div>
+          <div class="pitPrice cryptoPriceCell">${cryptoMoveMarkup(c.symbol, cur)}</div>
         </div>
         <div style="margin-top:10px;">
           <button type="button" class="primary" data-action="tradeCrypto" data-symbol="${c.symbol}">Trade</button>
