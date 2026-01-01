@@ -68,6 +68,37 @@ const VOLATILITY_STOCKS = [
 ];
 
 
+
+// ---------- Crypto Market (Volatility Mode only) ----------
+const CRYPTO_ASSET_CLASS = [
+  { symbol:"AUR",   name:"Aurum",          start: 180 },
+  { symbol:"NEX",   name:"NexChain",       start: 42 },
+  { symbol:"VPR",   name:"ViperX",         start: 9 },
+  { symbol:"HEX",   name:"HexaCoin",       start: 65 },
+  { symbol:"MTR",   name:"MetroByte",      start: 14 },
+  { symbol:"GLD",   name:"GoldWire",       start: 210 },
+  { symbol:"SPN",   name:"Spindle",        start: 7 },
+  { symbol:"KRB",   name:"KrakenBit",      start: 33 },
+  { symbol:"ION",   name:"IonPulse",       start: 58 },
+  { symbol:"FROST", name:"FrostLedger",    start: 11 },
+  { symbol:"RZR",   name:"RazorNet",       start: 26 },
+  { symbol:"PRSM",  name:"Prism",          start: 95 },
+  { symbol:"DUST",  name:"DustCoin",       start: 3 },
+  { symbol:"ORBIT", name:"Orbit",          start: 120 },
+  { symbol:"BOLT",  name:"BoltMint",       start: 17 },
+  { symbol:"EMBER", name:"Ember",          start: 22 },
+  { symbol:"CROWN", name:"CrownHash",      start: 155 },
+  { symbol:"TIDE",  name:"TidePool",       start: 8 },
+  { symbol:"QUARK", name:"Quark",          start: 49 },
+  { symbol:"VOID",  name:"Void",           start: 27 }
+];
+
+function getActiveCryptos(){
+  return state?.volatilityMode ? CRYPTO_ASSET_CLASS : [];
+}
+function getCrypto(sym){
+  return CRYPTO_ASSET_CLASS.find(c => c.symbol === sym);
+}
 const ALL_STOCKS = [...BASE_STOCKS, ...VOLATILITY_STOCKS];
 
 // ---------- State ----------
@@ -190,6 +221,13 @@ const elPitBulkAmt = document.getElementById("pitBulkAmt");
 const elPitBulkMinus = document.getElementById("pitBulkMinus");
 const elPitBulkPlus = document.getElementById("pitBulkPlus");
 const elPitClearSelected = document.getElementById("pitClearSelected");
+
+// Crypto Market (Volatility Mode)
+const elBtnCryptoMarket = document.getElementById("btnCryptoMarket");
+const elCryptoModal = document.getElementById("cryptoModal");
+const elCryptoTableBody = document.querySelector("#cryptoTable tbody");
+const elCryptoCards = document.getElementById("cryptoCards");
+
 
 const AVATAR_KEY = "mm_player_avatars_v1";
 
@@ -614,23 +652,25 @@ function updateLiveAnnouncement() {
 })();
 
 function closeModalById(id) {
-  const liveModal = document.getElementById("liveModal");
-  const newGameModal = document.getElementById("newGameModal");
-
   const el = document.getElementById(id);
   if (!el) return;
 
   el.hidden = true;
   el.setAttribute("aria-hidden", "true");
 
-  // unlock body scrolling only if BOTH modals are closed
-  const liveClosed = !liveModal || liveModal.hidden;
-  const newClosed  = !newGameModal || newGameModal.hidden;
-
-  if (liveClosed && newClosed) {
-    document.body.classList.remove("modalOpen");
-  }
+  // unlock body scrolling only if NO modals are open
+  const anyOpen = !!document.querySelector(".mmModal:not([hidden])");
+  if (!anyOpen) document.body.classList.remove("modalOpen");
 }
+
+function openModalById(id){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.hidden = false;
+  el.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modalOpen");
+}
+
 function getActiveStocks() {
   return state?.volatilityMode ? ALL_STOCKS : BASE_STOCKS;
 }
@@ -743,6 +783,58 @@ function addLog(text) {
 function clampPrice(n) {
   return Math.max(0, Math.round(n));
 }
+function clampCryptoPrice(n){
+  // crypto can have cents; keep it readable with 2 decimals and a floor
+  const x = Number(n);
+  if (!Number.isFinite(x)) return 0.01;
+  return Math.max(0.01, Math.round(x * 100) / 100);
+}
+
+// deterministic RNG (for live sessions / viewers)
+function mulberry32(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function applyCryptoOpeningBellMove() {
+  if (!state.volatilityMode) return;
+  ensureCryptoPrices();
+
+  // advance seed each bell so the move changes every time
+  state.cryptoSeed = (Number(state.cryptoSeed) || 1) + 1;
+  const rand = mulberry32(state.cryptoSeed);
+
+  const movers = [];
+
+  for (const c of getActiveCryptos()) {
+    const before = Number(state.cryptoPrices[c.symbol] ?? c.start);
+
+    // base wild swing: -35% to +45%
+    let pct = (rand() * 0.80) - 0.35;
+
+    // small chance of extreme move: -80% to +160%
+    if (rand() < 0.12) {
+      pct = (rand() * 2.40) - 0.80;
+    }
+
+    const after = clampCryptoPrice(before * (1 + pct));
+    state.cryptoPrices[c.symbol] = after;
+
+    movers.push({ sym: c.symbol, before, after, pct });
+  }
+
+  // log a short "headline" with biggest movers
+  movers.sort((a,b) => Math.abs(b.pct) - Math.abs(a.pct));
+  const top = movers.slice(0, 5).map(m =>
+    `${m.sym} ${m.pct >= 0 ? "+" : ""}${Math.round(m.pct*100)}% → $${fmtMoney2(m.after)}`
+  );
+
+  addLog(`Crypto Opening Bell: market swings hit the board.<br><span class="mini muted">${top.join(" • ")}</span>`);
+}
 function isDissolved(sym) {
   return !!state.dissolved?.[sym];
 }
@@ -784,6 +876,16 @@ function dissolveCompany(sym, reason = "Price hit $0") {
   return true;
 }
 
+
+function ensureCryptoPrices(){
+  if (!state.cryptoPrices) state.cryptoPrices = {};
+  if (!state.cryptoSeed) state.cryptoSeed = 0;
+
+  for (const c of getActiveCryptos()) {
+    const v = Number(state.cryptoPrices[c.symbol]);
+    if (!Number.isFinite(v)) state.cryptoPrices[c.symbol] = Number(c.start) || 0;
+  }
+}
 function ensurePricesForActiveStocks() {
   if (!state.prices) state.prices = {};
 
@@ -814,15 +916,31 @@ function ensureHoldings(player) {
   for (const s of getActiveStocks()) {
     if (player.holdings[s.symbol] == null) player.holdings[s.symbol] = 0;
   }
+
+  // crypto holdings (only relevant in volatility mode)
+  if (!player.cryptoHoldings) player.cryptoHoldings = {};
+  for (const c of getActiveCryptos()) {
+    if (player.cryptoHoldings[c.symbol] == null) player.cryptoHoldings[c.symbol] = 0;
+  }
 }
 function computePlayerNetWorth(player) {
   let stockValue = 0;
-  for (const [sym, shares] of Object.entries(player.holdings)) {
+  for (const [sym, shares] of Object.entries(player.holdings || {})) {
     const stock = getStock(sym);
+    if (!stock) continue;
     const price = state.prices[sym] ?? stock.start;
-    stockValue += shares * price;
+    stockValue += (Number(shares) || 0) * price;
   }
-  return player.cash + stockValue;
+
+  let cryptoValue = 0;
+  for (const [sym, units] of Object.entries(player.cryptoHoldings || {})) {
+    const c = getCrypto(sym);
+    if (!c) continue;
+    const price = state.cryptoPrices?.[sym] ?? c.start;
+    cryptoValue += (Number(units) || 0) * price;
+  }
+
+  return (player.cash || 0) + stockValue + cryptoValue;
 }
 function computePlayerDividendDue(player) {
   ensureHoldings(player);
@@ -911,6 +1029,20 @@ function estimateSlippageCost(symbol, shares, startPrice) {
 }
 
 
+
+function computeMaxCryptoUnits(playerId, symbol){
+  const p = state.players.find(x => x.id === playerId);
+  const c = getCrypto(symbol);
+  if (!p || !c) return 100;
+
+  const price = state.cryptoPrices?.[symbol] ?? c.start;
+  if (!Number.isFinite(price) || price <= 0) return 100;
+
+  // keep 100-unit increments to match UI
+  const maxUnits = Math.floor((p.cash || 0) / price);
+  return Math.max(100, Math.floor(maxUnits / 100) * 100);
+}
+
 function computeMaxSharesWithSlippage(playerId, symbol) {
   const p = state.players.find(x => x.id === playerId);
   const stock = getStock(symbol);
@@ -947,6 +1079,8 @@ function openPriceEditor(symbol) {
 
   const stock = getStock(symbol);
   if (!stock) return;
+
+  tradeModalState.market = "stock";
 
   const before = state.prices[symbol] ?? stock.start;
 
@@ -1390,6 +1524,8 @@ function openPitBuy(symbol) {
   const stock = getStock(symbol);
   if (!stock) return;
 
+  tradeModalState.market = "stock";
+
   // Pick player
   const playersList = state.players
     .map((p, i) => `${i + 1}) ${p.name}`)
@@ -1454,7 +1590,7 @@ function ensureTradeModal() {
           </div>
 
           <div class="field">
-            <div class="mini muted" style="min-width:52px;">Stock</div>
+            <div class="mini muted" style="min-width:52px;">Asset</div>
             <div style="font-weight:900;" id="mmTradeStockLabel">—</div>
           </div>
 
@@ -1496,6 +1632,7 @@ function ensureTradeModal() {
 }
 
 let tradeModalState = {
+  market: "stock", // "stock" | "crypto"
   symbol: null,
   shares: 100,
   playerId: null
@@ -1515,6 +1652,8 @@ function openTradeModalForStock(symbol) {
 
   const stock = getStock(symbol);
   if (!stock) return;
+
+  tradeModalState.market = "stock";
 
   tradeModalState.symbol = symbol;
   tradeModalState.shares = 100;
@@ -1548,13 +1687,17 @@ function openTradeModalForStock(symbol) {
     tradeModalState.shares += 100;
     renderTradeModalPreview();
   };
-   // modal MAX button — slippage-aware
+   // modal MAX button — market-aware
    const elMax = document.getElementById("modalSharesMax");
    elMax.onclick = () => {
      const pid = tradeModalState.playerId;
      if (!pid) return;
-   
-     tradeModalState.shares = computeMaxSharesWithSlippage(pid, symbol);
+
+     if (tradeModalState.market === "crypto") {
+       tradeModalState.shares = computeMaxCryptoUnits(pid, tradeModalState.symbol);
+     } else {
+       tradeModalState.shares = computeMaxSharesWithSlippage(pid, tradeModalState.symbol);
+     }
      renderTradeModalPreview();
    };
 
@@ -1599,6 +1742,95 @@ function openTradeModalForStock(symbol) {
   tradeModalEl.classList.add("open");
 }
 
+function openTradeModalForCrypto(symbol) {
+  if (!state.started) {
+    alert("Start a session first.");
+    return;
+  }
+  if (!state.volatilityMode) {
+    alert("Crypto Market is only available in Volatility Mode.");
+    return;
+  }
+
+  ensureTradeModal();
+
+  const c = getCrypto(symbol);
+  if (!c) {
+    alert("Unknown crypto symbol.");
+    return;
+  }
+
+  tradeModalState.market = "crypto";
+  tradeModalState.symbol = symbol;
+  tradeModalState.shares = 100;
+
+  // build player dropdown
+  const sel = document.getElementById("mmTradePlayer");
+  sel.innerHTML = state.players
+    .map(p => `<option value="${p.id}">${p.name}</option>`)
+    .join("");
+
+  tradeModalState.playerId = state.players[0]?.id || null;
+  sel.value = tradeModalState.playerId;
+
+  sel.onchange = () => {
+    tradeModalState.playerId = sel.value;
+    renderTradeModalPreview();
+  };
+
+  document.getElementById("mmTradeModalTitle").textContent = `Trade — ${symbol}`;
+  document.getElementById("mmTradeStockLabel").textContent = `${symbol} — ${c.name}`;
+
+  document.getElementById("mmTradeDown").onclick = () => {
+    tradeModalState.shares = Math.max(100, tradeModalState.shares - 100);
+    renderTradeModalPreview();
+  };
+  document.getElementById("mmTradeUp").onclick = () => {
+    tradeModalState.shares += 100;
+    renderTradeModalPreview();
+  };
+
+  // MAX handler is market-aware (set in openTradeModalForStock)
+
+  document.getElementById("mmTradeBuy").onclick = () => {
+    const pid = tradeModalState.playerId;
+    if (!pid) return;
+
+    const ok = doCryptoTrade(pid, "BUY", tradeModalState.symbol, tradeModalState.shares);
+    if (ok) closeTradeModal();
+    else renderTradeModalPreview();
+  };
+
+  document.getElementById("mmTradeSell").onclick = () => {
+    const pid = tradeModalState.playerId;
+    if (!pid) return;
+
+    const ok = doCryptoTrade(pid, "SELL", tradeModalState.symbol, tradeModalState.shares);
+    if (ok) closeTradeModal();
+    else renderTradeModalPreview();
+  };
+
+  document.getElementById("mmTradeSellAll").onclick = () => {
+    const pid = tradeModalState.playerId;
+    if (!pid) return;
+
+    const p = state.players.find(x => x.id === pid);
+    if (!p) return;
+    ensureHoldings(p);
+
+    const owned = p.cryptoHoldings?.[tradeModalState.symbol] || 0;
+    if (owned <= 0) return;
+
+    const ok = doCryptoTrade(pid, "SELL", tradeModalState.symbol, owned);
+    if (ok) closeTradeModal();
+    else renderTradeModalPreview();
+  };
+
+  renderTradeModalPreview();
+  tradeModalEl.classList.add("open");
+}
+
+
 function closeTradeModal() {
   if (!tradeModalEl) return;
   tradeModalEl.classList.remove("open");
@@ -1606,22 +1838,42 @@ function closeTradeModal() {
 
 function renderTradeModalPreview() {
   const sym = tradeModalState.symbol;
-  const stock = getStock(sym);
-  if (!sym || !stock) return;
+  if (!sym) return;
 
   document.getElementById("mmTradeShares").textContent = String(tradeModalState.shares);
-
-  const price = state.prices[sym] ?? stock.start;
-  const total = tradeModalState.shares * price;
 
   const p = state.players.find(x => x.id === tradeModalState.playerId);
   if (!p) return;
   ensureHoldings(p);
 
+  const sellAllBtn = document.getElementById("mmTradeSellAll");
+
+  if (tradeModalState.market === "crypto") {
+    const c = getCrypto(sym);
+    if (!c) return;
+
+    const price = state.cryptoPrices?.[sym] ?? c.start;
+    const total = tradeModalState.shares * price;
+    const owned = p.cryptoHoldings?.[sym] || 0;
+
+    if (sellAllBtn) sellAllBtn.disabled = owned <= 0;
+
+    document.getElementById("mmTradePreview").innerHTML =
+      `Price: <strong>$${fmtMoney(price)}</strong> • ` +
+      `Total: <strong>$${fmtMoney(total)}</strong> • ` +
+      `Owned: <strong>${owned} units</strong> • ` +
+      `Cash: <strong>$${fmtMoney(p.cash)}</strong>`;
+    return;
+  }
+
+  // stock preview
+  const stock = getStock(sym);
+  if (!stock) return;
+
+  const price = state.prices[sym] ?? stock.start;
+  const total = tradeModalState.shares * price;
   const owned = p.holdings[sym] || 0;
 
-  // enable/disable sell all
-  const sellAllBtn = document.getElementById("mmTradeSellAll");
   if (sellAllBtn) sellAllBtn.disabled = owned <= 0;
 
   document.getElementById("mmTradePreview").innerHTML =
@@ -1713,7 +1965,13 @@ function loadState() {
   if (state.monopolyMode == null) state.monopolyMode = false;
   if (state.openingBells == null) state.openingBells = 0;
   if (!state.prices) state.prices = {};
+  if (!state.cryptoPrices) state.cryptoPrices = {};
+  if (state.cryptoSeed == null) state.cryptoSeed = 0;
   if (!state.players) state.players = [];
+  for (const p of state.players) {
+    if (!p.holdings) p.holdings = {};
+    if (!p.cryptoHoldings) p.cryptoHoldings = {};
+  }
   if (!state.dissolved) state.dissolved = {};
   if (!state.log) state.log = [];
 }
@@ -1721,7 +1979,7 @@ function loadState() {
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { started:false, createdAt:null, players:[], prices:{}, dissolved:{}, monopolyMode:false, volatilityMode:false, log:[], openingBells:0 };
+  state = { started:false, createdAt:null, players:[], prices:{}, cryptoPrices:{}, cryptoSeed:0, dissolved:{}, monopolyMode:false, volatilityMode:false, log:[], openingBells:0 };
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
@@ -1966,6 +2224,67 @@ function renderPitBoard() {
   updatePitSelectedUI();
 }
 
+
+function renderCryptoMarket() {
+  if (!elCryptoTableBody || !elCryptoCards) return;
+
+  // button visibility
+  if (elBtnCryptoMarket) {
+    elBtnCryptoMarket.hidden = !(state.started && state.volatilityMode);
+  }
+
+  // if modal isn't open, we still keep the button updated and exit
+  const modalOpen = !!elCryptoModal && !elCryptoModal.hidden;
+  if (!modalOpen) return;
+
+  ensureCryptoPrices();
+
+  const rows = getActiveCryptos().map(c => {
+    const cur = state.cryptoPrices?.[c.symbol] ?? c.start;
+    return `
+      <tr>
+        <td><strong>${c.symbol}</strong></td>
+        <td>${c.name}</td>
+        <td>$${fmtMoney2(cur)}</td>
+        <td><button type="button" class="primary" data-action="tradeCrypto" data-symbol="${c.symbol}">Trade</button></td>
+      </tr>
+    `;
+  }).join("");
+
+  elCryptoTableBody.innerHTML = rows || `<tr><td colspan="4" class="muted">Crypto market unavailable.</td></tr>`;
+
+  // mobile cards
+  elCryptoCards.innerHTML = getActiveCryptos().map(c => {
+    const cur = state.cryptoPrices?.[c.symbol] ?? c.start;
+    return `
+      <div class="pitCard">
+        <div class="pitCardTop">
+          <div>
+            <div class="pitSym">${c.symbol}</div>
+            <div class="mini muted">${c.name}</div>
+          </div>
+          <div class="pitPrice">$${fmtMoney2(cur)}</div>
+        </div>
+        <div style="margin-top:10px;">
+          <button type="button" class="primary" data-action="tradeCrypto" data-symbol="${c.symbol}">Trade</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openCryptoModal() {
+  if (!state.started) {
+    alert("Start a session first.");
+    return;
+  }
+  if (!state.volatilityMode) {
+    alert("Crypto Market is only available in Volatility Mode.");
+    return;
+  }
+  openModalById("cryptoModal");
+  renderCryptoMarket();
+}
 function renderPlayers() {
   if (!elPlayersArea) return;
 
@@ -2060,6 +2379,29 @@ function renderPlayers() {
     .filter(Boolean)
     .join("") || `<div class="mini muted">No holdings yet.</div>`;
 
+
+  const cryptoLines = (state.volatilityMode ? getActiveCryptos() : [])
+    .map(c => {
+      const units = (p.cryptoHoldings?.[c.symbol] || 0);
+      if (units === 0) return null;
+
+      const price = state.cryptoPrices?.[c.symbol] ?? c.start;
+      const val = units * price;
+
+      return `
+        <div class="mini">
+          <strong>${c.symbol}</strong>:
+          ${units} units @ $${fmtMoney(price)} = $${fmtMoney(val)}
+          <span class="muted"> • Crypto (no dividends)</span>
+        </div>
+      `;
+    })
+    .filter(Boolean)
+    .join("");
+
+  const holdingsCombined = (holdingLines ? holdingLines : "") +
+    (cryptoLines ? `<div class="divider" style="margin:10px 0;"></div><div class="mini muted" style="margin-bottom:6px;">Crypto Holdings</div>${cryptoLines}` : "");
+
   const dividendSummary = `
     <div class="mini muted" style="margin-top:8px;">
       Total Dividends Due: <strong>$${fmtMoney(divTotal || 0)}</strong>
@@ -2150,7 +2492,7 @@ function renderPlayers() {
 
     <div class="divider"></div>
     <div>
-      ${holdingLines}
+      ${holdingsCombined}
       ${dividendSummary}
     </div>
   `;
@@ -2355,18 +2697,20 @@ function updateMarketMoverButton() {
 
 function renderAll() {
   ensurePricesForActiveStocks();
-   renderStatus();
+  ensureCryptoPrices();
+  renderStatus();
   renderPitBoard();
   renderPlayers();
   renderLog();
+  renderCryptoMarket();
 
   const started = !!state.started;
   elBtnPayDividends.disabled = !started;
   elBtnShortMove.disabled = !started;
-   
-   elBtnEndSession.disabled = !started;
 
-   renderOpeningBellCounter();
+  elBtnEndSession.disabled = !started;
+
+  renderOpeningBellCounter();
   updateMarketMoverButton();
 }
 
@@ -2480,7 +2824,8 @@ function startSession() {
       id: `p${i+1}`,
       name,
       cash,
-      holdings: {}
+      holdings: {},
+      cryptoHoldings: {}
     });
   }
 
@@ -2489,11 +2834,19 @@ function startSession() {
     prices[s.symbol] = s.start;
   }
 
+  // Crypto market (Volatility Mode only)
+  const cryptoPrices = {};
+  if (state.volatilityMode) {
+    for (const c of getActiveCryptos()) cryptoPrices[c.symbol] = c.start;
+  }
+
   state.started = true;
   state.createdAt = nowTs();
   state.players = players;
   setActivePlayer(players[0]?.id || null);
   state.prices = prices;
+  state.cryptoPrices = cryptoPrices;
+  state.cryptoSeed = Math.floor(Date.now() % 2147483647);
   state.dissolved = {};
   state.log = [];
   state.openingBells = 0;
@@ -2593,6 +2946,11 @@ function payDividends() {
      playSound("openingBell");
    }
 
+  // ₿ Crypto market swings (Volatility Mode only)
+  if (state.volatilityMode) {
+    applyCryptoOpeningBellMove();
+  }
+
   let totalPaid = 0;
 
   for (const p of state.players) {
@@ -2679,6 +3037,83 @@ function openCashDialog(playerId) {
   addLog(`${p.name} cash adjusted: ${delta >= 0 ? "+" : ""}${fmtMoney(delta)} → $${fmtMoney(p.cash)}.`);
   renderAll();
   saveState();
+}
+
+
+function doCryptoTrade(playerId, act, symbol, units) {
+  if (!assertHostAction()) return false;
+
+  if (!state.volatilityMode) {
+    alert("Crypto Market is only available in Volatility Mode.");
+    return false;
+  }
+
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) return false;
+  ensureHoldings(p);
+
+  const c = getCrypto(symbol);
+  if (!c) {
+    alert("Unknown crypto symbol.");
+    return false;
+  }
+
+  if (!Number.isFinite(units) || units <= 0 || units % 100 !== 0) {
+    alert("Units must be 100, 200, 300...");
+    return false;
+  }
+
+  const isBuy = act === "BUY";
+  const isSell = act === "SELL";
+  if (!isBuy && !isSell) {
+    alert("Invalid trade action.");
+    return false;
+  }
+
+  const price = state.cryptoPrices?.[symbol] ?? c.start;
+  const total = units * price;
+
+  const verb = isBuy ? "BUY" : "SELL";
+  const confirmMsg =
+    `${p.name}\n\n` +
+    `${verb} ${units} units of ${symbol}\n` +
+    `Price: $${fmtMoney(price)} per unit\n\n` +
+    `Total: $${fmtMoney(total)}\n\n` +
+    `Confirm this trade?`;
+
+  if (!confirm(confirmMsg)) return false;
+
+  if (isBuy) {
+    if ((p.cash || 0) < total) {
+      alert(`${p.name} doesn’t have enough cash. Needs $${fmtMoney(total)}, has $${fmtMoney(p.cash)}.`);
+      return false;
+    }
+  } else {
+    const owned = p.cryptoHoldings?.[symbol] || 0;
+    if (owned < units) {
+      alert(`${p.name} doesn’t have enough units to sell. Has ${owned}.`);
+      return false;
+    }
+  }
+
+  pushUndo(`${act} ${units} ${symbol} (CRYPTO) (${p.name})`);
+
+  if (isBuy) {
+    p.cash -= total;
+    p.cryptoHoldings[symbol] = (p.cryptoHoldings[symbol] || 0) + units;
+  } else {
+    p.cryptoHoldings[symbol] = (p.cryptoHoldings[symbol] || 0) - units;
+    p.cash += total;
+  }
+
+  addLog(`${p.name} ${verb} ${units} ${symbol} @ $${fmtMoney(price)} = $${fmtMoney(total)} (crypto).`);
+
+  // ✅ CASH SOUND on successful trade
+  playCashSfx();
+
+  renderAll();
+  saveState();
+  return true;
 }
 
 function doTrade(playerId, act, symbol, shares) {
@@ -3002,6 +3437,7 @@ elBtnStart.addEventListener("click", () => {
 elBtnApplyMarketMover.addEventListener("click", applyMarketMover);
 elBtnPayDividends.addEventListener("click", payDividendsConfirmed);
 elBtnShortMove.addEventListener("click", shortMove);
+if (elBtnCryptoMarket) elBtnCryptoMarket.addEventListener("click", openCryptoModal);
 
 document.addEventListener("click", (e) => {
   const btn = e.target.closest('[data-action="editPrice"]');
@@ -3068,6 +3504,13 @@ document.addEventListener("click", (e) => {
   if (!trg) return;
 
   openTradeModalForStock(trg.dataset.symbol);
+});
+
+
+document.addEventListener("click", (e) => {
+  const trg = e.target.closest('[data-action="tradeCrypto"]');
+  if (!trg) return;
+  openTradeModalForCrypto(trg.dataset.symbol);
 });
 
 (function initGlobalClickSound() {
