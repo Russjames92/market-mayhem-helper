@@ -814,17 +814,46 @@ function applyCryptoOpeningBellMove() {
   state.cryptoSeed = (Number(state.cryptoSeed) || 1) + 1;
   const rand = mulberry32(state.cryptoSeed);
 
+  const assets = getActiveCryptos();
+  if (!assets.length) return;
+
+  // Each Opening Bell: guarantee ONE "rocket" (+800% to +1000%)
+  const rocket = assets[Math.floor(rand() * assets.length)]?.symbol;
+
+  // Optional: pick a separate "crash" candidate that can take a huge hit (down to -96%)
+  let crash = assets[Math.floor(rand() * assets.length)]?.symbol;
+  if (crash === rocket && assets.length > 1) {
+    const i = (assets.findIndex(a => a.symbol === crash) + 1) % assets.length;
+    crash = assets[i].symbol;
+  }
+
   const movers = [];
 
-  for (const c of getActiveCryptos()) {
+  for (const c of assets) {
     const before = Number(state.cryptoPrices[c.symbol] ?? c.start);
 
-    // base wild swing: -35% to +45%
-    let pct = (rand() * 0.80) - 0.35;
+    let pct;
 
-    // small chance of extreme move: -80% to +160%
-    if (rand() < 0.12) {
-      pct = (rand() * 2.40) - 0.80;
+    if (c.symbol === rocket) {
+      // +800% to +1000% (multiplier 9x to 11x)
+      pct = 8 + (rand() * 2);
+    } else {
+      // base wild swing: -50% to +70%
+      pct = (rand() * 1.20) - 0.50;
+
+      // decent chance of extreme move: -96% to +250%
+      if (rand() < 0.18) {
+        pct = (rand() * 3.46) - 0.96;
+      }
+
+      // make sure at most one "max crash" candidate tends toward big red candles
+      // (not guaranteed every bell, but allows deep drawdowns up to -96%)
+      if (c.symbol === crash && rand() < 0.45) {
+        pct = -0.60 - (rand() * 0.36); // -60% to -96%
+      }
+
+      // hard clamp to your requested maximum drawdown
+      if (pct < -0.96) pct = -0.96;
     }
 
     const after = clampCryptoPrice(before * (1 + pct));
@@ -839,8 +868,9 @@ function applyCryptoOpeningBellMove() {
     `${m.sym} ${m.pct >= 0 ? "+" : ""}${Math.round(m.pct*100)}% → $${fmtMoney2(m.after)}`
   );
 
-  addLog(`Crypto Opening Bell: market swings hit the board.<br><span class="mini muted">${top.join(" • ")}</span>`);
+  addLog(`Crypto Opening Bell: market goes berserk.<br><span class="mini muted">${top.join(" • ")}</span>`);
 }
+
 function isDissolved(sym) {
   return !!state.dissolved?.[sym];
 }
