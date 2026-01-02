@@ -1546,3 +1546,81 @@ body.isViewer #toolsCard {
 .housingMovePill.flat{
   color: rgba(255,255,255,.70);
 }
+
+/* Housing modal polish (layout + spacing) */
+#housingModal .mmModalCard{
+  width:min(780px, calc(100% - 28px));
+}
+
+#housingModal .housingCurPrice{
+  font-size:34px;
+}
+
+#housingModal .housingTrade{ margin-top:10px; }
+
+#housingModal .mmTradeRow{
+  display:flex;
+  gap:14px;
+  align-items:flex-end;
+  flex-wrap:wrap;
+}
+
+#housingModal .mmTradeRow .field{
+  flex:1 1 260px !important;
+  min-width:240px !important;
+}
+
+#housingModal .mmTradeRow .field label{
+  display:block;
+  margin:0 0 6px;
+  font-size:13px;
+  letter-spacing:.2px;
+  opacity:.88;
+}
+
+#housingModal .mmTradeShares{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.03);
+}
+
+#housingModal .mmTradeShares button{
+  width:auto !important;
+  padding:10px 14px;
+  border-radius:12px;
+}
+
+#housingModal .mmTradeShares span{
+  min-width:64px;
+  text-align:center;
+  font-weight:900;
+}
+
+#housingModal .mmTradePreview{
+  margin-top:10px;
+  line-height:1.35;
+}
+
+#housingModal .mmTradeBtns{
+  margin-top:14px;
+  display:grid;
+  gap:10px;
+}
+
+#housingModal .mmTradeBtns button{
+  padding:14px 14px;
+  border-radius:14px;
+}
+
+@media (max-width:520px){
+  #housingModal .housingCurPrice{ font-size:30px; }
+  #housingModal .mmTradeShares{ justify-content:space-between; }
+  #housingModal .mmTradeShares button{ padding:10px 12px; }
+  #housingModal .mmTradeShares span{ min-width:56px; }
+}
