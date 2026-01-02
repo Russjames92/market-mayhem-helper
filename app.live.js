@@ -494,4 +494,3 @@ function startPresence() {
   // cleanup on tab close/refresh
   window.addEventListener("beforeunload", stopPresence, { once: true });
 }
-
