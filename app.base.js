@@ -2685,6 +2685,7 @@ function doHousingTrade(act){
 
   // Close the Housing modal after a successful trade (better flow)
   closeModalById("housingModal");
+   playCashSound();
   return true;
 }
 
