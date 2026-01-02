@@ -1133,7 +1133,8 @@ function estimateSlippageCost(symbol, shares, startPrice) {
   if (ticksTotal <= 0) return totalShares * price;
 
   // Cap how much a single order can move the price (keeps things playable)
-  const ticksApplied = Math.min(ticksTotal, VOL_MAX_TICKS_PER_TRADE);
+    const capTicks = Math.max(1, Math.round(price * VOL_MAX_PCT_PER_TRADE));
+  const ticksApplied = Math.min(ticksTotal, capTicks);
 
   // Distribute ticks evenly across lots
   const lots = Math.ceil(totalShares / VOL_LOT_SIZE);
