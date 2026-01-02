@@ -2592,10 +2592,7 @@ function openHousingModal(){
   if (elHousingUnits) elHousingUnits.textContent = String(state.housingTradeUnits || 1);
 
   // open
-  if (elHousingModal) {
-    elHousingModal.hidden = false;
-    elHousingModal.setAttribute("aria-hidden", "false");
-  }
+  openModalById("housingModal");
 
   renderHousingMarket();
 }
@@ -2685,6 +2682,9 @@ function doHousingTrade(act){
   renderAll();
   saveState();
   if (live.enabled && live.isHost) pushStateToCloud();
+
+  // Close the Housing modal after a successful trade (better flow)
+  closeModalById("housingModal");
   return true;
 }
 
