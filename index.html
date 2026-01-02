@@ -307,6 +307,10 @@
                     data-tooltip="Open the separate Crypto Market board (Volatility Mode only).">
               Crypto Market
             </button>
+            <button type="button" class="btn" id="btnHousingMarket" hidden
+                    data-tooltip="Open the separate Housing Market board (Volatility Mode only).">
+              Avg. Housing Market
+            </button>
             <button type="button" class="btnToggle" id="btnTogglePitBoard">Collapse</button>
           </div>
         </div>
@@ -463,6 +467,61 @@
       </div>
 
       <div id="cryptoCards"></div>
+    </div>
+  </div>
+
+  <!-- ✅ Housing Market Modal (Volatility Mode) -->
+  <div class="mmModal" id="housingModal" hidden aria-hidden="true">
+    <div class="mmModalOverlay" data-close-modal="housingModal"></div>
+
+    <div class="mmModalCard" role="dialog" aria-modal="true" aria-labelledby="housingModalTitle">
+      <div class="mmModalHead">
+        <h3 id="housingModalTitle">Housing Market</h3>
+        <button class="btnIcon" type="button" data-close-modal="housingModal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="sub">
+        Volatility Mode only. Average house price shifts at every Opening Bell. No dividends on housing.
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="housingTop">
+        <div class="housingPriceLine">
+          <div class="mini muted">Avg. Price</div>
+          <div id="housingCurPrice" class="housingCurPrice">$325k</div>
+        </div>
+        <div id="housingLastMove" class="housingMovePill flat">—</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="housingTrade">
+        <div class="mmTradeRow">
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>Player</label>
+            <select id="housingPlayer"></select>
+          </div>
+
+          <div class="field" style="flex:1; min-width:220px;">
+            <label>Units (houses)</label>
+            <div class="mmTradeShares">
+              <button type="button" id="housingMinus1">-1</button>
+              <span id="housingUnits" class="mini">1</span>
+              <button type="button" id="housingPlus1">+1</button>
+              <button type="button" id="housingMax" class="secondary">MAX</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="housingPreview" class="mmTradePreview mini muted"></div>
+
+        <div class="mmTradeBtns">
+          <button type="button" id="housingBuy" class="primary">Buy</button>
+          <button type="button" id="housingSell">Sell</button>
+          <button type="button" id="housingSellAll" class="danger">Sell All</button>
+        </div>
+      </div>
     </div>
   </div>
 
