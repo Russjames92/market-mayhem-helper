@@ -437,7 +437,7 @@ button:disabled{ opacity:.55; cursor:not-allowed; }
   box-shadow:0 0 0 2px rgba(255,255,255,.08);
 }
 
-/* Pit controls ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ ONE definition */
+/* Pit controls ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ ONE definition */
 .pitControls{
   display:flex;
   flex-direction:column;
@@ -939,12 +939,12 @@ body.modalOpen{ overflow:hidden; }
     -webkit-appearance:none;
     -moz-appearance:none;
 
-    /* slightly stronger background so iOS doesnÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢t ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“flattenÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â it */
+    /* slightly stronger background so iOS doesnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢t ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œflattenÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â it */
     background-color:var(--panel2);
     background-image:none;
   }
 
-  /* Ensure the wrapper doesnÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢t clip the control on iOS */
+  /* Ensure the wrapper doesnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢t clip the control on iOS */
   .row select:not(.indDir),
   .grid2 select:not(.indDir){
     width:100%;
@@ -1014,7 +1014,7 @@ body.modalOpen{ overflow:hidden; }
   }
 
   input[type="checkbox"]:checked::after{
-    content: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ";
+    content: "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“";
     color: #000;
     font-size: 22px;
     font-weight: 900;
@@ -1063,7 +1063,7 @@ body.modalOpen{ overflow:hidden; }
     font-size: 16px !important;
   }
 
-  /* Also force common ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“small textÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â areas that might cascade onto inputs */
+  /* Also force common ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œsmall textÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â areas that might cascade onto inputs */
   .mini,
   .muted,
   .sub,
@@ -1129,7 +1129,7 @@ body.modalOpen{ overflow:hidden; }
   font-weight: 600;
   letter-spacing: 0.04em;
 
-  pointer-events: none; /* ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“ THIS FIXES BUTTONS */
+  pointer-events: none; /* ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¹Ã…â€œ THIS FIXES BUTTONS */
 }
 
 /* FORCE hidden attribute to actually hide the live announcement */
@@ -1142,7 +1142,7 @@ body.hasLiveAnnouncement {
   padding-top: 32px;
 }
 /* ===================================================== */
-/* TRADE MODAL ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â MOBILE LAYOUT (single source of truth)  */
+/* TRADE MODAL ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â MOBILE LAYOUT (single source of truth)  */
 /* Fixes overflow + keeps -100 Shares +100 MAX visible   */
 /* ===================================================== */
 @media (max-width: 700px){
@@ -1503,3 +1503,46 @@ body.isViewer #toolsCard {
 .cryptoPriceWrap.down .cryptoMove{ color:#ff4d4d; }
 .cryptoPriceWrap.flat .cryptoPrice,
 .cryptoPriceWrap.flat .cryptoMove{ color:rgba(242,242,242,.72); }
+
+
+/* ---------------- Housing Market (Volatility Mode) ---------------- */
+.housingTop{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.housingPriceLine{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.housingCurPrice{
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+.housingMovePill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  font-weight:800;
+}
+.housingMovePill.up{
+  border-color: rgba(70, 220, 120, .22);
+  background: rgba(70, 220, 120, .10);
+  color: rgba(120, 255, 170, .95);
+}
+.housingMovePill.down{
+  border-color: rgba(255, 80, 80, .22);
+  background: rgba(255, 80, 80, .10);
+  color: rgba(255, 155, 155, .95);
+}
+.housingMovePill.flat{
+  color: rgba(255,255,255,.70);
+}
