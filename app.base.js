@@ -2559,7 +2559,7 @@ function renderHousingMarket(){
     elBtnHousingMarket.hidden = !(state.started && state.volatilityMode);
     if (!elBtnHousingMarket.hidden) {
       ensureHousingMarket();
-      elBtnHousingMarket.textContent = `Avg. Housing Market ($${fmtMoneyK(state.housingPrice)})`;
+      elBtnHousingMarket.textContent = `House Market`;
     }
   }
 
