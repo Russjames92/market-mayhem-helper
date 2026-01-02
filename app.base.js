@@ -680,6 +680,13 @@ function updateLiveAnnouncement() {
   window.addEventListener("resize", removeTip);
 })();
 
+
+function recomputeBodyModalLock(){
+  const anyModalOpen =
+    !!document.querySelector(".mmModalBack.open") ||
+    !!document.querySelector(".mmModal:not([hidden])");
+  document.body.classList.toggle("modalOpen", anyModalOpen);
+}
 function closeModalById(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -687,9 +694,8 @@ function closeModalById(id) {
   el.hidden = true;
   el.setAttribute("aria-hidden", "true");
 
-  // unlock body scrolling only if NO modals are open
-  const anyOpen = !!document.querySelector(".mmModal:not([hidden])");
-  if (!anyOpen) document.body.classList.remove("modalOpen");
+  // unlock body scrolling only if NO modals/backdrops are open
+  recomputeBodyModalLock();
 }
 
 function openModalById(id){
@@ -697,7 +703,7 @@ function openModalById(id){
   if (!el) return;
   el.hidden = false;
   el.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modalOpen");
+  recomputeBodyModalLock();
 }
 
 function getActiveStocks() {
@@ -1816,6 +1822,11 @@ function ensureTradeModal() {
   back.className = "mmModalBack";
   back.id = "mmTradeModalBack";
 
+
+  // keep it out of the modal-open detector until opened
+  back.hidden = true;
+  back.setAttribute("aria-hidden","true");
+
   back.innerHTML = `
     <div class="mmModal" role="dialog" aria-modal="true" aria-label="Trade Stock">
       <div class="mmModalHeader">
@@ -2094,13 +2105,19 @@ function openTradeModalForCrypto(symbol) {
   };
 
   renderTradeModalPreview();
+  tradeModalEl.hidden = false;
+  tradeModalEl.setAttribute("aria-hidden","false");
   tradeModalEl.classList.add("open");
+  recomputeBodyModalLock();
 }
 
 
 function closeTradeModal() {
   if (!tradeModalEl) return;
   tradeModalEl.classList.remove("open");
+  tradeModalEl.hidden = true;
+  tradeModalEl.setAttribute("aria-hidden","true");
+  recomputeBodyModalLock();
 }
 
 function renderTradeModalPreview() {
