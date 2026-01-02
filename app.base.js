@@ -116,6 +116,14 @@ let state = {
   dissolved: {},
   monopolyMode: false,
   volatilityMode: false, // ✅ NEW
+  // Volatility Mode expansions
+  cryptoPrices: {},
+  cryptoSeed: 0,
+  cryptoLastMove: {},
+  housingPrice: 325000,
+  housingSeed: 0,
+  housingTrend: 0, // -1 / +1 (biased), 0 = unset
+  housingLastMovePct: 0,
   log: [],
   openingBells: 0,
 };
@@ -233,6 +241,21 @@ const elBtnCryptoMarket = document.getElementById("btnCryptoMarket");
 const elCryptoModal = document.getElementById("cryptoModal");
 const elCryptoTableBody = document.querySelector("#cryptoTable tbody");
 const elCryptoCards = document.getElementById("cryptoCards");
+
+// Housing Market (Volatility Mode)
+const elBtnHousingMarket = document.getElementById("btnHousingMarket");
+const elHousingModal = document.getElementById("housingModal");
+const elHousingCurPrice = document.getElementById("housingCurPrice");
+const elHousingLastMove = document.getElementById("housingLastMove");
+const elHousingPlayer = document.getElementById("housingPlayer");
+const elHousingUnits = document.getElementById("housingUnits");
+const elHousingPreview = document.getElementById("housingPreview");
+const elHousingMinus1 = document.getElementById("housingMinus1");
+const elHousingPlus1  = document.getElementById("housingPlus1");
+const elHousingMax    = document.getElementById("housingMax");
+const elHousingBuy    = document.getElementById("housingBuy");
+const elHousingSell   = document.getElementById("housingSell");
+const elHousingSellAll= document.getElementById("housingSellAll");
 
 
 const AVATAR_KEY = "mm_player_avatars_v1";
@@ -796,6 +819,19 @@ function clampCryptoPrice(n){
   return Math.max(0.01, Math.round(x * 100) / 100);
 }
 
+
+function clampHousingPrice(n){
+  // keep housing prices readable in $1k steps with a reasonable floor
+  const x = Number(n);
+  if (!Number.isFinite(x)) return 10000;
+  return Math.max(10000, Math.round(x / 1000) * 1000);
+}
+function fmtMoneyK(n){
+  const x = Math.round(Number(n) || 0);
+  if (x >= 1000000) return (x/1000000).toFixed(2).replace(/\.00$/,"") + "M";
+  if (x >= 1000) return Math.round(x/1000) + "k";
+  return String(x);
+}
 // deterministic RNG (for live sessions / viewers)
 function mulberry32(seed) {
   return function() {
@@ -925,6 +961,51 @@ function ensureCryptoPrices(){
     if (!Number.isFinite(v)) state.cryptoPrices[c.symbol] = Number(c.start) || 0;
   }
 }
+
+function ensureHousingMarket(){
+  if (!state.volatilityMode) return;
+  if (!Number.isFinite(Number(state.housingPrice))) state.housingPrice = 325000;
+  state.housingPrice = clampHousingPrice(state.housingPrice);
+
+  if (!Number.isFinite(Number(state.housingSeed))) state.housingSeed = 0;
+  if (!Number.isFinite(Number(state.housingTrend))) state.housingTrend = 0;
+  if (!Number.isFinite(Number(state.housingLastMovePct))) state.housingLastMovePct = 0;
+}
+
+function housingMoveText(pct){
+  if (!Number.isFinite(pct) || pct === 0) return { cls:"flat", txt:"—" };
+  const up = pct > 0;
+  const arrow = up ? "▲" : "▼";
+  const pctTxt = `${up ? "+" : ""}${(pct*100).toFixed(1)}%`;
+  return { cls: up ? "up" : "down", txt: `${arrow} ${pctTxt}` };
+}
+
+function applyHousingOpeningBellMove(){
+  if (!state.volatilityMode) return;
+  ensureHousingMarket();
+
+  // advance seed per bell for deterministic live sync
+  state.housingSeed = (Number(state.housingSeed) || 1) + 1;
+  const rand = mulberry32(state.housingSeed);
+
+  // keep a trend, but allow occasional flips
+  if (!state.housingTrend) state.housingTrend = (rand() < 0.5 ? -1 : 1);
+  if (rand() < 0.15) state.housingTrend *= -1; // sometimes reverse
+
+  const before = Number(state.housingPrice || 325000);
+
+  // gentler than crypto: typically ~1%–5% plus a touch of noise
+  let pct = (0.01 + rand()*0.04) * state.housingTrend;
+  pct += (rand()*0.01 - 0.005); // +/- 0.5% noise
+  pct = Math.max(-0.08, Math.min(0.08, pct)); // cap at +/-8%
+
+  const after = clampHousingPrice(before * (1 + pct));
+  state.housingPrice = after;
+  state.housingLastMovePct = pct;
+
+  const mt = housingMoveText(pct);
+  addLog(`🏠 Housing Market moved: $${fmtMoney(before)} → $${fmtMoney(after)} (${mt.txt}).`);
+}
 function ensurePricesForActiveStocks() {
   if (!state.prices) state.prices = {};
 
@@ -961,6 +1042,9 @@ function ensureHoldings(player) {
   for (const c of getActiveCryptos()) {
     if (player.cryptoHoldings[c.symbol] == null) player.cryptoHoldings[c.symbol] = 0;
   }
+
+  // housing holdings (volatility mode expansion)
+  if (player.housingUnits == null) player.housingUnits = 0;
 }
 function computePlayerNetWorth(player) {
   let stockValue = 0;
@@ -979,7 +1063,14 @@ function computePlayerNetWorth(player) {
     cryptoValue += (Number(units) || 0) * price;
   }
 
-  return (player.cash || 0) + stockValue + cryptoValue;
+  let housingValue = 0;
+  if (state.volatilityMode) {
+    const units = Number(player.housingUnits) || 0;
+    const price = Number(state.housingPrice) || 0;
+    housingValue = units * price;
+  }
+
+  return (player.cash || 0) + stockValue + cryptoValue + housingValue;
 }
 function computePlayerDividendDue(player) {
   ensureHoldings(player);
@@ -2155,7 +2246,7 @@ function loadState() {
 function resetState() {
   if (!confirm("Reset session? This clears players, prices, and log.")) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = { started:false, createdAt:null, players:[], prices:{}, cryptoPrices:{}, cryptoSeed:0, dissolved:{}, monopolyMode:false, volatilityMode:false, log:[], openingBells:0 };
+  state = { started:false, createdAt:null, players:[], prices:{}, cryptoPrices:{}, cryptoSeed:0, cryptoLastMove:{}, housingPrice:325000, housingSeed:0, housingTrend:0, housingLastMovePct:0, dissolved:{}, monopolyMode:false, volatilityMode:false, log:[], openingBells:0 };
   buildSetupInputs();
   buildIndustryUI();
   buildShortMoveUI();
@@ -2462,6 +2553,141 @@ function renderCryptoMarket() {
   }).join("");
 }
 
+function renderHousingMarket(){
+  // button visibility + label
+  if (elBtnHousingMarket) {
+    elBtnHousingMarket.hidden = !(state.started && state.volatilityMode);
+    if (!elBtnHousingMarket.hidden) {
+      ensureHousingMarket();
+      elBtnHousingMarket.textContent = `Avg. Housing Market ($${fmtMoneyK(state.housingPrice)})`;
+    }
+  }
+
+  // if modal isn't open, nothing else to render
+  const modalOpen = !!elHousingModal && !elHousingModal.hidden;
+  if (!modalOpen) return;
+
+  ensureHousingMarket();
+
+  if (elHousingCurPrice) elHousingCurPrice.textContent = `$${fmtMoneyK(state.housingPrice)}`;
+  if (elHousingLastMove) {
+    const mt = housingMoveText(state.housingLastMovePct);
+    elHousingLastMove.className = `housingMovePill ${mt.cls}`;
+    elHousingLastMove.textContent = mt.txt;
+  }
+
+  // players dropdown
+  if (elHousingPlayer) {
+    elHousingPlayer.innerHTML = state.players.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+    if (!elHousingPlayer.value && state.activePlayerId) elHousingPlayer.value = state.activePlayerId;
+  }
+
+  updateHousingPreview();
+}
+
+function openHousingModal(){
+  if (!(state.started && state.volatilityMode)) return;
+
+  ensureHousingMarket();
+  if (elHousingUnits) elHousingUnits.textContent = String(state.housingTradeUnits || 1);
+
+  // open
+  if (elHousingModal) {
+    elHousingModal.hidden = false;
+    elHousingModal.setAttribute("aria-hidden", "false");
+  }
+
+  renderHousingMarket();
+}
+
+function setHousingUnits(n){
+  const v = Math.max(1, Math.floor(Number(n) || 1));
+  state.housingTradeUnits = v;
+  if (elHousingUnits) elHousingUnits.textContent = String(v);
+  updateHousingPreview();
+}
+
+function getHousingMaxUnits(player){
+  const price = Number(state.housingPrice || 0);
+  if (price <= 0) return 0;
+  return Math.max(0, Math.floor((Number(player?.cash) || 0) / price));
+}
+
+function updateHousingPreview(){
+  if (!elHousingPreview || !state.started) return;
+  ensureHousingMarket();
+
+  const pid = elHousingPlayer?.value || state.activePlayerId;
+  const p = state.players.find(x => x.id === pid) || state.players[0];
+  if (!p) { elHousingPreview.textContent = ""; return; }
+  ensureHoldings(p);
+
+  const units = Math.max(1, Math.floor(Number(state.housingTradeUnits) || 1));
+  const price = Number(state.housingPrice || 0);
+  const cost = units * price;
+  const canMax = getHousingMaxUnits(p);
+
+  elHousingPreview.innerHTML =
+    `Avg price: <strong>$${fmtMoney(price)}</strong> • ` +
+    `Units: <strong>${units}</strong> • ` +
+    `Total: <strong>$${fmtMoney(cost)}</strong><br>` +
+    `<span class="muted">Cash: $${fmtMoney(p.cash)} • You own: ${p.housingUnits || 0} house(s) • Max you can buy: ${canMax}</span>`;
+}
+
+function doHousingTrade(act){
+  if (!assertHostAction()) return false;
+  if (!state.started) return false;
+  ensureHousingMarket();
+
+  const pid = elHousingPlayer?.value || state.activePlayerId;
+  const p = state.players.find(x => x.id === pid);
+  if (!p) return false;
+  ensureHoldings(p);
+
+  const units = Math.max(1, Math.floor(Number(state.housingTradeUnits) || 1));
+  const price = Number(state.housingPrice || 0);
+  const total = units * price;
+
+  if (act === "buy") {
+    const max = getHousingMaxUnits(p);
+    if (max <= 0) { alert("Not enough cash to buy a house."); return false; }
+    const u = Math.min(units, max);
+    const t = u * price;
+
+    pushUndo(`Housing BUY ${u} ( ${p.name} )`);
+    p.cash -= t;
+    p.housingUnits = (Number(p.housingUnits) || 0) + u;
+
+    addLog(`🏠 ${p.name} bought ${u} house(s) @ $${fmtMoney(price)} = $${fmtMoney(t)}.`);
+  } else if (act === "sell") {
+    const owned = Number(p.housingUnits) || 0;
+    if (owned <= 0) { alert("No houses to sell."); return false; }
+    const u = Math.min(units, owned);
+    const t = u * price;
+
+    pushUndo(`Housing SELL ${u} ( ${p.name} )`);
+    p.cash += t;
+    p.housingUnits = owned - u;
+
+    addLog(`🏠 ${p.name} sold ${u} house(s) @ $${fmtMoney(price)} = $${fmtMoney(t)}.`);
+  } else if (act === "sellAll") {
+    const owned = Number(p.housingUnits) || 0;
+    if (owned <= 0) { alert("No houses to sell."); return false; }
+    const t = owned * price;
+
+    pushUndo(`Housing SELL ALL ${owned} ( ${p.name} )`);
+    p.cash += t;
+    p.housingUnits = 0;
+
+    addLog(`🏠 ${p.name} sold ALL houses (${owned}) @ $${fmtMoney(price)} = $${fmtMoney(t)}.`);
+  }
+
+  renderAll();
+  saveState();
+  if (live.enabled && live.isHost) pushStateToCloud();
+  return true;
+}
+
 function openCryptoModal() {
   if (!state.started) {
     alert("Start a session first.");
@@ -2588,8 +2814,21 @@ function renderPlayers() {
     .filter(Boolean)
     .join("");
 
+  const housingLines = (state.volatilityMode && Number(p.housingUnits) > 0)
+    ? `
+        <div class="mini">
+          <strong>HOU</strong>:
+          ${Number(p.housingUnits) || 0} house(s) @ $${fmtMoney(state.housingPrice || 0)} = $${fmtMoney((Number(p.housingUnits)||0) * (Number(state.housingPrice)||0))}
+          <span class="muted"> • Housing (no dividends)</span>
+        </div>
+      `
+    : "";
+
+
   const holdingsCombined = (holdingLines ? holdingLines : "") +
-    (cryptoLines ? `<div class="divider" style="margin:10px 0;"></div><div class="mini muted" style="margin-bottom:6px;">Crypto Holdings</div>${cryptoLines}` : "");
+    (cryptoLines ? `<div class="divider" style="margin:10px 0;"></div><div class="mini muted" style="margin-bottom:6px;">Crypto Holdings</div>${cryptoLines}` : "") +
+    (housingLines ? `<div class="divider" style="margin:10px 0;"></div><div class="mini muted" style="margin-bottom:6px;">Housing Holdings</div>${housingLines}` : "");
+
 
   const dividendSummary = `
     <div class="mini muted" style="margin-top:8px;">
@@ -2892,6 +3131,8 @@ function renderAll() {
   renderPlayers();
   renderLog();
   renderCryptoMarket();
+  ensureHousingMarket();
+  renderHousingMarket();
 
   const started = !!state.started;
   elBtnPayDividends.disabled = !started;
@@ -3014,7 +3255,8 @@ function startSession() {
       name,
       cash,
       holdings: {},
-      cryptoHoldings: {}
+      cryptoHoldings: {},
+      housingUnits: 0
     });
   }
 
@@ -3036,6 +3278,14 @@ function startSession() {
   state.prices = prices;
   state.cryptoPrices = cryptoPrices;
   state.cryptoSeed = Math.floor(Date.now() % 2147483647);
+  state.cryptoLastMove = {};
+
+  // Housing market (Volatility Mode only)
+  state.housingPrice = 325000;
+  state.housingSeed = Math.floor((Date.now() + 1337) % 2147483647);
+  state.housingTrend = 0;
+  state.housingLastMovePct = 0;
+
   state.dissolved = {};
   state.log = [];
   state.openingBells = 0;
@@ -3135,9 +3385,10 @@ function payDividends() {
      playSound("openingBell");
    }
 
-  // ₿ Crypto market swings (Volatility Mode only)
+  // ₿ Crypto + Housing market swings (Volatility Mode only)
   if (state.volatilityMode) {
     applyCryptoOpeningBellMove();
+    applyHousingOpeningBellMove();
   }
 
   let totalPaid = 0;
@@ -3655,6 +3906,22 @@ elBtnApplyMarketMover.addEventListener("click", applyMarketMover);
 elBtnPayDividends.addEventListener("click", payDividendsConfirmed);
 elBtnShortMove.addEventListener("click", shortMove);
 if (elBtnCryptoMarket) elBtnCryptoMarket.addEventListener("click", openCryptoModal);
+if (elBtnHousingMarket) elBtnHousingMarket.addEventListener("click", openHousingModal);
+
+// Housing modal controls
+if (elHousingMinus1) elHousingMinus1.addEventListener("click", () => setHousingUnits((Number(state.housingTradeUnits)||1) - 1));
+if (elHousingPlus1)  elHousingPlus1.addEventListener("click", () => setHousingUnits((Number(state.housingTradeUnits)||1) + 1));
+if (elHousingMax)    elHousingMax.addEventListener("click", () => {
+  const pid = elHousingPlayer?.value || state.activePlayerId;
+  const p = state.players.find(x => x.id === pid) || state.players[0];
+  if (!p) return;
+  setHousingUnits(getHousingMaxUnits(p) || 1);
+});
+if (elHousingPlayer) elHousingPlayer.addEventListener("change", () => updateHousingPreview());
+if (elHousingBuy)    elHousingBuy.addEventListener("click", () => doHousingTrade("buy"));
+if (elHousingSell)   elHousingSell.addEventListener("click", () => doHousingTrade("sell"));
+if (elHousingSellAll)elHousingSellAll.addEventListener("click", () => doHousingTrade("sellAll"));
+
 
 document.addEventListener("click", (e) => {
   const btn = e.target.closest('[data-action="editPrice"]');
