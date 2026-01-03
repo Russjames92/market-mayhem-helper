@@ -3526,7 +3526,8 @@ function openCashDialog(playerId) {
   }
 
   const old = Number(p.cash || 0);
-  const next = Math.max(0, Math.round(old + delta));
+    // Allow negative cash (fees can push cash below $0; player can recover by selling assets)
+  const next = Math.round(old + delta);
 
   pushUndo(`Cash adjust ${delta >= 0 ? "+" : ""}${fmtMoney(delta)} (${p.name})`);
 
