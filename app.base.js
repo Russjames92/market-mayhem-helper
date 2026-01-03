@@ -682,14 +682,24 @@ function updateLiveAnnouncement() {
 
 
 function recomputeBodyModalLock(){
+  // Self-heal: if a trade backdrop is marked .open but its inner modal is hidden, remove .open
+  document.querySelectorAll(".mmModalBack.open").forEach((back) => {
+    const innerVisible = !!back.querySelector(".mmModal:not([hidden])");
+    if (!innerVisible) back.classList.remove("open");
+  });
+
   const anyModalOpen =
     !!document.querySelector(".mmModalBack.open") ||
     !!document.querySelector(".mmModal:not([hidden])");
+
   document.body.classList.toggle("modalOpen", anyModalOpen);
 }
 function closeModalById(id) {
   const el = document.getElementById(id);
   if (!el) return;
+
+  // If focus is inside this modal, blur it before hiding (prevents focus/scroll issues)
+  try { if (el.contains(document.activeElement)) document.activeElement.blur(); } catch(e) {}
 
   el.hidden = true;
   el.setAttribute("aria-hidden", "true");
@@ -4009,6 +4019,19 @@ document.addEventListener("click", (e) => {
   openTradeModalForStock(trg.dataset.symbol);
 }, true);
 
+
+// Fallback: also bind to pit-board containers directly (some mobile/live browsers can miss document-level delegation)
+function pitTradeClickHandler(e){
+  // ignore checkboxes and edit buttons
+  if (e.target.closest(".pitSelect")) return;
+  if (e.target.closest('[data-action="editPrice"]')) return;
+
+  const trg = e.target.closest('[data-action="tradeStock"]');
+  if (!trg) return;
+  openTradeModalForStock(trg.dataset.symbol);
+}
+if (elPitTableBody) elPitTableBody.addEventListener("click", pitTradeClickHandler, true);
+if (elPitCards) elPitCards.addEventListener("click", pitTradeClickHandler, true);
 
 document.addEventListener("click", (e) => {
   const trg = e.target.closest('[data-action="tradeCrypto"]');
