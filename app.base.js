@@ -682,15 +682,17 @@ function updateLiveAnnouncement() {
 
 
 function recomputeBodyModalLock(){
-  // Self-heal: if a trade backdrop is marked .open but its inner modal is hidden, remove .open
+  // Clean up any trade backdrops that are marked open while hidden (prevents stuck scroll lock)
   document.querySelectorAll(".mmModalBack.open").forEach((back) => {
-    const innerVisible = !!back.querySelector(".mmModal:not([hidden])");
-    if (!innerVisible) back.classList.remove("open");
+    if (back.hidden) back.classList.remove("open");
   });
 
+  // Any open backdrop-based modal (trade), OR any top-level modal element (setup/crypto/housing)
+  // NOTE: We intentionally only check TOP-LEVEL .mmModal elements (direct children of <body>)
+  // so the Trade modal's inner .mmModal (nested inside .mmModalBack) does NOT lock scroll forever.
   const anyModalOpen =
     !!document.querySelector(".mmModalBack.open") ||
-    !!document.querySelector(".mmModal:not([hidden])");
+    !!document.querySelector("body > .mmModal:not([hidden])");
 
   document.body.classList.toggle("modalOpen", anyModalOpen);
 }
@@ -2008,8 +2010,10 @@ function openTradeModalForStock(symbol) {
    };
 
   renderTradeModalPreview();
-
+  tradeModalEl.hidden = false;
+  tradeModalEl.setAttribute("aria-hidden","false");
   tradeModalEl.classList.add("open");
+  recomputeBodyModalLock();
 }
 
 function openTradeModalForCrypto(symbol) {
