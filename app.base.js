@@ -2179,17 +2179,16 @@ function initSetupModals() {
     if (!el) return;
     el.hidden = false;
     el.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modalOpen");
+    // Use centralized modal lock logic so other modals (crypto/housing/trade) don't leave scroll locked.
+    recomputeBodyModalLock();
   }
 
   function closeModal(el) {
     if (!el) return;
     el.hidden = true;
     el.setAttribute("aria-hidden", "true");
-    // if both modals are closed, unlock body
-    if ((liveModal?.hidden ?? true) && (newGameModal?.hidden ?? true)) {
-      document.body.classList.remove("modalOpen");
-    }
+    // Use centralized modal lock logic so closing ANY modal restores scroll correctly.
+    recomputeBodyModalLock();
   }
 
   btnOpenLive?.addEventListener("click", () => openModal(liveModal));
@@ -3999,6 +3998,7 @@ document.addEventListener("click", (e) => {
 });
 
 document.addEventListener("click", (e) => {
+  // (capture listener) allow pit-board trade clicks to work even if other handlers stop propagation
   // ignore clicks on checkboxes or edit price button
   if (e.target.closest(".pitSelect")) return;
   if (e.target.closest('[data-action="editPrice"]')) return;
@@ -4007,7 +4007,7 @@ document.addEventListener("click", (e) => {
   if (!trg) return;
 
   openTradeModalForStock(trg.dataset.symbol);
-});
+}, true);
 
 
 document.addEventListener("click", (e) => {
