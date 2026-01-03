@@ -2465,6 +2465,17 @@ function renderPitBoard() {
       <td>$${fmtMoney(s.start)}</td>
       ${curCell}
     `;
+
+    // --- Robust click binding (some browsers / live-session states can miss delegated handlers) ---
+    // Bind directly on the freshly-created row buttons so clicking Symbol/Company always opens the trade modal.
+    for (const btn of tr.querySelectorAll('[data-action="tradeStock"]')) {
+      btn.onclick = (ev) => {
+        ev.preventDefault();
+        // Don't let other click handlers (or accidental label/row interactions) interfere
+        ev.stopPropagation();
+        openTradeModalForStock(btn.dataset.symbol);
+      };
+    }
     elPitTableBody.appendChild(tr);
 
     // card (mobile)
@@ -2511,6 +2522,16 @@ function renderPitBoard() {
           <div><b>Now</b>$${fmtMoney(cur)}</div>
         </div>
       `;
+
+      // Same robust binding for the mobile card header line
+      const symLine = card.querySelector('.pitSymLine[data-action="tradeStock"]');
+      if (symLine) {
+        symLine.onclick = (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          openTradeModalForStock(symLine.dataset.symbol);
+        };
+      }
       elPitCards.appendChild(card);
     }
   }
